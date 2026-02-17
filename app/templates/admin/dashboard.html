@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="print-header">
+    <h1>SERVICIO NACIONAL DE APRENDIZAJE SENA</h1>
+    <p>Reporte de Control de Préstamos</p>
+    <p>Fecha: <script>document.write(new Date().toLocaleDateString())</script></p>
+</div>
+
+<div class="row no-print mb-3">
+    <div class="col">
+        <h2>Panel Bibliotecario</h2>
+        <a href="?status=pendiente" class="btn btn-warning">Pendientes</a>
+        <a href="?status=aprobado" class="btn btn-primary">Prestados</a>
+        <a href="?status=devuelto" class="btn btn-secondary">Historial</a>
+        <button onclick="window.print()" class="btn btn-dark float-end">🖨️ Imprimir</button>
+    </div>
+    <div class="col-12 mt-2">
+        Filtrar por: 
+        <a href="?status={{current_status}}&role=instructor">Instructores</a> | 
+        <a href="?status={{current_status}}&role=aprendiz">Aprendices</a>
+    </div>
+</div>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Item</th>
+            <th>Serial</th>
+            <th>Solicitado</th>
+            <th class="no-print">Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in loans %}
+        <tr>
+            <td>{{ loan.requester.username }}</td>
+            <td>{{ loan.requester.role }}</td>
+            <td>{{ loan.item_type }}</td>
+            <td>{{ loan.assigned_serial or '---' }}</td>
+            <td>{{ loan.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="no-print">
+                {% if loan.status == 'pendiente' %}
+                <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST" class="d-flex">
+                    <input type="text" name="serial" placeholder="Placa/Serial" required class="form-control form-control-sm me-2">
+                    <button type="submit" class="btn btn-success btn-sm">Aprobar</button>
+                </form>
+                {% elif loan.status == 'aprobado' %}
+                    <a href="{{ url_for('admin.return_item', id=loan.id) }}" class="btn btn-info btn-sm">Recibir Devolución</a>
+                {% else %}
+                    <span class="badge bg-secondary">Cerrado</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

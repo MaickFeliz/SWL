@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Mis Préstamos</h2>
+<a href="{{ url_for('main.request_loan') }}" class="btn btn-primary mb-3">Solicitar Nuevo Equipo</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Estado</th>
+            <th>Serial Asignado</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in loans %}
+        <tr>
+            <td>{{ loan.item_type }}</td>
+            <td>
+                <span class="badge bg-{{ 'warning' if loan.status == 'pendiente' else 'success' if loan.status == 'aprobado' else 'secondary' }}">
+                    {{ loan.status }}
+                </span>
+            </td>
+            <td>{{ loan.assigned_serial or 'Esperando...' }}</td>
+            <td>{{ loan.request_date.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-md-6 mx-auto">
+    <h3>Solicitar Préstamo</h3>
+    <form method="POST">
+        <div class="mb-3">
+            <label>Tipo de Elemento</label>
+            <select name="item_type" class="form-select">
+                <option value="Computador Portátil">Computador Portátil</option>
+                <option value="VideoBeam">VideoBeam</option>
+                <option value="Mouse">Mouse</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Enviar Solicitud</button>
+        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-secondary">Volver</a>
+    </form>
+</div>
+{% endblock %}
