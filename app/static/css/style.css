@@ -1,19 +1,157 @@
-/* Estilos generales */
-body { font-family: sans-serif; background: #f4f4f4; }
-.navbar { margin-bottom: 20px; }
-.no-print { display: block; }
+/* 1. IMPORTAR FUENTE MODERNA (Poppins) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* MODO IMPRESIÓN (Tu requerimiento más importante) */
+:root {
+    --sena-green: #39a900;       /* Verde SENA Oficial */
+    --sena-dark: #00324D;        /* Azul Oscuro Institucional */
+    --sena-orange: #ff6c00;      /* Naranja complementario */
+    --bg-light: #f4f6f9;         /* Fondo gris azulado suave */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Sombra elegante */
+}
+
+/* 2. ESTILOS GENERALES */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-light);
+    color: #4a5568;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--sena-dark);
+}
+
+/* 3. NAVBAR (BARRA SUPERIOR) */
+.navbar {
+    background: linear-gradient(135deg, var(--sena-green) 0%, #2e8500 100%) !important;
+    box-shadow: 0 4px 20px rgba(57, 169, 0, 0.3);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 4. TARJETAS (CARDS) - El cambio más visible */
+.card {
+    border: none;
+    border-radius: 20px; /* Bordes muy redondos */
+    background: #ffffff;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+/* Efecto al pasar el mouse sobre las tarjetas (Levitar) */
+.card:hover {
+    transform: translateY(-5px); /* Se mueve hacia arriba */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-weight: 600;
+    padding: 1.2rem 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+/* Colores dinámicos para headers de las cards */
+.card-header.bg-primary { background: linear-gradient(135deg, var(--sena-dark), #004e75) !important; color: white; }
+.card-header.bg-success { background: linear-gradient(135deg, var(--sena-green), #2e8500) !important; color: white; }
+.card-header.bg-warning { background: linear-gradient(135deg, #ffc107, #ff9800) !important; color: #333; }
+.card-header.bg-info    { background: linear-gradient(135deg, #17a2b8, #138496) !important; color: white; }
+
+/* 5. BOTONES MODERNOS */
+.btn {
+    border-radius: 50px; /* Forma de píldora */
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(0,0,0,0.15);
+}
+
+.btn-primary { background: linear-gradient(45deg, var(--sena-dark), #0056b3); }
+.btn-success { background: linear-gradient(45deg, var(--sena-green), #28a745); }
+.btn-warning { background: linear-gradient(45deg, #ffc107, #ff9800); color: white; }
+.btn-danger  { background: linear-gradient(45deg, #dc3545, #c82333); }
+
+/* 6. TABLAS */
+.table-responsive {
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+    background: white;
+}
+
+.table thead {
+    background: var(--sena-dark);
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    padding: 1rem;
+    font-weight: 500;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Badges (Etiquetas de estado) más bonitas */
+.badge {
+    padding: 0.5em 0.8em;
+    border-radius: 8px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* 7. FORMULARIOS */
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.8rem;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: white;
+    border-color: var(--sena-green);
+    box-shadow: 0 0 0 4px rgba(57, 169, 0, 0.1); /* Anillo verde suave */
+}
+
+/* MODO IMPRESIÓN (INTACTO) */
 @media print {
     .no-print, nav, .btn, form { display: none !important; }
-    body { background: white; }
+    body { background: white; font-family: serif; color: black; }
     .container { width: 100%; max-width: 100%; }
+    .card { border: 1px solid black; box-shadow: none; border-radius: 0; }
+    .card-header { background: none; color: black; border-bottom: 1px solid black; }
     table { width: 100%; border: 1px solid black; border-collapse: collapse; }
-    th, td { border: 1px solid black; padding: 10px; }
-    
-    /* Cabecera SENA falsa */
+    th, td { border: 1px solid black; padding: 5px; }
     .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
-    .print-header h1 { font-size: 18pt; margin: 0; }
-    .print-header p { margin: 0; }
 }
 .print-header { display: none; }
