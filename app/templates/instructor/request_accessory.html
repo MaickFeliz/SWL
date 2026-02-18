@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="col-md-6 mx-auto mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+            <h3>📽️ Solicitud de Elementos / Accesorios</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Selecciona el Elemento</label>
+                    <select name="item_id" class="form-select" required>
+                        <option value="" selected disabled>-- Seleccionar --</option>
+                        {% for item in items %}
+                            <option value="{{ item.id }}">
+                                {{ item.name }} (Disponibles: {{ item.available_quantity }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" name="quantity" class="form-control" min="1" max="5" value="1" required>
+                    {% if current_user.role == 'aprendiz' %}
+                        <small class="text-muted">Nota: Solo puedes solicitar Mouse.</small>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning">Solicitar</button>
+                    <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

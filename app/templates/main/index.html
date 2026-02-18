@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 fw-bold text-success">Bienvenido a la Biblioteca SENA</h1>
+    <p class="lead text-muted">Gestión inteligente de préstamos, inventario y recursos.</p>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="card-body text-center">
+                <div class="display-1 mb-3">📍</div>
+                <h3 class="card-title">Registro de Visitas</h3>
+                <p class="card-text">Registra tu ingreso a la biblioteca, uso de mesas o lectura.</p>
+                <a href="{{ url_for('main.register_visit') }}" class="btn btn-outline-success w-100">Ingresar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="card-body text-center">
+                <div class="display-1 mb-3">⚡</div>
+                <h3 class="card-title">Préstamo Rápido</h3>
+                <p class="card-text">Solicitud exprés de equipos sin iniciar sesión (Gestionado por personal).</p>
+                <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-primary w-100">Modo Kiosco</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="card-body text-center">
+                <div class="display-1 mb-3">🔐</div>
+                <h3 class="card-title">Plataforma Virtual</h3>
+                <p class="card-text">Ingresa con tu usuario para gestionar solicitudes y ver historial.</p>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-success w-100">Iniciar Sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

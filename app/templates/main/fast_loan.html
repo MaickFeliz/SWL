@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-md-8 mx-auto mt-4">
+    <div class="card border-primary shadow">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>⚡ Préstamo Rápido (Sin Login)</h3>
+        </div>
+        <div class="card-body">
+            
+            {% if not user %}
+            <form method="POST">
+                <input type="hidden" name="search_doc" value="1">
+                <div class="input-group input-group-lg">
+                    <input type="number" name="document_id" class="form-control" placeholder="Ingrese Documento de Identidad" required autofocus>
+                    <button class="btn btn-outline-primary" type="submit">Buscar Usuario 🔍</button>
+                </div>
+            </form>
+            {% else %}
+
+            <div class="alert alert-info">
+                <strong>Usuario:</strong> {{ user.full_name }} <br>
+                <strong>Rol:</strong> {{ user.role }} | <strong>Ficha:</strong> {{ user.ficha or 'N/A' }}
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="confirm_loan" value="1">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                
+                <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="pc-tab" data-bs-toggle="tab" data-bs-target="#pc-pane" type="button" onclick="setTyp('computo')">💻 Portátil</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="elem-tab" data-bs-toggle="tab" data-bs-target="#elem-pane" type="button" onclick="setTyp('elemento')">📽️ Elemento</button>
+                    </li>
+                </ul>
+                <input type="hidden" name="item_type" id="item_type" value="computo">
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="pc-pane">
+                        <div class="mb-3">
+                            <label>Ambiente de Formación</label>
+                            <input type="text" name="environment" class="form-control" placeholder="Ej: 204">
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="elem-pane">
+                        <div class="mb-3">
+                            <label>Seleccione Elemento</label>
+                            <select name="inventory_id" class="form-select">
+                                {% for item in items %}
+                                    <option value="{{ item.id }}">{{ item.name }} ({{ item.available_quantity }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Cantidad</label>
+                            <input type="number" name="quantity" class="form-control" value="1" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">Realizar Préstamo</button>
+                    <a href="{{ url_for('main.fast_loan') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+
+            <script>
+                function setTyp(val) { document.getElementById('item_type').value = val; }
+            </script>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

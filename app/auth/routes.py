@@ -10,9 +10,12 @@ def login():
         return redirect(url_for('main.instructor_dashboard'))
     
     if request.method == 'POST':
-        username = request.form['username']
+        # Cambiamos 'username' por 'document_id' para el login
+        document_id = request.form['username'] # En el login.html el campo se llama 'username' aunque metan la cédula
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
+        
+        # Buscamos por document_id (que ahora duplicamos como username)
+        user = User.query.filter_by(document_id=document_id).first()
         
         if user and user.check_password(password):
             login_user(user)
@@ -20,26 +23,47 @@ def login():
                 return redirect(url_for('admin.admin_dashboard'))
             return redirect(url_for('main.instructor_dashboard'))
         
-        flash('Usuario o contraseña incorrectos', 'danger')
+        flash('Documento o contraseña incorrectos', 'danger')
     return render_template('auth/login.html')
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        role = request.form['role']
+        # Recolectar datos del formulario nuevo
+        document_id = request.form.get('document_id')
+        full_name = request.form.get('full_name')
+        phone = request.form.get('phone')
+        role = request.form.get('role')
+        password = request.form.get('password')
         
-        if User.query.filter_by(username=username).first():
-            flash('El usuario ya existe', 'warning')
+        # Campos opcionales (solo aprendices)
+        ficha = request.form.get('ficha') if role == 'aprendiz' else None
+        program_name = request.form.get('program_name') if role == 'aprendiz' else None
+        
+        # Validar si ya existe
+        if User.query.filter_by(document_id=document_id).first():
+            flash('El usuario con este documento ya existe', 'warning')
             return redirect(url_for('auth.register'))
             
-        user = User(username=username, role=role)
+        # CREAR USUARIO
+        # Truco: Usamos el document_id también como 'username' para cumplir el requisito de la BD
+        user = User(
+            username=document_id, 
+            document_id=document_id,
+            full_name=full_name,
+            phone=phone,
+            role=role,
+            ficha=ficha,
+            program_name=program_name
+        )
+        
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
-        flash('Registro exitoso. Inicia sesión.', 'success')
+        
+        flash('Registro exitoso. Ingresa con tu documento.', 'success')
         return redirect(url_for('auth.login'))
+        
     return render_template('auth/register.html')
 
 @bp.route('/logout')

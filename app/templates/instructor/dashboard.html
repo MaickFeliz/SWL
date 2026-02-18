@@ -1,7 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Mis Préstamos</h2>
-<a href="{{ url_for('main.request_loan') }}" class="btn btn-primary mb-3">Solicitar Nuevo Equipo</a>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <a href="{{ url_for('main.request_laptop') }}" class="btn btn-primary w-100 py-3">
+            💻 Solicitar Portátil
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('main.request_accessory') }}" class="btn btn-warning w-100 py-3">
+            📽️ Solicitar Elementos
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('main.request_book') }}" class="btn btn-info text-white w-100 py-3">
+            📚 Solicitar Libros
+        </a>
+    </div>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -11,19 +28,21 @@
             <th>Fecha</th>
         </tr>
     </thead>
-    <tbody>
-        {% for loan in loans %}
-        <tr>
-            <td>{{ loan.item_type }}</td>
-            <td>
-                <span class="badge bg-{{ 'warning' if loan.status == 'pendiente' else 'success' if loan.status == 'aprobado' else 'secondary' }}">
-                    {{ loan.status }}
-                </span>
-            </td>
-            <td>{{ loan.assigned_serial or 'Esperando...' }}</td>
-            <td>{{ loan.request_date.strftime('%Y-%m-%d') }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+
+<tbody>
+    {% for loan in loans %}
+    <tr>
+        <td>{{ loan.item_name }}</td>
+        <td>
+            <span class="badge bg-{{ 'warning' if loan.status == 'pendiente' else 'success' if loan.status == 'aprobado' else 'secondary' }}">
+                {{ loan.status }}
+            </span>
+        </td>
+        <td>{{ loan.item_code or 'Esperando asignación...' }}</td>
+        <td>{{ loan.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
 </table>
 {% endblock %}

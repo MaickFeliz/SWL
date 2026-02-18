@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-md-6 mx-auto mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h3>📚 Solicitud de Libro</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Título del Libro</label>
+                    <input type="text" name="book_title" class="form-control" placeholder="Ej: Cien Años de Soledad" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Código del Libro (Cota)</label>
+                    <input type="text" name="book_code" class="form-control" placeholder="Ej: LIT-863-GAR" required>
+                    <small class="text-muted">Busca el código en la etiqueta del lomo del libro.</small>
+                </div>
+
+                <div class="alert alert-light border">
+                    <small>ℹ️ Recuerda que debes devolver el libro antes de salir de la biblioteca.</small>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-info text-white">Solicitar Libro</button>
+                    <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

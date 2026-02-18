@@ -8,10 +8,19 @@
 <body>
     <nav class="navbar navbar-dark bg-success no-print">
         <div class="container">
-            <a class="navbar-brand" href="#">📚 SENA Library</a>
-            {% if current_user.is_authenticated %}
-                <span class="text-white">{{ current_user.username }} ({{ current_user.role }})</span>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light">Salir</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">📚 SENA Library</a>
+                {% if current_user.is_authenticated %}
+                <div>
+                    <span class="text-white me-3">{{ current_user.full_name }} ({{ current_user.role }})</span>
+                
+                    {% if current_user.role == 'bibliotecario' %}
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-sm btn-outline-light me-1">Préstamos</a>
+                        <a href="{{ url_for('admin.inventory_manage') }}" class="btn btn-sm btn-outline-light me-1">Inventario</a>
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-sm btn-outline-light me-1">Usuarios</a>
+                    {% endif %}
+                
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Salir</a>
+                </div>
             {% endif %}
         </div>
     </nav>

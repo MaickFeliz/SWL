@@ -7,10 +7,22 @@ from datetime import datetime
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# 1. REGISTRO (Aprendices e Instructores)
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=False) # Para login
+    
+    # Nuevos campos requeridos
+    document_id = db.Column(db.String(20), unique=True, nullable=False) # Cédula/TI
+    full_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    
     role = db.Column(db.String(20), nullable=False) # 'aprendiz', 'instructor', 'bibliotecario'
+    
+    # Específico para aprendices (nullable porque los instructores no tienen esto)
+    ficha = db.Column(db.String(20), nullable=True) 
+    program_name = db.Column(db.String(100), nullable=True)
+
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
@@ -19,18 +31,53 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+# Para manejar el inventario (Punto 3: Mouse, VideoBeam, etc.)
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True) # Ej: Mouse, VideoBeam, HDMI
+    total_quantity = db.Column(db.Integer, default=0)
+    available_quantity = db.Column(db.Integer, default=0)
+    
+    # Tipo de item para filtrar qué pueden pedir los aprendices vs instructores
+    category = db.Column(db.String(20), default='general') # 'general', 'instructor_only', 'lego'
+
+# 2, 3, 5 y 6. PRÉSTAMOS (Unificamos lógica pero con campos flexibles)
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    item_type = db.Column(db.String(50), nullable=False)
-    request_date = db.Column(db.DateTime, default=datetime.utcnow)
+    # Tipo de préstamo para saber qué formulario usar
+    loan_type = db.Column(db.String(20), nullable=False) # 'computo', 'elemento', 'libro'
     
-    # Lo llena el bibliotecario
-    assigned_serial = db.Column(db.String(50), nullable=True)
+    # Detalles del elemento
+    item_name = db.Column(db.String(100), nullable=False) # Nombre del equipo o Título del libro
+    item_code = db.Column(db.String(50), nullable=True) # Serial del PC o Código del libro
+    quantity = db.Column(db.Integer, default=1) # Para mouses o cables
+    
+    # Contexto (Puntos 2 y 6)
+    environment = db.Column(db.String(50), nullable=True) # Ambiente de formación
+    associated_ficha = db.Column(db.String(20), nullable=True) # Ficha a la que se le dicta clase (si aplica)
+
+    # Tiempos
+    request_date = db.Column(db.DateTime, default=datetime.utcnow) # Fecha automática solicitud
     approval_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     
-    status = db.Column(db.String(20), default='pendiente') # pendiente, aprobado, devuelto
+    status = db.Column(db.String(20), default='pendiente') # pendiente, aprobado, devuelto, rechazado
+    observation = db.Column(db.Text, nullable=True) # Por si devuelven algo dañado
 
     requester = db.relationship('User', backref='loans')
+
+# 4. USO DE BIBLIOTECA (Registro de visitas)
+class LibraryLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # No usamos ForeignKey estricta porque puede ser un "visitante" externo no registrado
+    visitor_name = db.Column(db.String(100), nullable=False)
+    visitor_id = db.Column(db.String(20), nullable=False)
+    role = db.Column(db.String(20), nullable=False) # Aprendiz, Instructor, Visitante
+    
+    entry_time = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    activity = db.Column(db.String(50), nullable=False) 
+    # Opciones: Asesoría, Lectura, Reunión, Capacitación, PC mesa, Tablero, Otro, LEGO (Solo instructores)

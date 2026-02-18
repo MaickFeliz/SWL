@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="col-md-5 mx-auto mt-5">
+    <div class="card border-success mb-3 shadow-lg">
+        <div class="card-header bg-success text-white text-center py-3">
+            <h2 class="m-0">Registro de Ingreso</h2>
+            <p class="m-0"><small>Biblioteca SENA</small></p>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Documento de Identidad</label>
+                    <input type="number" name="document_id" class="form-control form-control-lg" 
+                           placeholder="Escanea o digita tu cédula" value="{{ pre_doc or '' }}" required autofocus>
+                    <div class="form-text">Si ya estás registrado, solo ingresa tu documento.</div>
+                </div>
+
+                {% if pre_doc %}
+                <div class="mb-3 animate-fade-in">
+                    <label class="form-label fw-bold">Nombre Completo (Visitante)</label>
+                    <input type="text" name="visitor_name" class="form-control" placeholder="Escribe tu nombre">
+                </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">¿Qué vas a hacer hoy?</label>
+                    <select name="activity" class="form-select form-select-lg" required>
+                        <option value="" disabled selected>-- Selecciona una actividad --</option>
+                        <option value="Lectura">Lectura / Consulta</option>
+                        <option value="PC mesa">Uso de Computador de Mesa</option>
+                        <option value="Reunión">Reunión / Trabajo en Grupo</option>
+                        <option value="Asesoría">Asesoría</option>
+                        <option value="Capacitación">Capacitación</option>
+                        <option value="Tablero">Uso de Tablero</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">Registrar Ingreso</button>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+            <small>Hora actual: <span id="clock"></span></small>
+        </div>
+    </div>
+</div>
+
+<script>
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+</script>
+{% endblock %}

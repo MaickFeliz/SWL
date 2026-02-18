@@ -1,18 +1,73 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="col-md-4 mx-auto mt-5">
-    <h3 class="text-center">Registro</h3>
-    <form method="POST">
-        <div class="mb-3"><input type="text" name="username" class="form-control" placeholder="Usuario" required></div>
-        <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Contraseña" required></div>
-        <div class="mb-3">
-            <select name="role" class="form-select">
-                <option value="aprendiz">Aprendiz</option>
-                <option value="instructor">Instructor</option>
-                <option value="bibliotecario">Bibliotecario</option>
-            </select>
+<div class="col-md-6 mx-auto mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white text-center">
+            <h3>Registro de Usuarios</h3>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Registrar</button>
-    </form>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Rol en el SENA</label>
+                    <select name="role" id="roleSelect" class="form-select" onchange="toggleFields()">
+                        <option value="aprendiz">Aprendiz</option>
+                        <option value="instructor">Instructor</option>
+                        <option value="bibliotecario">Bibliotecario</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Documento de Identidad</label>
+                        <input type="text" name="document_id" class="form-control" placeholder="Cédula / TI" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Celular</label>
+                        <input type="text" name="phone" class="form-control" placeholder="Ej: 3001234567" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" name="full_name" class="form-control" placeholder="Nombres y Apellidos" required>
+                </div>
+
+                <div id="aprendizFields">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Número de Ficha</label>
+                            <input type="text" name="ficha" class="form-control" placeholder="Ej: 2671234">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Programa de Formación</label>
+                            <input type="text" name="program_name" class="form-control" placeholder="Ej: ADSO">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+    function toggleFields() {
+        var role = document.getElementById("roleSelect").value;
+        var fields = document.getElementById("aprendizFields");
+        // Mostrar campos solo si es aprendiz
+        if (role === "aprendiz") {
+            fields.style.display = "block";
+        } else {
+            fields.style.display = "none";
+        }
+    }
+    // Ejecutar al cargar por si el navegador recuerda la selección
+    window.onload = toggleFields;
+</script>
 {% endblock %}

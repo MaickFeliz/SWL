@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Gestión de Inventario</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addItemModal">
+            Nuevo Elemento
+        </button>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Stock Total</th>
+                    <th>Disponibles</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        {% if item.category == 'general' %}
+                            <span class="badge bg-secondary">Todos (Aprendiz)</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Instructor</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">{{ item.total_quantity }}</td>
+                    <td class="fw-bold {{ 'text-danger' if item.available_quantity < 3 else 'text-success' }}">
+                        {{ item.available_quantity }}
+                    </td>
+                                        <td>
+                                            <form action="{{ url_for('admin.inventory_update', id=item.id) }}" method="POST" class="d-inline-flex gap-1">
+                                                <input type="hidden" name="amount" value="1">
+                                                <button type="submit" name="action" value="add" class="btn btn-sm btn-outline-success" title="Sumar 1">+</button>
+                                                <button type="submit" name="action" value="remove" class="btn btn-sm btn-outline-danger" title="Restar 1">-</button>
+                                            </form>
+                                            
+                                            <a href="{{ url_for('admin.inventory_delete', id=item.id) }}" 
+                                               class="btn btn-sm btn-dark ms-2"
+                                               onclick="return confirm('¿Seguro que quieres borrar este item? Se perderá el historial.')">
+                                               🗑️
+                                            </a>
+                                            <button class="btn btn-sm btn-primary ms-1" data-bs-toggle="modal" data-bs-target="#editItemModal{{ item.id }}">✏️</button>
+                    
+                                            <div class="modal fade" id="editItemModal{{ item.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title">Editar {{ item.name }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <form action="{{ url_for('admin.inventory_edit_details', id=item.id) }}" method="POST">
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label>Nombre</label>
+                                                                    <input type="text" name="name" class="form-control" value="{{ item.name }}" required>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label>Categoría</label>
+                                                                    <select name="category" class="form-select">
+                                                                        <option value="general" {{ 'selected' if item.category == 'general' }}>General (Todos)</option>
+                                                                        <option value="instructor" {{ 'selected' if item.category == 'instructor' }}>Instructor (Restringido)</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay elementos en el inventario.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Agregar Nuevo Elemento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Nombre del Elemento</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ej: Cable VGA, Parlante..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Categoría (Quién puede pedirlo)</label>
+                        <select name="category" class="form-select">
+                            <option value="instructor">Solo Instructores (Equipos costosos)</option>
+                            <option value="general">General (Mouses, Libros, etc)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Cantidad Inicial</label>
+                        <input type="number" name="quantity" class="form-control" min="1" value="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

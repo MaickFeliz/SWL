@@ -28,7 +28,7 @@
             <th>Usuario</th>
             <th>Rol</th>
             <th>Item</th>
-            <th>Serial</th>
+            <th>Serial / Código</th>
             <th>Solicitado</th>
             <th class="no-print">Acción</th>
         </tr>
@@ -36,10 +36,23 @@
     <tbody>
         {% for loan in loans %}
         <tr>
-            <td>{{ loan.requester.username }}</td>
+            <td>
+                {{ loan.requester.full_name }}<br>
+                <small class="text-muted">{{ loan.requester.document_id }}</small>
+            </td>
             <td>{{ loan.requester.role }}</td>
-            <td>{{ loan.item_type }}</td>
-            <td>{{ loan.assigned_serial or '---' }}</td>
+            <td>
+                {{ loan.item_name }}
+                {% if loan.quantity > 1 %}
+                    <span class="badge bg-dark">x{{ loan.quantity }}</span>
+                {% endif %}
+                {% if loan.environment %}
+                    <br><small>📍 {{ loan.environment }}</small>
+                {% endif %}
+            </td>
+            
+            <td class="fw-bold text-primary">{{ loan.item_code or '---' }}</td>
+            
             <td>{{ loan.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
             <td class="no-print">
                 {% if loan.status == 'pendiente' %}
