@@ -12,33 +12,17 @@
 
 <body class="d-flex flex-column min-vh-100">
     {% if not 'auth' in request.endpoint %}
-    <nav class="navbar navbar-expand-lg navbar-dark no-print">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Sena_Colombia_logo.svg/1200px-Sena_Colombia_logo.svg.png"
-                    alt="SENA Logo" style="height: 30px; margin-right: 10px;">
-                Biblioteca
+    <nav class="bg-blue-600 p-4 text-white">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{{ url_for('main.index') }}" class="text-xl font-bold">
+                {{ config['APP_NAME'] }}
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="space-x-4">
                 {% if current_user.is_authenticated %}
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    {% if current_user.role == 'bibliotecario' %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.inventory_manage') }}">Inventario</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.manage_users') }}">Gestionar Usuarios</a></li>
-                    {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.instructor_dashboard') }}">Mis Préstamos y Solicitudes</a></li>
-                    {% endif %}
-                </ul>
-                <div class="d-flex align-items-center">
-                    <span class="navbar-text me-3">
-                        {{ current_user.full_name }} (<strong>{{ current_user.role|capitalize }}</strong>)
-                    </span>
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
-                </div>
+                    <span>Hola, {{ current_user.nombre }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="hover:underline">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="hover:underline">Ingresar</a>
                 {% endif %}
             </div>
         </div>

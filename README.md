@@ -1,4 +1,4 @@
-# Sistema de Gestión Bibliotecaria - SENA
+# Sistema de Gestión Bibliotecaria
 
 > **Plataforma integral para la administración de préstamos, inventario y control de acceso en ambientes de formación.**
 
@@ -76,4 +76,4 @@ Biblioteca-SENA/
 ├── run.py          # Punto de entrada
 └── requirements.txt # Lista de dependencias
 
-Desarrollado con ❤️ y mucho café para el SENA.
+Desarrollado por Nosotros.
