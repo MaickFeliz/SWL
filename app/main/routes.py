@@ -67,6 +67,14 @@ def index():
         return redirect(url_for('main.instructor_dashboard'))
     return render_template('main/index.html')
 
+@bp.route('/dashboard')
+@login_required
+def instructor_dashboard():
+    # Consulta los préstamos del usuario actual (tu plantilla los está esperando en el ciclo for)
+    loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
+    
+    return render_template('instructor/dashboard.html', loans=loans)
+
 @bp.route('/request/laptop', methods=['GET', 'POST'])
 @login_required
 def request_laptop():
