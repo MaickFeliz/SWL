@@ -47,9 +47,8 @@
                                             </form>
                                             
                                             <a href="{{ url_for('admin.inventory_delete', id=item.id) }}" 
-                                               class="btn btn-sm btn-dark ms-2"
-                                               onclick="return confirm('¿Seguro que quieres borrar este item? Se perderá el historial.')">
-                                               🗑️
+                                                class="btn btn-sm btn-dark ms-2"
+                                                onclick="return confirm('¿Seguro que quieres borrar este item? Se perderá el historial.')">
                                             </a>
                                             <button class="btn btn-sm btn-primary ms-1" data-bs-toggle="modal" data-bs-target="#editItemModal{{ item.id }}">✏️</button>
                     
