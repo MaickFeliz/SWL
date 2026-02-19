@@ -5,59 +5,33 @@ from app import db
 from app.models import Loan, Inventory, User, LibraryLog # <--- IMPORTANTE: LibraryLog AÑADIDO
 from datetime import datetime
 
-@bp.route('/fast-loan', methods=['GET', 'POST'])
+# app/main/routes.py
+@bp.route('/fast_loan', methods=['POST'])
 def fast_loan():
-    # Paso 1: Buscar usuario
-    if request.method == 'POST' and 'search_doc' in request.form:
-        doc = request.form.get('document_id')
-        user = User.query.filter_by(document_id=doc).first()
-        if not user:
-            flash('Usuario no encontrado. Debe registrarse primero.', 'danger')
-            return redirect(url_for('main.fast_loan'))
+    document_id = request.form.get('document_id')
+    item_id = request.form.get('item_id')
+    
+    user = User.query.filter_by(document_id=document_id).first()
+    item = Inventory.query.get_or_404(item_id)
+    
+    if not user:
+        flash('Aprendiz no encontrado. Debes estar registrado para esta acción.', 'danger')
+        return redirect(url_for('main.index'))
         
-        # Cargar inventario para el paso 2
-        items = Inventory.query.all()
-        return render_template('main/fast_loan.html', user=user, items=items)
-
-    # Paso 2: Procesar el préstamo
-    if request.method == 'POST' and 'confirm_loan' in request.form:
-        user_id = request.form.get('user_id')
-        item_type = request.form.get('item_type') # 'computo' o 'elemento'
-        
-        # Datos del formulario
-        user = User.query.get(user_id)
-        
-        if item_type == 'computo':
-            # Lógica Portátil
-            environment = request.form.get('environment')
-            new_loan = Loan(user_id=user.id, loan_type='computo', item_name='Computador Portátil', 
-                        quantity=1, environment=environment, associated_ficha=user.ficha, status='pendiente')
-        
-        elif item_type == 'elemento':
-            # Lógica Elemento
-            item_inventory_id = request.form.get('inventory_id')
-            qty = int(request.form.get('quantity'))
-            inv_item = Inventory.query.get(item_inventory_id)
-            
-            # Validación de categoría rápida
-            if user.role == 'aprendiz' and inv_item.category == 'instructor':
-                flash(f'🚫 El usuario es Aprendiz y no puede pedir {inv_item.name}.', 'danger')
-                return redirect(url_for('main.fast_loan'))
-
-            if inv_item.available_quantity < qty:
-                flash('🚫 Stock insuficiente.', 'danger')
-                return redirect(url_for('main.fast_loan'))
-
-            inv_item.available_quantity -= qty
-            new_loan = Loan(user_id=user.id, loan_type='elemento', item_name=inv_item.name, 
-                        quantity=qty, status='pendiente')
-        
+    # Crear la solicitud SIEMPRE en estado Pendiente. 
+    # EL STOCK NO SE TOCA HASTA QUE EL BIBLIOTECARIO APRUEBE.
+    new_loan = Loan(user_id=user.id, inventory_id=item.id, status='Pendiente')
+    
+    try:
         db.session.add(new_loan)
         db.session.commit()
-        flash(f'✅ Solicitud creada para {user.full_name}. Pendiente de aprobación.', 'success')
-        return redirect(url_for('main.fast_loan'))
-
-    return render_template('main/fast_loan.html')
+        flash('Solicitud rápida creada con éxito. Esperando validación en el mostrador.', 'success')
+    except Exception as e:
+        db.session.rollback()  # ESTO ES VITAL. Si hay un fallo, se revierte la transacción.
+        flash('Error de base de datos al procesar la solicitud. Intenta nuevamente.', 'danger')
+        # app.logger.error(f"Fallo en préstamo rápido: {str(e)}") # Así lo logueas en un sistema real
+        
+    return redirect(url_for('main.index'))
 
 @bp.route('/')
 def index():

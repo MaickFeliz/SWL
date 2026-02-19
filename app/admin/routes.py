@@ -5,14 +5,33 @@ from app import db
 from app.models import Loan, User, Inventory
 from datetime import datetime
 from sqlalchemy import or_
+from functools import wraps
 
-@bp.route('/users', methods=['GET', 'POST'])
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            flash('Acceso denegado. Se requieren privilegios de superusuario.', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# app/admin/routes.py
+@bp.route('/users')
 @login_required
+@admin_required  # <- Mira qué bonito y limpio se ve
 def manage_users():
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
+    # Obtener el número de página de la URL, por defecto la página 1
+    page = request.args.get('page', 1, type=int)
+    # Paginar a 10 usuarios por vista
+    users_pagination = User.query.paginate(page=page, per_page=10, error_out=False)
+    
+    return render_template('admin/users.html', users=users_pagination)
 
-    # Búsqueda simple
+@bp.route('/users/search')
+@login_required
+def search_users():
+    
     search = request.args.get('search')
     if search:
         users = User.query.filter(or_(

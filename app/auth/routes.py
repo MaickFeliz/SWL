@@ -5,28 +5,28 @@ from app import db
 from app.models import User
 from app.forms import LoginForm, RegistrationForm
 
-
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        if current_user.role == 'bibliotecario':
-            return redirect(url_for('admin.admin_dashboard'))
-        return redirect(url_for('main.instructor_dashboard'))
-
+        return redirect(url_for('main.index'))
     form = LoginForm()
+    
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(document_id=form.document_id.data).first()
+        
         if user is None or not user.check_password(form.password.data):
-            flash('Usuario o contraseña incorrectos.', 'danger')
+            flash('Documento o contraseña inválidos.', 'danger')
             return redirect(url_for('auth.login'))
-        login_user(user)
-
-        if user.role == 'bibliotecario':
-            return redirect(url_for('admin.admin_dashboard'))
-        return redirect(url_for('main.instructor_dashboard'))
-
+        
+        login_user(user, remember=False)
+        
+        if user.role == 'admin':
+            return redirect(url_for('admin.dashboard'))
+        elif user.role == 'instructor':
+            return redirect(url_for('main.instructor_dashboard'))
+        return redirect(url_for('main.index'))
+        
     return render_template('auth/login.html', form=form)
-
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
