@@ -1,71 +1,78 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-8 mx-auto mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h3> Solicitud de Portátiles</h3>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted">Solicitante</label>
-                        <input type="text" class="form-control" value="{{ current_user.full_name }}" disabled>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted">Documento / Ficha</label>
-                        <input type="text" class="form-control" 
-                                value="{{ current_user.document_id }} {% if current_user.role == 'aprendiz' %}- Ficha: {{ current_user.ficha }}{% endif %}" 
-                                disabled>
-                    </div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-md">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-laptop fs-1 text-primary"></i>
+                    <h2 class="card-title mt-2">Solicitud de Portátiles</h2>
+                    <p class="card-text text-muted">Completa los datos para solicitar uno o más equipos para tu clase.</p>
                 </div>
                 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted">Fecha y Hora</label>
-                        <input type="text" id="fechaHora" class="form-control" disabled>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted">Celular</label>
-                        <input type="text" class="form-control" value="{{ current_user.phone }}" disabled>
-                    </div>
-                </div>
+                <form method="POST">
+                    <fieldset disabled>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Solicitante</label>
+                                <input type="text" class="form-control" value="{{ current_user.full_name }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Documento / Ficha</label>
+                                <input type="text" class="form-control" 
+                                        value="{{ current_user.document_id }} {% if current_user.role == 'aprendiz' %}- Ficha: {{ current_user.ficha }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha y Hora</label>
+                                <input type="text" id="fechaHora" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Celular</label>
+                                <input type="text" class="form-control" value="{{ current_user.phone }}">
+                            </div>
+                        </div>
+                    </fieldset>
 
-                <hr>
+                    <hr class="my-4">
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold"> Ambiente de Formación</label>
-                        <input type="text" name="environment" class="form-control" placeholder="Ej: Ambiente 204 / Sistemas 1" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ambiente de Formación</label>
+                            <input type="text" name="environment" class="form-control form-control-lg" placeholder="Ej: Ambiente 204 / Sistemas 1" required>
+                            <small class="form-text text-muted">Lugar donde se usarán los equipos.</small>
+                        </div>
+
+                        {% if current_user.role == 'instructor' %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ficha del Grupo</label>
+                            <input type="text" name="associated_ficha" class="form-control form-control-lg" placeholder="Ficha a la que dicta clase" required>
+                             <small class="form-text text-muted">El grupo que usará los equipos.</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Cantidad de Equipos</label>
+                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" max="30" value="1" required>
+                            <small class="form-text text-muted">Indica cuántos portátiles necesitas para la clase.</small>
+                        </div>
+                        {% else %}
+                        <input type="hidden" name="quantity" value="1">
+                        {% endif %}
                     </div>
 
-                    {% if current_user.role == 'instructor' %}
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold"> Ficha del Grupo</label>
-                        <input type="text" name="associated_ficha" class="form-control" placeholder="Ficha a la que dicta clase" required>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send-fill me-2"></i>Confirmar y Enviar Solicitud</button>
+                        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Volver al Panel</a>
                     </div>
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold"> Cantidad de Equipos</label>
-                        <input type="number" name="quantity" class="form-control" min="1" max="30" value="1" required>
-                        <small class="text-muted">Indique cuántos portátiles necesita para la clase.</small>
-                    </div>
-                    {% else %}
-                    <input type="hidden" name="quantity" value="1">
-                    {% endif %}
-                </div>
-
-                <div class="d-grid gap-2 mt-3">
-                    <button type="submit" class="btn btn-success btn-lg"> Enviar Solicitud</button>
-                    <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     // Poner fecha y hora actual automáticamente
-    document.getElementById('fechaHora').value = new Date().toLocaleString();
+    document.getElementById('fechaHora').value = new Date().toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' });
 </script>
 {% endblock %}

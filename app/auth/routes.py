@@ -3,70 +3,71 @@ from flask_login import login_user, logout_user, current_user
 from app.auth import bp
 from app import db
 from app.models import User
+from app.forms import LoginForm, RegistrationForm
+
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if current_user.role == 'bibliotecario':
+            return redirect(url_for('admin.admin_dashboard'))
         return redirect(url_for('main.instructor_dashboard'))
-    
-    if request.method == 'POST':
-        # Cambiamos 'username' por 'document_id' para el login
-        document_id = request.form['username'] # En el login.html el campo se llama 'username' aunque metan la cédula
-        password = request.form['password']
-        
-        # Buscamos por document_id (que ahora duplicamos como username)
-        user = User.query.filter_by(document_id=document_id).first()
-        
-        if user and user.check_password(password):
-            login_user(user)
-            if user.role == 'bibliotecario':
-                return redirect(url_for('admin.admin_dashboard'))
-            return redirect(url_for('main.instructor_dashboard'))
-        
-        flash('Documento o contraseña incorrectos', 'danger')
-    return render_template('auth/login.html')
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Usuario o contraseña incorrectos.', 'danger')
+            return redirect(url_for('auth.login'))
+        login_user(user)
+
+        if user.role == 'bibliotecario':
+            return redirect(url_for('admin.admin_dashboard'))
+        return redirect(url_for('main.instructor_dashboard'))
+
+    return render_template('auth/login.html', form=form)
+
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        # Recolectar datos del formulario nuevo
-        document_id = request.form.get('document_id')
-        full_name = request.form.get('full_name')
-        phone = request.form.get('phone')
-        role = request.form.get('role')
-        password = request.form.get('password')
-        
-        # Campos opcionales (solo aprendices)
-        ficha = request.form.get('ficha') if role == 'aprendiz' else None
-        program_name = request.form.get('program_name') if role == 'aprendiz' else None
-        
-        # Validar si ya existe
-        if User.query.filter_by(document_id=document_id).first():
-            flash('El usuario con este documento ya existe', 'warning')
-            return redirect(url_for('auth.register'))
-            
-        # CREAR USUARIO
-        # Truco: Usamos el document_id también como 'username' para cumplir el requisito de la BD
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        # Validar que no exista ni el documento ni el email
+        if User.query.filter_by(document_id=form.document_id.data).first():
+            flash('El número de documento ya está registrado.', 'warning')
+            return render_template('auth/register.html', form=form)
+        if User.query.filter_by(email=form.email.data).first():
+            flash('La dirección de correo electrónico ya está registrada.', 'warning')
+            return render_template('auth/register.html', form=form)
+
         user = User(
-            username=document_id, 
-            document_id=document_id,
-            full_name=full_name,
-            phone=phone,
-            role=role,
-            ficha=ficha,
-            program_name=program_name
+            username=form.email.data,  # Usar email como username para login
+            full_name=form.full_name.data,
+            document_id=form.document_id.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            role=form.role.data
         )
-        
-        user.set_password(password)
+        if form.role.data == 'aprendiz':
+            user.ficha = form.ficha.data
+            user.program_name = form.program_name.data
+
+        user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        
-        flash('Registro exitoso. Ingresa con tu documento.', 'success')
+
+        flash(
+            '¡Registro exitoso! Ahora puede iniciar sesión con su correo electrónico.', 'success')
         return redirect(url_for('auth.login'))
-        
-    return render_template('auth/register.html')
+
+    return render_template('auth/register.html', form=form)
+
 
 @bp.route('/logout')
 def logout():
     logout_user()
+    flash('Ha cerrado la sesión exitosamente.', 'info')
     return redirect(url_for('auth.login'))

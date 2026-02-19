@@ -1,48 +1,84 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Mis Préstamos</h2>
-<div class="row mb-4">
+
+<div class="mb-4">
+    <h2 class="mb-0">Panel del Instructor</h2>
+    <p class="text-secondary">Bienvenido, {{ current_user.full_name }}.</p>
+</div>
+
+<!-- ACTION CARDS -->
+<div class="row mb-5">
     <div class="col-md-4">
-        <a href="{{ url_for('main.request_laptop') }}" class="btn btn-primary w-100 py-3">
-            Solicitar Portátil
-        </a>
+        <div class="card card-body text-center shadow-sm h-100">
+            <a href="{{ url_for('main.request_laptop') }}" class="text-decoration-none text-dark stretched-link">
+                <i class="bi bi-laptop fs-1 text-primary"></i>
+                <h5 class="mt-3">Solicitar Portátil</h5>
+                <p class="text-muted">Pide un equipo de cómputo para tus clases.</p>
+            </a>
+        </div>
     </div>
     <div class="col-md-4">
-        <a href="{{ url_for('main.request_accessory') }}" class="btn btn-warning w-100 py-3">
-            Solicitar Elementos
-        </a>
+        <div class="card card-body text-center shadow-sm h-100">
+            <a href="{{ url_for('main.request_accessory') }}" class="text-decoration-none text-dark stretched-link">
+                <i class="bi bi-headset fs-1 text-warning"></i>
+                <h5 class="mt-3">Solicitar Accesorios</h5>
+                <p class="text-muted">Solicita video beams, audífonos, y más.</p>
+            </a>
+        </div>
     </div>
     <div class="col-md-4">
-        <a href="{{ url_for('main.request_book') }}" class="btn btn-info text-white w-100 py-3">
-            Solicitar Libros
-        </a>
+        <div class="card card-body text-center shadow-sm h-100">
+            <a href="{{ url_for('main.request_book') }}" class="text-decoration-none text-dark stretched-link">
+                <i class="bi bi-book-half fs-1 text-info"></i>
+                <h5 class="mt-3">Solicitar Libros</h5>
+                <p class="text-muted">Consulta y pide libros de nuestra biblioteca.</p>
+            </a>
+        </div>
     </div>
 </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Equipo</th>
-            <th>Estado</th>
-            <th>Serial Asignado</th>
-            <th>Fecha</th>
-        </tr>
-    </thead>
-
-<tbody>
-    {% for loan in loans %}
-    <tr>
-        <td>{{ loan.item_name }}</td>
-        <td>
-            <span class="badge bg-{{ 'warning' if loan.status == 'pendiente' else 'success' if loan.status == 'aprobado' else 'secondary' }}">
-                {{ loan.status }}
-            </span>
-        </td>
-        <td>{{ loan.item_code or 'Esperando asignación...' }}</td>
-        <td>{{ loan.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-
-</table>
+<!-- LOANS TABLE -->
+<div class="card shadow-md">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Mis Solicitudes Recientes</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Item Solicitado</th>
+                        <th>Estado</th>
+                        <th>Placa / Serial Asignado</th>
+                        <th>Fecha de Solicitud</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                    <tr>
+                        <td><strong>{{ loan.item_name }}</strong></td>
+                        <td>
+                            <span class="badge 
+                                {% if loan.status == 'pendiente' %}bg-warning text-dark
+                                {% elif loan.status == 'aprobado' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ loan.status|capitalize }}
+                            </span>
+                        </td>
+                        <td><span class="badge bg-primary-soft">{{ loan.item_code or 'Esperando...' }}</span></td>
+                        <td>{{ loan.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not loans %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <h4 class="mt-3">No tienes solicitudes activas.</h4>
+                <p class="text-muted">Usa las tarjetas de arriba para solicitar material.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

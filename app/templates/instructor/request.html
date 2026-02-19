@@ -1,18 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="col-md-6 mx-auto">
-    <h3>Solicitar Préstamo</h3>
-    <form method="POST">
-        <div class="mb-3">
-            <label>Tipo de Elemento</label>
-            <select name="item_type" class="form-select">
-                <option value="Computador Portátil">Computador Portátil</option>
-                <option value="VideoBeam">VideoBeam</option>
-                <option value="Mouse">Mouse</option>
-            </select>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-md">
+            <div class="card-body p-5">
+                <h2 class="card-title text-center mb-1">Solicitud de Préstamo</h2>
+                <p class="card-text text-center text-muted mb-4">Selecciona el tipo de material que necesitas.</p>
+                
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="item_type" class="form-label">Tipo de Elemento</label>
+                        <select name="item_type" id="item_type" class="form-select form-select-lg">
+                            <option value="Computador Portátil">Computador Portátil</option>
+                            <option value="VideoBeam">VideoBeam</option>
+                            <option value="Mouse">Mouse</option>
+                        </select>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send-fill me-2"></i>Enviar Solicitud</button>
+                        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Volver al Panel</a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <button type="submit" class="btn btn-success">Enviar Solicitud</button>
-        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-secondary">Volver</a>
-    </form>
+    </div>
 </div>
 {% endblock %}

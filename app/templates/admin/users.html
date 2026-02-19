@@ -1,76 +1,100 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>👥 Gestión de Usuarios</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Gestión de Usuarios</h2>
+        <p class="text-secondary">Edita roles y datos de los usuarios del sistema.</p>
+    </div>
+</div>
 
-<form method="GET" class="d-flex mb-4">
-    <input type="text" name="search" class="form-control me-2" placeholder="Buscar por Nombre o Documento...">
-    <button type="submit" class="btn btn-outline-primary">Buscar</button>
-</form>
+<div class="card shadow-md">
+    <div class="card-header">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="Buscar por Nombre, Documento, Ficha...">
+            <button type="submit" class="btn btn-primary flex-shrink-0"><i class="bi bi-search me-2"></i>Buscar</button>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Documento</th>
+                        <th>Rol</th>
+                        <th>Ficha / Programa</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.full_name }}</strong><br><small class="text-muted">{{ user.email }}</small></td>
+                        <td>{{ user.document_id }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if user.role == 'aprendiz' %}bg-info text-dark
+                                {% elif user.role == 'instructor' %}bg-warning text-dark
+                                {% else %}bg-dark{% endif %}">
+                                {{ user.role|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ user.ficha or '-' }}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editUser{{ user.id }}"><i class="bi bi-pencil-square me-1"></i>Editar</button>
+                        </td>
+                    </tr>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Documento</th>
-            <th>Nombre</th>
-            <th>Rol</th>
-            <th>Ficha</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.document_id }}</td>
-            <td>{{ user.full_name }}</td>
-            <td>
-                <span class="badge bg-{{ 'info' if user.role == 'aprendiz' else 'warning' if user.role == 'instructor' else 'dark' }}">
-                    {{ user.role }}
-                </span>
-            </td>
-            <td>{{ user.ficha or '-' }}</td>
-            <td>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editUser{{ user.id }}">Editar</button>
-            </td>
-        </tr>
-
-        <div class="modal fade" id="editUser{{ user.id }}" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Editar a {{ user.full_name }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <!-- Edit User Modal -->
+                    <div class="modal fade" id="editUser{{ user.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar a {{ user.full_name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ url_for('admin.edit_user', id=user.id) }}" method="POST">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre Completo</label>
+                                            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Celular</label>
+                                            <input type="text" name="phone" class="form-control" value="{{ user.phone }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Rol del Sistema</label>
+                                            <select name="role" class="form-select">
+                                                <option value="aprendiz" {{ 'selected' if user.role == 'aprendiz' }}>Aprendiz</option>
+                                                <option value="instructor" {{ 'selected' if user.role == 'instructor' }}>Instructor</option>
+                                                <option value="bibliotecario" {{ 'selected' if user.role == 'bibliotecario' }}>Bibliotecario</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Ficha (Si aplica)</label>
+                                            <input type="text" name="ficha" class="form-control" value="{{ user.ficha or '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <form action="{{ url_for('admin.edit_user', id=user.id) }}" method="POST">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label>Nombre Completo</label>
-                                <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label>Celular</label>
-                                <input type="text" name="phone" class="form-control" value="{{ user.phone }}">
-                            </div>
-                            <div class="mb-3">
-                                <label>Rol</label>
-                                <select name="role" class="form-select">
-                                    <option value="aprendiz" {{ 'selected' if user.role == 'aprendiz' }}>Aprendiz</option>
-                                    <option value="instructor" {{ 'selected' if user.role == 'instructor' }}>Instructor</option>
-                                    <option value="bibliotecario" {{ 'selected' if user.role == 'bibliotecario' }}>Bibliotecario</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label>Ficha (Si aplica)</label>
-                                <input type="text" name="ficha" class="form-control" value="{{ user.ficha or '' }}">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% endfor %}
-    </tbody>
-</table>
+        {% if not users %}
+            <div class="text-center py-5">
+                <i class="bi bi-person-slash fs-1 text-muted"></i>
+                <h4 class="mt-3">No se encontraron usuarios.</h4>
+                <p class="text-muted">Prueba con otro término de búsqueda o registra nuevos usuarios.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

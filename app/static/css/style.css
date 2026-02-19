@@ -1,157 +1,495 @@
-/* 1. IMPORTAR FUENTE MODERNA (Poppins) */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* 1. FUENTES Y VARIABLES (Estilo SaaS Corporativo) */
+/* Cambiamos Poppins por Inter, la tipografía por excelencia del software moderno */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --sena-green: #39a900;       /* Verde SENA Oficial */
-    --sena-dark: #00324D;        /* Azul Oscuro Institucional */
-    --sena-orange: #ff6c00;      /* Naranja complementario */
-    --bg-light: #f4f6f9;         /* Fondo gris azulado suave */
-    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* Sombra elegante */
+    --sena-green: #39a900;
+    --sena-dark: #00324D;
+    --sena-orange: #ff6c00;
+    --bg-body: #f8fafc;
+    --surface-color: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* 2. ESTILOS GENERALES */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--bg-light);
-    color: #4a5568;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 700;
-    color: var(--sena-dark);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
 }
 
-/* 3. NAVBAR (BARRA SUPERIOR) */
+/* 2. NAVEGACIÓN (Navbar limpia, adiós degradados fiesteros) */
 .navbar {
-    background: linear-gradient(135deg, var(--sena-green) 0%, #2e8500 100%) !important;
-    box-shadow: 0 4px 20px rgba(57, 169, 0, 0.3);
-    padding: 1rem 0;
+    background-color: var(--sena-dark) !important;
+    box-shadow: var(--shadow-sm);
+    padding: 0.75rem 0;
+    border-bottom: 3px solid var(--sena-green);
 }
 
 .navbar-brand {
-    font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
 }
 
-/* 4. TARJETAS (CARDS) - El cambio más visible */
+/* 3. TARJETAS (Estructura de Panel/Dashboard real) */
 .card {
-    border: none;
-    border-radius: 20px; /* Bordes muy redondos */
-    background: #ffffff;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--surface-color);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease-in-out;
 }
 
-/* Efecto al pasar el mouse sobre las tarjetas (Levitar) */
+/* Nada de levitar como si fuera magia, solo resaltamos la sombra */
 .card:hover {
-    transform: translateY(-5px); /* Se mueve hacia arriba */
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
+    transform: none;
 }
 
 .card-header {
-    background-color: white;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
     font-weight: 600;
-    padding: 1.2rem 1.5rem;
+    padding: 1rem 1.5rem;
+    color: var(--text-primary);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
 }
 
-/* Colores dinámicos para headers de las cards */
-.card-header.bg-primary { background: linear-gradient(135deg, var(--sena-dark), #004e75) !important; color: white; }
-.card-header.bg-success { background: linear-gradient(135deg, var(--sena-green), #2e8500) !important; color: white; }
-.card-header.bg-warning { background: linear-gradient(135deg, #ffc107, #ff9800) !important; color: #333; }
-.card-header.bg-info    { background: linear-gradient(135deg, #17a2b8, #138496) !important; color: white; }
-
-/* 5. BOTONES MODERNOS */
+/* 4. BOTONES (Serios, de acción corporativa) */
 .btn {
-    border-radius: 50px; /* Forma de píldora */
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-sm);
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 7px 14px rgba(0,0,0,0.15);
+    transform: none;
+    filter: brightness(0.95);
 }
 
-.btn-primary { background: linear-gradient(45deg, var(--sena-dark), #0056b3); }
-.btn-success { background: linear-gradient(45deg, var(--sena-green), #28a745); }
-.btn-warning { background: linear-gradient(45deg, #ffc107, #ff9800); color: white; }
-.btn-danger  { background: linear-gradient(45deg, #dc3545, #c82333); }
+.btn-primary {
+    background-color: var(--sena-dark);
+    border-color: var(--sena-dark);
+}
 
-/* 6. TABLAS */
+.btn-success {
+    background-color: var(--sena-green);
+    border-color: var(--sena-green);
+}
+
+.btn-warning {
+    background-color: var(--sena-orange);
+    border-color: var(--sena-orange);
+    color: white;
+}
+
+.btn-outline-primary {
+    color: var(--sena-dark);
+    border-color: var(--sena-dark);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--sena-dark);
+    color: white;
+}
+
+/* 5. TABLAS (Data Grid estilo SaaS) */
 .table-responsive {
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--surface-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .table {
     margin-bottom: 0;
-    background: white;
+    font-size: 0.875rem;
 }
 
 .table thead {
-    background: var(--sena-dark);
-    color: white;
+    background-color: var(--bg-body);
 }
 
 .table thead th {
-    border: none;
-    padding: 1rem;
-    font-weight: 500;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
 }
 
 .table tbody td {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     vertical-align: middle;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
-/* Badges (Etiquetas de estado) más bonitas */
-.badge {
-    padding: 0.5em 0.8em;
-    border-radius: 8px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+/* 6. FORMULARIOS (Inputs limpios y cuadrados) */
+.form-control,
+.form-select {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background-color: var(--surface-color);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-/* 7. FORMULARIOS */
-.form-control, .form-select {
-    border-radius: 10px;
-    padding: 0.8rem;
-    border: 1px solid #e2e8f0;
-    background-color: #f8fafc;
-    transition: all 0.3s;
-}
-
-.form-control:focus, .form-select:focus {
-    background-color: white;
+.form-control:focus,
+.form-select:focus {
     border-color: var(--sena-green);
-    box-shadow: 0 0 0 4px rgba(57, 169, 0, 0.1); /* Anillo verde suave */
+    box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.15);
 }
 
-/* MODO IMPRESIÓN (INTACTO) */
-@media print {
-    .no-print, nav, .btn, form { display: none !important; }
-    body { background: white; font-family: serif; color: black; }
-    .container { width: 100%; max-width: 100%; }
-    .card { border: 1px solid black; box-shadow: none; border-radius: 0; }
-    .card-header { background: none; color: black; border-bottom: 1px solid black; }
-    table { width: 100%; border: 1px solid black; border-collapse: collapse; }
-    th, td { border: 1px solid black; padding: 5px; }
-    .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
+/* 7. ETIQUETAS (Badges minimalistas) */
+.badge {
+    border-radius: var(--radius-sm);
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
-.print-header { display: none; }
+
+/* MODO IMPRESIÓN (Intacto y funcional) */
+@media print {
+
+    .no-print,
+    nav,
+    .btn,
+    form {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        font-family: serif;
+        color: black;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .card {
+        border: 1px solid black;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .card-header {
+        background: none;
+        color: black;
+        border-bottom: 1px solid black;
+    }
+
+    table {
+        width: 100%;
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+}
+
+
+
+.print-header {
+
+    display: none;
+
+}
+
+
+
+/* 8. VISTAS DE AUTENTICACIÓN (Login y Registro Corporativo) */
+
+.auth-container {
+
+    display: flex;
+
+    min-height: 100vh;
+
+    width: 100%;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background-color: var(--bg-body);
+
+}
+
+
+
+.auth-wrapper {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1.25fr;
+
+    max-width: 1000px;
+
+    width: 100%;
+
+    background-color: var(--surface-color);
+
+    box-shadow: var(--shadow-md);
+
+    border-radius: var(--radius-lg);
+
+    overflow: hidden;
+
+    border: 1px solid var(--border-color);
+
+}
+
+
+
+.auth-branding {
+
+    background-color: var(--sena-dark);
+
+    color: white;
+
+    padding: 3rem;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: flex-start;
+
+}
+
+
+
+.auth-branding img {
+
+    max-width: 120px;
+
+    margin-bottom: 1.5rem;
+
+}
+
+
+
+.auth-branding h1 {
+
+    font-size: 1.75rem;
+
+    font-weight: 700;
+
+    color: white;
+
+    margin-bottom: 0.5rem;
+
+}
+
+
+
+.auth-branding p {
+
+    font-size: 1rem;
+
+    color: rgba(255, 255, 255, 0.8);
+
+    max-width: 300px;
+
+}
+
+
+
+.auth-form-container {
+
+    padding: 3rem;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+}
+
+
+
+.auth-form-container h2 {
+
+    font-size: 1.5rem;
+
+    font-weight: 600;
+
+    margin-bottom: 0.5rem;
+
+    color: var(--text-primary);
+
+}
+
+
+
+.auth-form-container .form-text {
+
+    margin-bottom: 2rem;
+
+    font-size: 0.9rem;
+
+    color: var(--text-secondary);
+
+}
+
+
+
+.auth-form-container .form-group {
+
+    margin-bottom: 1.25rem;
+
+}
+
+
+
+.auth-form-container .form-label {
+
+    font-weight: 500;
+
+    font-size: 0.875rem;
+
+    margin-bottom: 0.5rem;
+
+    color: var(--text-secondary);
+
+}
+
+
+
+.auth-form-container .btn {
+
+    width: 100%;
+
+    padding: 0.75rem;
+
+    font-size: 1rem;
+
+}
+
+
+
+.auth-form-container .text-center a {
+
+    color: var(--sena-green);
+
+    font-weight: 500;
+
+    text-decoration: none;
+
+    transition: color 0.2s;
+
+}
+
+
+
+.auth-form-container .text-center a:hover {
+
+    color: var(--sena-dark);
+
+    text-decoration: underline;
+
+}
+
+
+
+@media (max-width: 768px) {
+
+    .auth-wrapper {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .auth-branding {
+
+        display: none;
+
+        /* Ocultamos el branding en pantallas pequeñas para dar prioridad al formulario */
+
+    }
+
+
+
+    .auth-form-container {
+
+        padding: 2rem;
+
+    }
+
+}
+
+.bg-primary-soft {
+    background-color: rgba(0, 50, 77, 0.1);
+    color: var(--sena-dark);
+}
+
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: var(--text-secondary);
+}
+
+.icon-square {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+}
+
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1);
+    color: #0c5460;
+}
+.border-info-soft {
+    border-color: rgba(13, 202, 240, 0.2);
+}
+

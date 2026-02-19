@@ -1,56 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-5 mx-auto mt-5">
-    <div class="card border-success mb-3 shadow-lg">
-        <div class="card-header bg-success text-white text-center py-3">
-            <h2 class="m-0">Registro de Ingreso</h2>
-            <p class="m-0"><small>Biblioteca SENA</small></p>
-        </div>
-        <div class="card-body p-4">
-            <form method="POST">
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Documento de Identidad</label>
-                    <input type="number" name="document_id" class="form-control form-control-lg" 
-                            placeholder="Escanea o digita tu cédula" value="{{ pre_doc or '' }}" required autofocus>
-                    <div class="form-text">Si ya estás registrado, solo ingresa tu documento.</div>
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-md">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-check-fill fs-1 text-success"></i>
+                    <h2 class="card-title mt-2">Registro de Ingreso a Biblioteca</h2>
+                    <p class="card-text text-muted">Registra tu visita para hacer uso de los espacios y recursos.</p>
                 </div>
 
-                {% if pre_doc %}
-                <div class="mb-3 animate-fade-in">
-                    <label class="form-label fw-bold">Nombre Completo (Visitante)</label>
-                    <input type="text" name="visitor_name" class="form-control" placeholder="Escribe tu nombre">
-                </div>
-                {% endif %}
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="document_id" class="form-label">Documento de Identidad</label>
+                        <input type="number" name="document_id" id="document_id" class="form-control form-control-lg" 
+                                placeholder="Escanea o digita tu cédula" value="{{ pre_doc or '' }}" required autofocus>
+                        <div class="form-text">Si ya eres usuario del sistema, solo ingresa tu documento.</div>
+                    </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-bold">¿Qué vas a hacer hoy?</label>
-                    <select name="activity" class="form-select form-select-lg" required>
-                        <option value="" disabled selected>-- Selecciona una actividad --</option>
-                        <option value="Lectura">Lectura / Consulta</option>
-                        <option value="PC mesa">Uso de Computador de Mesa</option>
-                        <option value="Reunión">Reunión / Trabajo en Grupo</option>
-                        <option value="Asesoría">Asesoría</option>
-                        <option value="Capacitación">Capacitación</option>
-                        <option value="Tablero">Uso de Tablero</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
+                    {% if pre_doc %}
+                    <div class="mb-3">
+                        <label for="visitor_name" class="form-label">Nombre Completo (Si eres visitante)</label>
+                        <input type="text" name="visitor_name" id="visitor_name" class="form-control form-control-lg" placeholder="Escribe tu nombre completo">
+                    </div>
+                    {% endif %}
 
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-success btn-lg">Registrar Ingreso</button>
-                </div>
-            </form>
-        </div>
-        <div class="card-footer text-center text-muted">
-            <small>Hora actual: <span id="clock"></span></small>
+                    <div class="mb-4">
+                        <label for="activity" class="form-label">Actividad a Realizar</label>
+                        <select name="activity" id="activity" class="form-select form-select-lg" required>
+                            <option value="" disabled selected>-- Selecciona una actividad --</option>
+                            <option value="Lectura">Lectura / Consulta en Sala</option>
+                            <option value="PC mesa">Uso de Computador de Mesa</option>
+                            <option value="Reunión">Reunión / Trabajo en Grupo</option>
+                            <option value="Asesoría">Asesoría con Bibliotecario</option>
+                            <option value="Capacitación">Asistencia a Capacitación</option>
+                            <option value="Tablero">Uso de Tablero Acrílico</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-check2-circle me-2"></i>Registrar mi Ingreso</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted bg-light">
+                <small><i class="bi bi-clock me-2"></i>Hora actual: <span id="clock"></span></small>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-    }, 1000);
+    function updateClock() {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 </script>
 {% endblock %}

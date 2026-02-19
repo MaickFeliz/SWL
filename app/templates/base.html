@@ -1,40 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca SENA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <nav class="navbar navbar-dark bg-success no-print">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">📚 SENA Library</a>
+
+<body class="d-flex flex-column min-vh-100">
+    {% if not 'auth' in request.endpoint %}
+    <nav class="navbar navbar-expand-lg navbar-dark no-print">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Sena_Colombia_logo.svg/1200px-Sena_Colombia_logo.svg.png"
+                    alt="SENA Logo" style="height: 30px; margin-right: 10px;">
+                Biblioteca
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
-                <div>
-                    <span class="text-white me-3">{{ current_user.full_name }} ({{ current_user.role }})</span>
-                
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if current_user.role == 'bibliotecario' %}
-                        <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-sm btn-outline-light me-1">Préstamos</a>
-                        <a href="{{ url_for('admin.inventory_manage') }}" class="btn btn-sm btn-outline-light me-1">Inventario</a>
-                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-sm btn-outline-light me-1">Usuarios</a>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.inventory_manage') }}">Inventario</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.manage_users') }}">Gestionar Usuarios</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.instructor_dashboard') }}">Mis Préstamos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.request_page') }}">Solicitar Material</a></li>
                     {% endif %}
-                
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Salir</a>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text me-3">
+                        {{ current_user.full_name }} (<strong>{{ current_user.role|capitalize }}</strong>)
+                    </span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">Cerrar Sesión</a>
                 </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </nav>
-    
-    <div class="container">
+    {% endif %}
+
+    <main class="{% if 'auth' not in request.endpoint %}container mt-4{% endif %}">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} no-print">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        <div class="no-print">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
-        
+
         {% block content %}{% endblock %}
-    </div>
+    </main>
+
+    <footer class="mt-auto py-3 bg-light text-center no-print">
+        <div class="container">
+            <span class="text-muted">© 2024 Biblioteca SENA | Centro de Diseño e Innovación Tecnológica Industrial.</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

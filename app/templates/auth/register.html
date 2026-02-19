@@ -1,73 +1,88 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="col-md-6 mx-auto mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white text-center">
-            <h3>Registro de Usuarios</h3>
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <div class="auth-branding">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Sena_Colombia_logo.svg/1200px-Sena_Colombia_logo.svg.png"
+                alt="Logo SENA">
+            <h1>Cree su Cuenta</h1>
+            <p>Únase a nuestra plataforma para acceder a todos los recursos y servicios de la biblioteca.</p>
         </div>
-        <div class="card-body">
+        <div class="auth-form-container">
+            <h2>Registro de Usuario</h2>
+            <p class="form-text">Complete el formulario para solicitar su acceso.</p>
             <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label">Rol en el SENA</label>
-                    <select name="role" id="roleSelect" class="form-select" onchange="toggleFields()">
-                        <option value="aprendiz">Aprendiz</option>
-                        <option value="instructor">Instructor</option>
-                        <option value="bibliotecario">Bibliotecario</option>
-                    </select>
-                </div>
-
+                {{ form.hidden_tag() }}
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Documento de Identidad</label>
-                        <input type="text" name="document_id" class="form-control" placeholder="Cédula / TI" required>
+                    <div class="col-md-6 form-group">
+                        {{ form.full_name.label(class="form-label") }}
+                        {{ form.full_name(class="form-control") }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Celular</label>
-                        <input type="text" name="phone" class="form-control" placeholder="Ej: 3001234567" required>
+                    <div class="col-md-6 form-group">
+                        {{ form.document_id.label(class="form-label") }}
+                        {{ form.document_id(class="form-control") }}
                     </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Nombre Completo</label>
-                    <input type="text" name="full_name" class="form-control" placeholder="Nombres y Apellidos" required>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                    </div>
+                    <div class="col-md-6 form-group">
+                        {{ form.phone.label(class="form-label") }}
+                        {{ form.phone(class="form-control") }}
+                    </div>
                 </div>
-
-                <div id="aprendizFields">
+                <div class="form-group">
+                    {{ form.role.label(class="form-label") }}
+                    {{ form.role(class="form-select", id="roleSelect") }}
+                </div>
+                <div id="aprendizFields" style="display: none;">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Número de Ficha</label>
-                            <input type="text" name="ficha" class="form-control" placeholder="Ej: 2671234">
+                        <div class="col-md-6 form-group">
+                            {{ form.ficha.label(class="form-label") }}
+                            {{ form.ficha(class="form-control") }}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Programa de Formación</label>
-                            <input type="text" name="program_name" class="form-control" placeholder="Ej: ADSO">
+                        <div class="col-md-6 form-group">
+                            {{ form.program_name.label(class="form-label") }}
+                            {{ form.program_name(class="form-control") }}
                         </div>
                     </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-control" required>
+                <div class="form-group">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control") }}
                 </div>
-
-                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+                <div class="form-group">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
             </form>
+            <div class="text-center mt-3">
+                <p>¿Ya tiene una cuenta? <a href="{{ url_for('auth.login') }}">Inicie sesión aquí</a></p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    function toggleFields() {
-        var role = document.getElementById("roleSelect").value;
-        var fields = document.getElementById("aprendizFields");
-        // Mostrar campos solo si es aprendiz
-        if (role === "aprendiz") {
-            fields.style.display = "block";
-        } else {
-            fields.style.display = "none";
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('roleSelect');
+        const aprendizFields = document.getElementById('aprendizFields');
+
+        function toggleFields() {
+            if (roleSelect.value === 'aprendiz') {
+                aprendizFields.style.display = 'block';
+            } else {
+                aprendizFields.style.display = 'none';
+            }
         }
-    }
-    // Ejecutar al cargar por si el navegador recuerda la selección
-    window.onload = toggleFields;
+
+        roleSelect.addEventListener('change', toggleFields);
+        toggleFields(); // Ejecutar al cargar la página
+    });
 </script>
 {% endblock %}

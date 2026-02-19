@@ -48,11 +48,22 @@ def admin_dashboard():
     
     status_filter = request.args.get('status', 'pendiente')
     
+    # Get counts for all statuses
+    pending_count = Loan.query.filter_by(status='pendiente').count()
+    approved_count = Loan.query.filter_by(status='aprobado').count()
+    returned_count = Loan.query.filter_by(status='devuelto').count()
+
     query = Loan.query.filter(Loan.status == status_filter)
 
     loans = query.order_by(Loan.request_date.desc()).all()
     
-    return render_template('admin/dashboard.html', loans=loans, current_status=status_filter)
+    stats = {
+        'pending': pending_count,
+        'approved': approved_count,
+        'returned': returned_count
+    }
+    
+    return render_template('admin/dashboard.html', loans=loans, current_status=status_filter, stats=stats)
 
 @bp.route('/approve/<int:id>', methods=['POST'])
 @login_required
