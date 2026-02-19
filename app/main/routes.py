@@ -31,7 +31,7 @@ def fast_loan():
             # Lógica Portátil
             environment = request.form.get('environment')
             new_loan = Loan(user_id=user.id, loan_type='computo', item_name='Computador Portátil', 
-                          quantity=1, environment=environment, associated_ficha=user.ficha, status='pendiente')
+                        quantity=1, environment=environment, associated_ficha=user.ficha, status='pendiente')
         
         elif item_type == 'elemento':
             # Lógica Elemento
@@ -50,7 +50,7 @@ def fast_loan():
 
             inv_item.available_quantity -= qty
             new_loan = Loan(user_id=user.id, loan_type='elemento', item_name=inv_item.name, 
-                          quantity=qty, status='pendiente')
+                        quantity=qty, status='pendiente')
         
         db.session.add(new_loan)
         db.session.commit()

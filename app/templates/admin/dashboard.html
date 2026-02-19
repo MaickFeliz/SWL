@@ -13,7 +13,7 @@
         <a href="?status=pendiente" class="btn btn-warning">Pendientes</a>
         <a href="?status=aprobado" class="btn btn-primary">Prestados</a>
         <a href="?status=devuelto" class="btn btn-secondary">Historial</a>
-        <button onclick="window.print()" class="btn btn-dark float-end">🖨️ Imprimir</button>
+        <button onclick="window.print()" class="btn btn-dark float-end">Imprimir</button>
     </div>
     <div class="col-12 mt-2">
         Filtrar por: 
@@ -47,7 +47,7 @@
                     <span class="badge bg-dark">x{{ loan.quantity }}</span>
                 {% endif %}
                 {% if loan.environment %}
-                    <br><small>📍 {{ loan.environment }}</small>
+                    <br><small> {{ loan.environment }}</small>
                 {% endif %}
             </td>
             

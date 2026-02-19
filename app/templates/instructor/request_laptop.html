@@ -4,7 +4,7 @@
 <div class="col-md-8 mx-auto mt-4">
     <div class="card shadow">
         <div class="card-header bg-success text-white">
-            <h3>💻 Solicitud de Portátiles</h3>
+            <h3> Solicitud de Portátiles</h3>
         </div>
         <div class="card-body">
             <form method="POST">
@@ -16,8 +16,8 @@
                     <div class="col-md-6">
                         <label class="form-label text-muted">Documento / Ficha</label>
                         <input type="text" class="form-control" 
-                               value="{{ current_user.document_id }} {% if current_user.role == 'aprendiz' %}- Ficha: {{ current_user.ficha }}{% endif %}" 
-                               disabled>
+                                value="{{ current_user.document_id }} {% if current_user.role == 'aprendiz' %}- Ficha: {{ current_user.ficha }}{% endif %}" 
+                                disabled>
                     </div>
                 </div>
                 
@@ -36,17 +36,17 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">📍 Ambiente de Formación</label>
+                        <label class="form-label fw-bold"> Ambiente de Formación</label>
                         <input type="text" name="environment" class="form-control" placeholder="Ej: Ambiente 204 / Sistemas 1" required>
                     </div>
 
                     {% if current_user.role == 'instructor' %}
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">👥 Ficha del Grupo</label>
+                        <label class="form-label fw-bold"> Ficha del Grupo</label>
                         <input type="text" name="associated_ficha" class="form-control" placeholder="Ficha a la que dicta clase" required>
                     </div>
                     <div class="col-md-12 mb-3">
-                        <label class="form-label fw-bold">🔢 Cantidad de Equipos</label>
+                        <label class="form-label fw-bold"> Cantidad de Equipos</label>
                         <input type="number" name="quantity" class="form-control" min="1" max="30" value="1" required>
                         <small class="text-muted">Indique cuántos portátiles necesita para la clase.</small>
                     </div>
@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="d-grid gap-2 mt-3">
-                    <button type="submit" class="btn btn-success btn-lg">🚀 Enviar Solicitud</button>
+                    <button type="submit" class="btn btn-success btn-lg"> Enviar Solicitud</button>
                     <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
                 </div>
             </form>
