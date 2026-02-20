@@ -2,6 +2,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from config import Config
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+from flask import session
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -14,6 +18,25 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    # Configuración del Directorio de Logs
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    # Handler del log: Archivo máximo 1MB, con backup hasta 3 versiones
+    file_handler = RotatingFileHandler(app.config['LOG_FILE'], maxBytes=1024000, backupCount=3)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('LMS Startup - Technical Specs Initialized')
+
+    # Hacer las sesiones persistentes respecto al TIEMPO de expiración
+    @app.before_request
+    def make_session_permanent():
+        session.permanent = True
 
     # Registrar Blueprints
     from app.auth import bp as auth_bp

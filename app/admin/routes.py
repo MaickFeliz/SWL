@@ -3,23 +3,19 @@ from flask_login import login_required, current_user
 from app.admin import bp
 from app import db
 from app.models import Loan, User, Inventory
+from app import db
+from app.models import Loan, User, Inventory
 from datetime import datetime
 from sqlalchemy import or_
 from functools import wraps
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != 'admin':
-            flash('Acceso denegado. Se requieren privilegios de superusuario.', 'danger')
-            return redirect(url_for('main.index'))
-        return f(*args, **kwargs)
-    return decorated_function
+from app.services.loan_service import LoanService
+from app.services.inventory_service import InventoryService
+from app.utils.decorators import role_required
 
 # app/admin/routes.py
 @bp.route('/users')
-@login_required
-@admin_required  # <- Mira qué bonito y limpio se ve
+@role_required('admin')
 def manage_users():
     # Obtener el número de página de la URL, por defecto la página 1
     page = request.args.get('page', 1, type=int)
@@ -29,9 +25,8 @@ def manage_users():
     return render_template('admin/users.html', users=users_pagination)
 
 @bp.route('/users/search')
-@login_required
+@role_required('admin', 'bibliotecario')
 def search_users():
-    
     search = request.args.get('search')
     if search:
         users = User.query.filter(or_(
@@ -44,33 +39,30 @@ def search_users():
     return render_template('admin/users.html', users=users)
 
 @bp.route('/users/edit/<int:id>', methods=['POST'])
-@login_required
+@role_required('bibliotecario', 'admin')
 def edit_user(id):
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
-    
     user = User.query.get_or_404(id)
     user.full_name = request.form.get('full_name')
     user.phone = request.form.get('phone')
     user.role = request.form.get('role')
-    user.ficha = request.form.get('ficha')
     
     db.session.commit()
     flash(f'Usuario {user.full_name} actualizado.', 'success')
     return redirect(url_for('admin.manage_users'))
 
 @bp.route('/dashboard')
-@login_required
+@role_required('bibliotecario', 'admin')
 def admin_dashboard():
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
-    
     status_filter = request.args.get('status', 'pendiente')
     
-    # Get counts for all statuses
     pending_count = Loan.query.filter_by(status='pendiente').count()
-    approved_count = Loan.query.filter_by(status='aprobado').count()
+    activo_count = Loan.query.filter_by(status='activo').count()
     returned_count = Loan.query.filter_by(status='devuelto').count()
+    atrasado_count = Loan.query.filter_by(status='atrasado').count()
+    
+    # Items más solicitados (agrupando por nombre en Python o SQL simplificado)
+    from sqlalchemy import func
+    top_items = db.session.query(Loan.item_name, func.count(Loan.id).label('total')).group_by(Loan.item_name).order_by(func.count(Loan.id).desc()).limit(5).all()
 
     query = Loan.query.filter(Loan.status == status_filter)
 
@@ -78,97 +70,76 @@ def admin_dashboard():
     
     stats = {
         'pending': pending_count,
-        'approved': approved_count,
-        'returned': returned_count
+        'activo': activo_count,
+        'returned': returned_count,
+        'atrasado': atrasado_count
     }
     
-    return render_template('admin/dashboard.html', loans=loans, current_status=status_filter, stats=stats)
+    return render_template('admin/dashboard.html', loans=loans, current_status=status_filter, stats=stats, top_items=top_items)
 
 @bp.route('/approve/<int:id>', methods=['POST'])
-@login_required
+@role_required('bibliotecario', 'admin')
 def approve(id):
-    loan = Loan.query.get_or_404(id)
-    # En el formulario HTML el input debe llamarse 'serial' o 'item_code'
     serial = request.form.get('serial')
-    
     if not serial:
         flash('Falta el serial o código del elemento', 'danger')
         return redirect(url_for('admin.admin_dashboard'))
         
-    # CORRECCIÓN: Guardar en item_code
-    loan.item_code = serial
-    loan.status = 'aprobado'
-    loan.approval_date = datetime.utcnow()
-    db.session.commit()
+    loan = Loan.query.get_or_404(id)
     
+    # Restar inventario si es un elemento
+    if loan.loan_type == 'elemento':
+        success, msg = InventoryService.deduct_stock(loan.item_name, loan.quantity)
+        if not success:
+            flash(msg, 'danger')
+            return redirect(url_for('admin.admin_dashboard'))
+
+    LoanService.approve_loan(id, serial)
     flash('Préstamo aprobado correctamente', 'success')
-    return redirect(url_for('admin.admin_dashboard'))
+    return redirect(url_for('admin.admin_dashboard', status='activo'))
 
 @bp.route('/return/<int:id>')
-@login_required
+@role_required('bibliotecario', 'admin')
 def return_item(id):
     loan = Loan.query.get_or_404(id)
     
-    # Evitar devolver algo que ya estaba devuelto (para no duplicar inventario)
-    if loan.status == 'devuelto':
-        flash('Este elemento ya había sido devuelto.', 'warning')
-        return redirect(url_for('admin.admin_dashboard'))
+    # LOGICA DE RESTOCK
+    if loan.loan_type == 'elemento' and loan.status != 'devuelto':
+        InventoryService.add_stock(loan.item_name, loan.quantity)
 
-    loan.status = 'devuelto'
-    loan.return_date = datetime.utcnow()
+    success, msg = LoanService.return_loan(id)
     
-    # LOGICA DE RESTOCK (Solo para elementos de inventario)
-    if loan.loan_type == 'elemento':
-        # Buscar el item en el inventario por nombre
-        inventory_item = Inventory.query.filter_by(name=loan.item_name).first()
-        if inventory_item:
-            inventory_item.available_quantity += loan.quantity
-            flash(f'Elemento devuelto y stock restaurado (+{loan.quantity}).', 'info')
+    if success:
+        flash(msg, 'success')
     else:
-        flash('Equipo de cómputo devuelto.', 'info')
+        flash(msg, 'warning')
 
-    db.session.commit()
-
-    return redirect(url_for('admin.admin_dashboard', status='aprobado'))
+    return redirect(url_for('admin.admin_dashboard', status='devuelto'))
 
 # GESTIÓN DE INVENTARIO
 @bp.route('/inventory', methods=['GET', 'POST'])
-@login_required
+@role_required('bibliotecario', 'admin')
 def inventory_manage():
-    if current_user.role != 'bibliotecario':
-        flash('Acceso denegado.', 'danger')
-        return redirect(url_for('main.instructor_dashboard'))
-
-    # AGREGAR NUEVO ITEM
     if request.method == 'POST':
         name = request.form.get('name')
         category = request.form.get('category')
         quantity = int(request.form.get('quantity'))
 
-        # Validar si ya existe
-        if Inventory.query.filter_by(name=name).first():
-            flash('El elemento ya existe en el inventario.', 'warning')
+        success, msg = InventoryService.create_item(name, category, quantity)
+        
+        if success:
+            flash(msg, 'success')
         else:
-            new_item = Inventory(
-                name=name, 
-                category=category, 
-                total_quantity=quantity, 
-                available_quantity=quantity
-            )
-            db.session.add(new_item)
-            db.session.commit()
-            flash('Elemento creado exitosamente.', 'success')
+            flash(msg, 'warning')
+            
         return redirect(url_for('admin.inventory_manage'))
 
     items = Inventory.query.all()
     return render_template('admin/inventory.html', items=items)
 
 @bp.route('/inventory/update/<int:id>', methods=['POST'])
-@login_required
+@role_required('bibliotecario', 'admin')
 def inventory_update(id):
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
-        
     item = Inventory.query.get_or_404(id)
     action = request.form.get('action') # 'add' o 'remove'
     amount = int(request.form.get('amount'))
@@ -190,11 +161,8 @@ def inventory_update(id):
     return redirect(url_for('admin.inventory_manage'))
 
 @bp.route('/inventory/delete/<int:id>')
-@login_required
+@role_required('admin')
 def inventory_delete(id):
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
-        
     item = Inventory.query.get_or_404(id)
     db.session.delete(item)
     db.session.commit()
@@ -202,11 +170,8 @@ def inventory_delete(id):
     return redirect(url_for('admin.inventory_manage'))
 
 @bp.route('/inventory/edit_details/<int:id>', methods=['POST'])
-@login_required
+@role_required('bibliotecario', 'admin')
 def inventory_edit_details(id):
-    if current_user.role != 'bibliotecario':
-        return redirect(url_for('main.instructor_dashboard'))
-        
     item = Inventory.query.get_or_404(id)
     item.name = request.form.get('name')
     item.category = request.form.get('category')

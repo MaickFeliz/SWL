@@ -32,29 +32,35 @@
                         <td><strong>{{ item.name }}</strong></td>
                         <td>
                             {% if item.category == 'general' %}
-                                <span class="badge bg-light text-dark">General (Todos)</span>
+                            <span class="badge bg-light text-dark">General (Todos)</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">Solo Instructor</span>
+                            <span class="badge bg-warning text-dark">Solo Staff</span>
                             {% endif %}
                         </td>
                         <td class="text-center fw-bold">{{ item.total_quantity }}</td>
-                        <td class="text-center fw-bold {{ 'text-danger' if item.available_quantity < 3 else 'text-success' }}">
+                        <td
+                            class="text-center fw-bold {{ 'text-danger' if item.available_quantity < 3 else 'text-success' }}">
                             {{ item.available_quantity }}
                         </td>
                         <td class="text-center">
-                            <form action="{{ url_for('admin.inventory_update', id=item.id) }}" method="POST" class="d-inline-flex">
+                            <form action="{{ url_for('admin.inventory_update', id=item.id) }}" method="POST"
+                                class="d-inline-flex">
                                 <input type="hidden" name="amount" value="1">
-                                <button type="submit" name="action" value="add" class="btn btn-sm btn-outline-success" title="Sumar 1"><i class="bi bi-plus-lg"></i></button>
-                                <button type="submit" name="action" value="remove" class="btn btn-sm btn-outline-danger ms-1" title="Restar 1"><i class="bi bi-dash-lg"></i></button>
+                                <button type="submit" name="action" value="add" class="btn btn-sm btn-outline-success"
+                                    title="Sumar 1"><i class="bi bi-plus-lg"></i></button>
+                                <button type="submit" name="action" value="remove"
+                                    class="btn btn-sm btn-outline-danger ms-1" title="Restar 1"><i
+                                        class="bi bi-dash-lg"></i></button>
                             </form>
-                            
-                            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#editItemModal{{ item.id }}" title="Editar Detalles"><i class="bi bi-pencil-square"></i></button>
-                            
-                            <a href="{{ url_for('admin.inventory_delete', id=item.id) }}" 
-                                class="btn btn-sm btn-outline-dark ms-1"
-                                onclick="return confirm('¿Seguro que quieres borrar este item? Se perderá el historial de préstamos asociado.')" title="Eliminar Item">
-                               <i class="bi bi-trash-fill"></i>
-                            </a>
+
+                            <button class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal"
+                                data-bs-target="#editItemModal{{ item.id }}" title="Editar Detalles"><i
+                                    class="bi bi-pencil-square"></i></button>
+
+                            <button class="btn btn-sm btn-outline-dark ms-1" data-bs-toggle="modal"
+                                data-bs-target="#deleteItemModal{{ item.id }}" title="Eliminar Item">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
 
                             <!-- Edit Modal -->
                             <div class="modal fade" id="editItemModal{{ item.id }}" tabindex="-1">
@@ -64,25 +70,55 @@
                                             <h5 class="modal-title">Editar {{ item.name }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
-                                        <form action="{{ url_for('admin.inventory_edit_details', id=item.id) }}" method="POST">
+                                        <form action="{{ url_for('admin.inventory_edit_details', id=item.id) }}"
+                                            method="POST">
                                             <div class="modal-body">
                                                 <div class="mb-3">
                                                     <label class="form-label">Nombre del Elemento</label>
-                                                    <input type="text" name="name" class="form-control" value="{{ item.name }}" required>
+                                                    <input type="text" name="name" class="form-control"
+                                                        value="{{ item.name }}" required>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Categoría (Permisos)</label>
                                                     <select name="category" class="form-select">
-                                                        <option value="general" {{ 'selected' if item.category == 'general' }}>General (Puede ser solicitado por todos)</option>
-                                                        <option value="instructor" {{ 'selected' if item.category == 'instructor' }}>Restringido (Solo para instructores)</option>
+                                                        <option value="general" {{ 'selected' if
+                                                            item.category=='general' }}>General (Puede ser solicitado
+                                                            por todos)</option>
+                                                        <option value="premium" {{ 'selected' if
+                                                            item.category=='premium' }}>Restringido (Solo para staff)
+                                                        </option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Cancelar</button>
                                                 <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                                             </div>
                                         </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteItemModal{{ item.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-danger">
+                                        <div class="modal-header text-bg-danger">
+                                            <h5 class="modal-title">Eliminar {{ item.name }}</h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>¿Seguro que quieres borrar este elemento? Perderás el historial de
+                                                préstamos asociado.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancelar</button>
+                                            <a href="{{ url_for('admin.inventory_delete', id=item.id) }}"
+                                                class="btn btn-danger">Sí, Eliminar</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -115,12 +151,13 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Nombre del Elemento</label>
-                        <input type="text" name="name" class="form-control" placeholder="Ej: Cable VGA, Parlante, Libro X..." required>
+                        <input type="text" name="name" class="form-control"
+                            placeholder="Ej: Cable VGA, Parlante, Libro X..." required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Categoría (Quién puede pedirlo)</label>
                         <select name="category" class="form-select">
-                            <option value="instructor">Solo Instructores (Equipos costosos, especiales)</option>
+                            <option value="premium">Solo Staff (Equipos costosos, especiales)</option>
                             <option value="general" selected>General (Disponibles para todos, ej: mouse)</option>
                         </select>
                     </div>

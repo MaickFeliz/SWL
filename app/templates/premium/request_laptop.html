@@ -8,9 +8,10 @@
                 <div class="text-center mb-4">
                     <i class="bi bi-laptop fs-1 text-primary"></i>
                     <h2 class="card-title mt-2">Solicitud de Portátiles</h2>
-                    <p class="card-text text-muted">Completa los datos para solicitar uno o más equipos para tu clase.</p>
+                    <p class="card-text text-muted">Completa los datos para solicitar uno o más equipos para tu clase.
+                    </p>
                 </div>
-                
+
                 <form method="POST">
                     <fieldset disabled>
                         <div class="row mb-3">
@@ -19,9 +20,9 @@
                                 <input type="text" class="form-control" value="{{ current_user.full_name }}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Documento / Ficha</label>
-                                <input type="text" class="form-control" 
-                                        value="{{ current_user.document_id }} {% if current_user.role == 'aprendiz' %}- Ficha: {{ current_user.ficha }}{% endif %}">
+                                <label class="form-label">Documento / Programa</label>
+                                <input type="text" class="form-control"
+                                    value="{{ current_user.document_id }} {% if current_user.role == 'cliente' %}- Programa: {{ current_user.program_name }}{% endif %}">
                             </div>
                         </div>
                         <div class="row mb-4">
@@ -41,20 +42,18 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Ambiente de Formación</label>
-                            <input type="text" name="environment" class="form-control form-control-lg" placeholder="Ej: Ambiente 204 / Sistemas 1" required>
+                            <input type="text" name="environment" class="form-control form-control-lg"
+                                placeholder="Ej: Ambiente 204 / Sistemas 1" required>
                             <small class="form-text text-muted">Lugar donde se usarán los equipos.</small>
                         </div>
 
-                        {% if current_user.role == 'instructor' %}
+                        {% if current_user.role == 'premium' %}
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Ficha del Grupo</label>
-                            <input type="text" name="associated_ficha" class="form-control form-control-lg" placeholder="Ficha a la que dicta clase" required>
-                             <small class="form-text text-muted">El grupo que usará los equipos.</small>
-                        </div>
-                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold">Cantidad de Equipos</label>
-                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" max="30" value="1" required>
-                            <small class="form-text text-muted">Indica cuántos portátiles necesitas para la clase.</small>
+                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" max="30"
+                                value="1" required>
+                            <small class="form-text text-muted">Indica cuántos portátiles necesitas para la
+                                clase.</small>
                         </div>
                         {% else %}
                         <input type="hidden" name="quantity" value="1">
@@ -62,8 +61,10 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send-fill me-2"></i>Confirmar y Enviar Solicitud</button>
-                        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Volver al Panel</a>
+                        <button type="submit" class="btn btn-primary btn-lg"><i
+                                class="bi bi-send-fill me-2"></i>Confirmar y Enviar Solicitud</button>
+                        <a href="{{ url_for('main.premium_dashboard') }}" class="btn btn-outline-secondary">Volver al
+                            Panel</a>
                     </div>
                 </form>
             </div>

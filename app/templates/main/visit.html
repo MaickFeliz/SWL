@@ -14,15 +14,16 @@
                 <form method="POST">
                     <div class="mb-3">
                         <label for="document_id" class="form-label">Documento de Identidad</label>
-                        <input type="number" name="document_id" id="document_id" class="form-control form-control-lg" 
-                                placeholder="Escanea o digita tu cédula" value="{{ pre_doc or '' }}" required autofocus>
+                        <input type="number" name="document_id" id="document_id" class="form-control form-control-lg"
+                            placeholder="Escanea o digita tu cédula" value="{{ pre_doc or '' }}" required autofocus>
                         <div class="form-text">Si ya eres usuario del sistema, solo ingresa tu documento.</div>
                     </div>
 
                     {% if pre_doc %}
                     <div class="mb-3">
                         <label for="visitor_name" class="form-label">Nombre Completo (Si eres visitante)</label>
-                        <input type="text" name="visitor_name" id="visitor_name" class="form-control form-control-lg" placeholder="Escribe tu nombre completo">
+                        <input type="text" name="visitor_name" id="visitor_name" class="form-control form-control-lg"
+                            placeholder="Escribe tu nombre completo">
                     </div>
                     {% endif %}
 
@@ -41,7 +42,8 @@
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-check2-circle me-2"></i>Registrar mi Ingreso</button>
+                        <button type="submit" class="btn btn-success btn-lg"><i
+                                class="bi bi-check2-circle me-2"></i>Registrar mi Ingreso</button>
                     </div>
                 </form>
             </div>

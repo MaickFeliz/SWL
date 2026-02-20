@@ -1,21 +1,21 @@
-/* 1. FUENTES Y VARIABLES (Estilo SaaS Corporativo) */
+/* 1. FUENTES Y VARIABLES (Estilo LMS Corporate) */
 /* Cambiamos Poppins por Inter, la tipografía por excelencia del software moderno */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --sena-green: #39a900;
-    --sena-dark: #00324D;
-    --sena-orange: #ff6c00;
-    --bg-body: #f8fafc;
+    --brand-primary: #0f172a; /* Deep blue/slate */
+    --brand-secondary: #3b82f6; /* Bright blue */
+    --brand-accent: #f59e0b; /* Amber warning */
+    --bg-body: #f1f5f9;
     --surface-color: #ffffff;
     --border-color: #e2e8f0;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 8px 16px rgba(0,0,0,0.08);
 }
 
 body {
@@ -39,10 +39,10 @@ h6 {
 
 /* 2. NAVEGACIÓN (Navbar limpia, adiós degradados fiesteros) */
 .navbar {
-    background-color: var(--sena-dark) !important;
+    background-color: var(--brand-primary) !important;
     box-shadow: var(--shadow-sm);
     padding: 0.75rem 0;
-    border-bottom: 3px solid var(--sena-green);
+    border-bottom: 3px solid var(--brand-secondary);
 }
 
 .navbar-brand {
@@ -95,28 +95,28 @@ h6 {
 }
 
 .btn-primary {
-    background-color: var(--sena-dark);
-    border-color: var(--sena-dark);
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
 }
 
 .btn-success {
-    background-color: var(--sena-green);
-    border-color: var(--sena-green);
+    background-color: var(--brand-secondary);
+    border-color: var(--brand-secondary);
 }
 
 .btn-warning {
-    background-color: var(--sena-orange);
-    border-color: var(--sena-orange);
+    background-color: var(--brand-accent);
+    border-color: var(--brand-accent);
     color: white;
 }
 
 .btn-outline-primary {
-    color: var(--sena-dark);
-    border-color: var(--sena-dark);
+    color: var(--brand-primary);
+    border-color: var(--brand-primary);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--sena-dark);
+    background-color: var(--brand-primary);
     color: white;
 }
 
@@ -167,8 +167,8 @@ h6 {
 
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--sena-green);
-    box-shadow: 0 0 0 3px rgba(57, 169, 0, 0.15);
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 /* 7. ETIQUETAS (Badges minimalistas) */
@@ -289,7 +289,7 @@ h6 {
 
 .auth-branding {
 
-    background-color: var(--sena-dark);
+    background-color: var(--brand-primary);
 
     color: white;
 
@@ -419,7 +419,7 @@ h6 {
 
 .auth-form-container .text-center a {
 
-    color: var(--sena-green);
+    color: var(--brand-secondary);
 
     font-weight: 500;
 
@@ -433,7 +433,7 @@ h6 {
 
 .auth-form-container .text-center a:hover {
 
-    color: var(--sena-dark);
+    color: var(--brand-primary);
 
     text-decoration: underline;
 
@@ -471,7 +471,7 @@ h6 {
 
 .bg-primary-soft {
     background-color: rgba(0, 50, 77, 0.1);
-    color: var(--sena-dark);
+    color: var(--brand-primary);
 }
 
 .bg-secondary-soft {

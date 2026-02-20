@@ -22,8 +22,8 @@ def login():
         
         if user.role == 'admin':
             return redirect(url_for('admin.dashboard'))
-        elif user.role == 'instructor':
-            return redirect(url_for('main.instructor_dashboard'))
+        elif user.role == 'premium':
+            return redirect(url_for('main.premium_dashboard'))
         return redirect(url_for('main.index'))
         
     return render_template('auth/login.html', form=form)
@@ -51,8 +51,7 @@ def register():
             phone=form.phone.data,
             role=form.role.data
         )
-        if form.role.data == 'aprendiz':
-            user.ficha = form.ficha.data
+        if form.role.data == 'cliente':
             user.program_name = form.program_name.data
 
         user.set_password(form.password.data)

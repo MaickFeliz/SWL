@@ -16,12 +16,11 @@ class RegistrationForm(FlaskForm):
                         DataRequired(), Email()])
     phone = StringField('Celular', validators=[
                         DataRequired(), Length(min=10, max=15)])
-    role = SelectField('Rol en el SENA', choices=[
-        ('aprendiz', 'Aprendiz'),
-        ('instructor', 'Instructor'),
+    role = SelectField('Rol en el Sistema', choices=[
+        ('cliente', 'Usuario/Cliente'),
+        ('premium', 'Usuario Premium/Staff'),
         ('bibliotecario', 'Bibliotecario')
     ], validators=[DataRequired()])
-    ficha = StringField('Número de Ficha', validators=[Length(max=15)])
     program_name = StringField(
         'Programa de Formación', validators=[Length(max=100)])
     password = PasswordField('Contraseña', validators=[

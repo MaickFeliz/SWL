@@ -7,7 +7,8 @@
                 <div class="text-center mb-4">
                     <i class="bi bi-lightning-charge-fill fs-1 text-primary"></i>
                     <h2 class="card-title mt-2">Préstamo Rápido (Modo Kiosco)</h2>
-                    <p class="card-text text-muted">Gestionado por el bibliotecario para préstamos sin inicio de sesión.</p>
+                    <p class="card-text text-muted">Gestionado por el bibliotecario para préstamos sin inicio de sesión.
+                    </p>
                 </div>
 
                 {% if not user %}
@@ -16,7 +17,8 @@
                     <div class="input-group input-group-lg">
                         <input type="number" name="document_id" class="form-control"
                             placeholder="Ingrese el documento de identidad del solicitante" required autofocus>
-                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-2"></i>Buscar Usuario</button>
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-2"></i>Buscar
+                            Usuario</button>
                     </div>
                 </form>
                 {% else %}
@@ -27,7 +29,8 @@
                         <div>
                             <strong class="d-block">{{ user.full_name }}</strong>
                             <span class="badge bg-light text-dark me-2">{{ user.role|capitalize }}</span>
-                            {% if user.ficha %}<span class="badge bg-light text-dark">Ficha: {{ user.ficha }}</span>{% endif %}
+                            {% if user.program_name %}<span class="badge bg-light text-dark">Programa: {{
+                                user.program_name }}</span>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -38,10 +41,14 @@
 
                     <nav>
                         <div class="nav nav-tabs nav-fill mb-4" id="nav-tab" role="tablist">
-                            <button class="nav-link active" id="nav-pc-tab" data-bs-toggle="tab" data-bs-target="#nav-pc" type="button" role="tab" aria-controls="nav-pc" aria-selected="true" onclick="setTyp('computo')">
+                            <button class="nav-link active" id="nav-pc-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-pc" type="button" role="tab" aria-controls="nav-pc"
+                                aria-selected="true" onclick="setTyp('computo')">
                                 <i class="bi bi-laptop me-2"></i>Portátil
                             </button>
-                            <button class="nav-link" id="nav-elem-tab" data-bs-toggle="tab" data-bs-target="#nav-elem" type="button" role="tab" aria-controls="nav-elem" aria-selected="false" onclick="setTyp('elemento')">
+                            <button class="nav-link" id="nav-elem-tab" data-bs-toggle="tab" data-bs-target="#nav-elem"
+                                type="button" role="tab" aria-controls="nav-elem" aria-selected="false"
+                                onclick="setTyp('elemento')">
                                 <i class="bi bi-box-seam me-2"></i>Elemento de Inventario
                             </button>
                         </div>
@@ -52,7 +59,8 @@
                         <div class="tab-pane fade show active" id="nav-pc" role="tabpanel" aria-labelledby="nav-pc-tab">
                             <div class="mb-3">
                                 <label class="form-label">Ambiente de Formación</label>
-                                <input type="text" name="environment" class="form-control form-control-lg" placeholder="Ej: 204 / Sistemas 1">
+                                <input type="text" name="environment" class="form-control form-control-lg"
+                                    placeholder="Ej: 204 / Sistemas 1">
                             </div>
                         </div>
 
@@ -61,20 +69,24 @@
                                 <label class="form-label">Seleccione Elemento</label>
                                 <select name="inventory_id" class="form-select form-select-lg">
                                     {% for item in items %}
-                                    <option value="{{ item.id }}" {% if item.available_quantity == 0 %}disabled{% endif %}>{{ item.name }} (Disponibles: {{ item.available_quantity }})</option>
+                                    <option value="{{ item.id }}" {% if item.available_quantity==0 %}disabled{% endif
+                                        %}>{{ item.name }} (Disponibles: {{ item.available_quantity }})</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Cantidad</label>
-                                <input type="number" name="quantity" class="form-control form-control-lg" value="1" min="1">
+                                <input type="number" name="quantity" class="form-control form-control-lg" value="1"
+                                    min="1">
                             </div>
                         </div>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-check-circle-fill me-2"></i>Confirmar y Realizar Préstamo</button>
-                        <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-secondary">Limpiar y Empezar de Nuevo</a>
+                        <button type="submit" class="btn btn-success btn-lg"><i
+                                class="bi bi-check-circle-fill me-2"></i>Confirmar y Realizar Préstamo</button>
+                        <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-secondary">Limpiar y Empezar de
+                            Nuevo</a>
                     </div>
                 </form>
 

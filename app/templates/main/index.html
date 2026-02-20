@@ -1,56 +1,64 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="px-4 py-5 my-5 text-center">
-    <img class="d-block mx-auto mb-4" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Sena_Colombia_logo.svg/1200px-Sena_Colombia_logo.svg.png" alt="" width="72">
-    <h1 class="display-5 fw-bold text-body-emphasis">Sistema de Gestión de Biblioteca</h1>
-    <div class="col-lg-6 mx-auto">
-      <p class="lead mb-4">Una solución integral para la gestión de recursos, préstamos y visitas en la biblioteca del Centro de Diseño e Innovación Tecnológica Industrial.</p>
-      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-        <a href="{{ url_for('auth.login') }}" type="button" class="btn btn-primary btn-lg px-4 gap-3">Acceso Instructores</a>
-        <a href="{{ url_for('main.fast_loan') }}" type="button" class="btn btn-outline-secondary btn-lg px-4">Préstamo Rápido</a>
-      </div>
+
+  <h1 class="display-5 fw-bold text-body-emphasis">Sistema de Gestión de Biblioteca</h1>
+  <div class="col-lg-6 mx-auto">
+    <p class="lead mb-4">Una solución integral para la gestión de recursos, préstamos y visitas en la biblioteca del
+      Centro de Diseño e Innovación Tecnológica Industrial.</p>
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+      <a href="{{ url_for('auth.login') }}" type="button" class="btn btn-primary btn-lg px-4 gap-3">Acceso Staff</a>
+      <a href="{{ url_for('main.fast_loan') }}" type="button" class="btn btn-outline-secondary btn-lg px-4">Préstamo
+        Rápido</a>
     </div>
+  </div>
 </div>
 
 <div class="container px-4 py-5" id="hanging-icons">
-    <h2 class="pb-2 border-bottom">Funcionalidades Principales</h2>
-    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-      <div class="col d-flex align-items-start">
-        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-            <i class="bi bi-person-check-fill"></i>
-        </div>
-        <div>
-          <h3 class="fs-2">Registro de Visitas</h3>
-          <p>Lleva un control automatizado de los aprendices e instructores que ingresan a la biblioteca para hacer uso de sus espacios y recursos.</p>
-          <a href="{{ url_for('main.register_visit') }}" class="btn btn-success">
-            Registrar Visita
-          </a>
-        </div>
+  <h2 class="pb-2 border-bottom">Funcionalidades Principales</h2>
+  <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    <div class="col d-flex align-items-start">
+      <div
+        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+        <i class="bi bi-person-check-fill"></i>
       </div>
-      <div class="col d-flex align-items-start">
-        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-            <i class="bi bi-laptop"></i>
-        </div>
-        <div>
-          <h3 class="fs-2">Préstamos de Equipos</h3>
-          <p>Gestiona el ciclo completo de préstamo de portátiles, desde la solicitud del instructor hasta la devolución y registro en el sistema.</p>
-          <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
-            Solicitar Equipo
-          </a>
-        </div>
-      </div>
-      <div class="col d-flex align-items-start">
-        <div class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-            <i class="bi bi-box-seam"></i>
-        </div>
-        <div>
-          <h3 class="fs-2">Gestión de Inventario</h3>
-          <p>Controla el stock de libros, accesorios y otros elementos. El inventario se actualiza automáticamente con cada préstamo y devolución.</p>
-          <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
-            Gestionar Inventario
-          </a>
-        </div>
+      <div>
+        <h3 class="fs-2">Registro de Visitas</h3>
+        <p>Lleva un control automatizado de los clientes y staff que ingresan a la biblioteca para hacer uso de
+          sus espacios y recursos.</p>
+        <a href="{{ url_for('main.register_visit') }}" class="btn btn-success">
+          Registrar Visita
+        </a>
       </div>
     </div>
+    <div class="col d-flex align-items-start">
+      <div
+        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+        <i class="bi bi-laptop"></i>
+      </div>
+      <div>
+        <h3 class="fs-2">Préstamos de Equipos</h3>
+        <p>Gestiona el ciclo completo de préstamo de portátiles, desde la solicitud del staff hasta la devolución y
+          registro en el sistema.</p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+          Solicitar Equipo
+        </a>
+      </div>
+    </div>
+    <div class="col d-flex align-items-start">
+      <div
+        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <div>
+        <h3 class="fs-2">Gestión de Inventario</h3>
+        <p>Controla el stock de libros, accesorios y otros elementos. El inventario se actualiza automáticamente con
+          cada préstamo y devolución.</p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+          Gestionar Inventario
+        </a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

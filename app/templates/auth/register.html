@@ -3,8 +3,7 @@
 <div class="auth-container">
     <div class="auth-wrapper">
         <div class="auth-branding">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Sena_Colombia_logo.svg/1200px-Sena_Colombia_logo.svg.png"
-                alt="Logo SENA">
+
             <h1>Cree su Cuenta</h1>
             <p>Únase a nuestra plataforma para acceder a todos los recursos y servicios de la biblioteca.</p>
         </div>
@@ -37,18 +36,15 @@
                     {{ form.role.label(class="form-label") }}
                     {{ form.role(class="form-select", id="roleSelect") }}
                 </div>
-                <div id="aprendizFields" style="display: none;">
+                <div id="clienteFields" style="display: none;">
                     <div class="row">
-                        <div class="col-md-6 form-group">
-                            {{ form.ficha.label(class="form-label") }}
-                            {{ form.ficha(class="form-control") }}
-                        </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-12 form-group">
                             {{ form.program_name.label(class="form-label") }}
                             {{ form.program_name(class="form-control") }}
                         </div>
                     </div>
                 </div>
+
                 <div class="form-group">
                     {{ form.password.label(class="form-label") }}
                     {{ form.password(class="form-control") }}
@@ -71,13 +67,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const roleSelect = document.getElementById('roleSelect');
-        const aprendizFields = document.getElementById('aprendizFields');
+        const clienteFields = document.getElementById('clienteFields');
 
         function toggleFields() {
-            if (roleSelect.value === 'aprendiz') {
-                aprendizFields.style.display = 'block';
+            if (roleSelect.value === 'cliente') {
+                clienteFields.style.display = 'block';
             } else {
-                aprendizFields.style.display = 'none';
+                clienteFields.style.display = 'none';
             }
         }
 

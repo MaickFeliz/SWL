@@ -6,7 +6,7 @@
             <div class="card-body p-5">
                 <h2 class="card-title text-center mb-1">Solicitud de Préstamo</h2>
                 <p class="card-text text-center text-muted mb-4">Selecciona el tipo de material que necesitas.</p>
-                
+
                 <form method="POST">
                     <div class="mb-4">
                         <label for="item_type" class="form-label">Tipo de Elemento</label>
@@ -17,8 +17,10 @@
                         </select>
                     </div>
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send-fill me-2"></i>Enviar Solicitud</button>
-                        <a href="{{ url_for('main.instructor_dashboard') }}" class="btn btn-outline-secondary">Volver al Panel</a>
+                        <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-send-fill me-2"></i>Enviar
+                            Solicitud</button>
+                        <a href="{{ url_for('main.premium_dashboard') }}" class="btn btn-outline-secondary">Volver al
+                            Panel</a>
                     </div>
                 </form>
             </div>
