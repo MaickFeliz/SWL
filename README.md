@@ -1,79 +1,59 @@
-# Sistema de Gestión Bibliotecaria
+📚 Sistema de Gestión Bibliotecaria Pro (LMS)
+Solución integral de código abierto para la administración de inventarios, préstamos de equipos y control de acceso en centros educativos y empresariales.
 
-> **Plataforma integral para la administración de préstamos, inventario y control de acceso en ambientes de formación.**
+📋 Descripción General
+Esta plataforma automatiza el flujo de trabajo de bibliotecas y centros de recursos modernos. Diseñada originalmente para gestionar el alto tráfico de usuarios, el sistema permite un control riguroso sobre activos físicos como equipos de cómputo, material bibliográfico y accesorios técnicos, adaptándose a cualquier institución que requiera una gestión de recursos eficiente.
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
-![Flask](https://img.shields.io/badge/Framework-Flask-green.svg)
-![Status](https://img.shields.io/badge/Estado-En_Desarrollo-orange.svg)
+🚀 Características Principales
+👤 Gestión Multitier de Usuarios
+Usuario Estándar: Registro simplificado por perfil (estudiante, empleado, etc.) con límites de solicitud configurables.
 
-## Descripción
-Este sistema automatiza el flujo de trabajo de la biblioteca del SENA, permitiendo gestionar préstamos de equipos de cómputo, libros y accesorios. Incluye un módulo de **Kiosco de Autoservicio** y lógica de roles diferenciada para **Aprendices** e **Instructores**.
+Usuario Premium/Instructor: Acceso a inventario especializado (equipos audiovisuales, herramientas técnicas) y gestión de préstamos grupales.
 
-## Características Principales
+Administrador (SuperUser): Panel de control centralizado para la gestión de inventarios, auditoría de devoluciones y actualización de bases de datos.
 
-### Gestión de Usuarios & Roles
-* **Aprendiz:** Registro con Ficha y Programa. Solicitudes limitadas (1 equipo, Mouses).
-* **Instructor:** Préstamos masivos para ambientes, acceso a inventario especial (VideoBeams, TV, LEGO).
-* **Bibliotecario (Admin):** Panel de control total, aprobación de préstamos, gestión de devoluciones.
+🛠️ Módulos de Operación
+Motor de Préstamos Inteligente: Validación en tiempo real de stock y prevención de duplicados por usuario.
 
-### Módulos del Sistema
-1.  **Préstamos de Cómputo:**
-    * Validación de stock y préstamos duplicados.
-    * Asignación de seriales por parte del bibliotecario.
-2.  **Inventario en Tiempo Real:**
-    * Control de stock (entradas y salidas).
-    * Categorización de items (General vs Instructor).
-3.  **Kiosco "Fast Loan" (Préstamo Rápido):**
-    * Modo para agilizar la fila sin necesidad de login.
-    * Búsqueda por documento de identidad.
-4.  **Control de Visitas:**
-    * Registro de entrada, actividad (Lectura, PC, etc.) y salida.
+Inventario Dinámico: Categorización flexible de ítems (General vs. Especializado) con trazabilidad por seriales.
 
-## Instalación y Puesta en Marcha
+Kiosco "Fast Loan": Interfaz de autoservicio optimizada para agilizar procesos de alta demanda mediante búsqueda por documento de identidad, sin fricción de inicio de sesión.
 
-### 1. Requisitos Previos
-* Python 3.x instalado.
-* Git (opcional).
+Registro de Actividad: Módulo de control de visitas y estadísticas de uso de espacios físicos.
 
-### 2. Configuración del Entorno
-```bash
-# Clonar el repositorio (si aplica) o descargar la carpeta
-cd Biblioteca-SENA
+💻 Instalación y Despliegue
+1. Configuración del Entorno
+Es obligatorio el uso de entornos virtuales para evitar desastres en las dependencias globales de tu sistema.
 
-# Crear entorno virtual (Recomendado)
+Bash
+
+# Clonar y acceder
+git clone https://github.com/tu-usuario/Sistema-Gestion-Bibliotecaria.git
+cd Sistema-Gestion-Bibliotecaria
+
+# Configurar venv
 python -m venv venv
-# Activar: 
-#   Windows: venv\Scripts\activate
-#   Mac/Linux: source venv/bin/activate
+source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt
+2. Ejecución
+El sistema inicializa la base de datos SQLite automáticamente en el primer arranque.
 
-### 3. Ejecución
-# El sistema está configurado para inicializar la base de datos automáticamente en la primera ejecución.
-```bash
+Bash
+
 python run.py
+Local: http://localhost:5000
 
-# Accede en tu navegador a: http://localhost:5000
-# Modo Red Local: El sistema se ejecutará en 0.0.0.0, permitiendo acceso desde otros dispositivos en la misma red WiFi.
+Red Local: Disponible en 0.0.0.0 para acceso desde dispositivos móviles o terminales de kiosco en la misma red.
 
-SuperAdmin - 1000000000,admin123
-Instructor - (Registrar en app),(Personal)
-Aprendiz - (Registrar en app),(Personal)
+📁 Arquitectura del Proyecto
+El software sigue un patrón de diseño modular para facilitar el escalamiento:
 
-#Nota: El usuario Admin se crea automáticamente al iniciar la aplicación por primera vez.
+app/admin/: Lógica de gestión, reportes y aprobaciones.
 
-📂 Estructura del Proyecto
-Biblioteca-SENA/
-├── app/
-│   ├── admin/      # Rutas de gestión y aprobaciones
-│   ├── auth/       # Login y Registro
-│   ├── main/       # Dashboard Instructor/Aprendiz y Kiosco
-│   ├── models.py   # Modelos de Base de Datos (SQLAlchemy)
-│   ├── templates/  # Vistas HTML (Jinja2)
-│   └── static/     # CSS y Estilos
-├── instance/       # Base de datos SQLite (app.db)
-├── run.py          # Punto de entrada
-└── requirements.txt # Lista de dependencias
+app/auth/: Sistema de autenticación y seguridad.
 
-Desarrollado por Nosotros.
+app/main/: Dashboards de usuario y lógica del modo Kiosco.
+
+instance/: Persistencia de datos local.
