@@ -25,6 +25,8 @@ Registro de Actividad: Módulo de control de visitas y estadísticas de uso de e
 1. Configuración del Entorno
 Es obligatorio el uso de entornos virtuales para evitar desastres en las dependencias globales de tu sistema.
 
+```bash
+
 # Clonar y acceder
 git clone https://github.com/tu-usuario/Sistema-Gestion-Bibliotecaria.git
 cd Sistema-Gestion-Bibliotecaria
@@ -35,10 +37,13 @@ source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
 
 # Instalar dependencias
 pip install -r requirements.txt
+```
 2. Ejecución
 El sistema inicializa la base de datos SQLite automáticamente en el primer arranque.
 
+```bash
 python run.py
+```
 Local: http://localhost:5000
 
 Red Local: Disponible en 0.0.0.0 para acceso desde dispositivos móviles o terminales de kiosco en la misma red.
