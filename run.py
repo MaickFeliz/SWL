@@ -5,8 +5,6 @@ app = create_app()
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
-        
         # 1. Crear Admin (Ya lo tenías)
         if not User.query.filter_by(username='admin').first():
             print("Creando superusuario 'admin'...")
@@ -14,7 +12,7 @@ if __name__ == '__main__':
                 username='admin', 
                 document_id='1000000000', 
                 full_name='Administrador Principal', 
-                role='bibliotecario', 
+                role='admin', 
                 phone='0000000000'
             )
             admin.set_password('admin123')

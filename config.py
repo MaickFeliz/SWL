@@ -4,7 +4,8 @@ from datetime import timedelta
 class Config:
     # Seguridad básica
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'clave-secreta-para-desarrollo'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///app.db'
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'instance', 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     

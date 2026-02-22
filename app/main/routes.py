@@ -8,27 +8,44 @@ from app.utils.decorators import role_required
 from datetime import datetime
 
 # app/main/routes.py
-@bp.route('/fast_loan', methods=['POST'])
+@bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
-    document_id = request.form.get('document_id')
-    item_id = request.form.get('item_id')
-    
-    user = User.query.filter_by(document_id=document_id).first()
-    item = Inventory.query.get_or_404(item_id)
-    
-    if not user:
-        flash('Usuario no encontrado. Debes estar registrado para esta acción.', 'danger')
+    if request.method == 'GET':
+        return render_template('main/fast_loan.html')
+
+    if request.form.get('search_doc'):
+        document_id = request.form.get('document_id')
+        user = User.query.filter_by(document_id=document_id).first()
+        if not user:
+            flash('Usuario no encontrado. Debes estar registrado para esta acción.', 'danger')
+            return redirect(url_for('main.fast_loan'))
+        
+        items = Inventory.query.filter(Inventory.category != 'general').all() if user.role == 'premium' else Inventory.query.all()
+        # Admin/staff has access to all, as well as testing. Actually just provide all items.
+        items = Inventory.query.all()
+        return render_template('main/fast_loan.html', user=user, items=items)
+
+    if request.form.get('confirm_loan'):
+        user_id = request.form.get('user_id')
+        item_type = request.form.get('item_type')
+        environment = request.form.get('environment')
+
+        try:
+            if item_type == 'computo':
+                LoanService.create_loan(user_id=user_id, loan_type='computo', item_name='Computador Portátil', quantity=1, environment=environment)
+            else:
+                inventory_id = request.form.get('inventory_id')
+                quantity = int(request.form.get('quantity', 1))
+                item = Inventory.query.get(inventory_id)
+                LoanService.create_loan(user_id=user_id, loan_type='elemento', item_name=item.name, quantity=quantity)
+            
+            flash('Préstamo rápido registrado con éxito.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error al procesar la solicitud. Revise el inventario e intente nuevamente.', 'danger')
+
         return redirect(url_for('main.index'))
-        
-    try:
-        LoanService.create_loan(user.id, 'elemento', item.name, quantity=1)
-        flash('Solicitud rápida creada con éxito. Esperando validación en el mostrador.', 'success')
-    except Exception as e:
-        db.session.rollback()  # ESTO ES VITAL. Si hay un fallo, se revierte la transacción.
-        flash('Error de base de datos al procesar la solicitud. Intenta nuevamente.', 'danger')
-        # app.logger.error(f"Fallo en préstamo rápido: {str(e)}") # Así lo logueas en un sistema real
-        
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.fast_loan'))
 
 @bp.route('/')
 def index():

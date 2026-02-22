@@ -12,20 +12,23 @@ from functools import wraps
 from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
+from app.forms import AdminUserForm, ImportForm
+import pandas as pd
+from werkzeug.utils import secure_filename
 
 # app/admin/routes.py
 @bp.route('/users')
 @role_required('admin')
 def manage_users():
-    # Obtener el número de página de la URL, por defecto la página 1
     page = request.args.get('page', 1, type=int)
-    # Paginar a 10 usuarios por vista
     users_pagination = User.query.paginate(page=page, per_page=10, error_out=False)
     
-    return render_template('admin/users.html', users=users_pagination)
+    form = AdminUserForm()
+    import_form = ImportForm()
+    return render_template('admin/users.html', users=users_pagination, form=form, import_form=import_form)
 
 @bp.route('/users/search')
-@role_required('admin', 'bibliotecario')
+@role_required('admin')
 def search_users():
     search = request.args.get('search')
     if search:
@@ -36,10 +39,41 @@ def search_users():
     else:
         users = User.query.order_by(User.full_name).limit(50).all() # Limitamos a 50 para no saturar
 
-    return render_template('admin/users.html', users=users)
+    form = AdminUserForm()
+    import_form = ImportForm()
+    return render_template('admin/users.html', users=users, form=form, import_form=import_form)
+
+@bp.route('/users/create', methods=['POST'])
+@role_required('admin')
+def create_user():
+    form = AdminUserForm()
+    if form.validate_on_submit():
+        if User.query.filter_by(document_id=form.document_id.data).first() or \
+           User.query.filter_by(email=form.email.data).first():
+            flash('El documento o correo ya está registrado.', 'warning')
+            return redirect(url_for('admin.manage_users'))
+
+        user = User(
+            username=form.email.data,
+            full_name=form.full_name.data,
+            document_id=form.document_id.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            role=form.role.data,
+            program_name=form.program_name.data if form.role.data == 'cliente' else None
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Usuario creado con éxito.', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({field}): {error}", 'danger')
+    return redirect(url_for('admin.manage_users'))
 
 @bp.route('/users/edit/<int:id>', methods=['POST'])
-@role_required('bibliotecario', 'admin')
+@role_required('admin')
 def edit_user(id):
     user = User.query.get_or_404(id)
     user.full_name = request.form.get('full_name')
@@ -48,6 +82,18 @@ def edit_user(id):
     
     db.session.commit()
     flash(f'Usuario {user.full_name} actualizado.', 'success')
+    return redirect(url_for('admin.manage_users'))
+
+@bp.route('/users/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def delete_user(id):
+    if id == current_user.id:
+        flash('No puedes eliminar tu propio usuario.', 'danger')
+        return redirect(url_for('admin.manage_users'))
+    user = User.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Usuario {user.full_name} eliminado.', 'success')
     return redirect(url_for('admin.manage_users'))
 
 @bp.route('/dashboard')
@@ -78,7 +124,7 @@ def admin_dashboard():
     return render_template('admin/dashboard.html', loans=loans, current_status=status_filter, stats=stats, top_items=top_items)
 
 @bp.route('/approve/<int:id>', methods=['POST'])
-@role_required('bibliotecario', 'admin')
+@role_required('bibliotecario')
 def approve(id):
     serial = request.form.get('serial')
     if not serial:
@@ -99,7 +145,7 @@ def approve(id):
     return redirect(url_for('admin.admin_dashboard', status='activo'))
 
 @bp.route('/return/<int:id>')
-@role_required('bibliotecario', 'admin')
+@role_required('bibliotecario')
 def return_item(id):
     loan = Loan.query.get_or_404(id)
     
@@ -118,7 +164,7 @@ def return_item(id):
 
 # GESTIÓN DE INVENTARIO
 @bp.route('/inventory', methods=['GET', 'POST'])
-@role_required('bibliotecario', 'admin')
+@role_required('bibliotecario')
 def inventory_manage():
     if request.method == 'POST':
         name = request.form.get('name')
@@ -135,10 +181,11 @@ def inventory_manage():
         return redirect(url_for('admin.inventory_manage'))
 
     items = Inventory.query.all()
-    return render_template('admin/inventory.html', items=items)
+    import_form = ImportForm()
+    return render_template('admin/inventory.html', items=items, import_form=import_form)
 
 @bp.route('/inventory/update/<int:id>', methods=['POST'])
-@role_required('bibliotecario', 'admin')
+@role_required('bibliotecario')
 def inventory_update(id):
     item = Inventory.query.get_or_404(id)
     action = request.form.get('action') # 'add' o 'remove'
@@ -161,7 +208,7 @@ def inventory_update(id):
     return redirect(url_for('admin.inventory_manage'))
 
 @bp.route('/inventory/delete/<int:id>')
-@role_required('admin')
+@role_required('bibliotecario')
 def inventory_delete(id):
     item = Inventory.query.get_or_404(id)
     db.session.delete(item)
@@ -170,7 +217,7 @@ def inventory_delete(id):
     return redirect(url_for('admin.inventory_manage'))
 
 @bp.route('/inventory/edit_details/<int:id>', methods=['POST'])
-@role_required('bibliotecario', 'admin')
+@role_required('bibliotecario')
 def inventory_edit_details(id):
     item = Inventory.query.get_or_404(id)
     item.name = request.form.get('name')
@@ -179,3 +226,70 @@ def inventory_edit_details(id):
     db.session.commit()
     flash(f'Detalles de "{item.name}" actualizados.', 'success')
     return redirect(url_for('admin.inventory_manage'))
+
+@bp.route('/import', methods=['POST'])
+@role_required('admin')
+def bulk_import():
+    form = ImportForm()
+    if form.validate_on_submit():
+        file = form.file.data
+        filename = secure_filename(file.filename)
+        ext = filename.rsplit('.', 1)[-1].lower()
+        source_type = request.form.get('import_type', 'users')
+        
+        try:
+            if ext == 'csv':
+                df = pd.read_csv(file)
+            else:
+                df = pd.read_excel(file)
+                
+            added = 0
+            if source_type == 'users':
+                for _, row in df.iterrows():
+                    doc = str(row.get('document_id', '')).strip()
+                    email = str(row.get('email', '')).strip()
+                    if not doc or not email or doc == 'nan' or email == 'nan':
+                        continue
+                        
+                    # Verificar si existe en DB
+                    if User.query.filter((User.document_id == doc) | (User.email == email)).first():
+                        continue
+                        
+                    user = User(
+                        username=email,
+                        full_name=str(row.get('full_name', '')),
+                        document_id=doc,
+                        email=email,
+                        phone=str(row.get('phone', '')),
+                        role=str(row.get('role', 'cliente')).lower(),
+                        program_name=str(row.get('program_name', '')) if 'program_name' in row else None
+                    )
+                    user.set_password(str(row.get('password', '12345678')))
+                    db.session.add(user)
+                    added += 1
+            elif source_type == 'inventory':
+                for _, row in df.iterrows():
+                    name = str(row.get('name', '')).strip()
+                    if not name or name == 'nan':
+                        continue
+                    if Inventory.query.filter_by(name=name).first():
+                        continue
+                    qty = int(row.get('total_quantity', 1) if not pd.isna(row.get('total_quantity')) else 1)
+                    item = Inventory(
+                        name=name,
+                        total_quantity=qty,
+                        available_quantity=qty,
+                        category=str(row.get('category', 'general')).lower()
+                    )
+                    db.session.add(item)
+                    added += 1
+            
+            db.session.commit()
+            flash(f'Importación masiva completada: {added} nuevos registros agregados.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al procesar el archivo: revise el formato de las columnas. {str(e)}', 'danger')
+    else:
+        flash('Seleccione un archivo CSV o Excel válido.', 'danger')
+        
+    return redirect(request.referrer or url_for('admin.admin_dashboard'))

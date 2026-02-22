@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from config import Config
 import os
 import logging
@@ -8,15 +9,17 @@ from logging.handlers import RotatingFileHandler
 from flask import session
 
 db = SQLAlchemy()
+migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
-login_manager.login_message = "Inicia sesión para acceder, crack."
+login_manager.login_message = "Por favor, inicie sesión para acceder al sistema."
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
 
     # Configuración del Directorio de Logs

@@ -4,3 +4,6 @@ Flask-Login
 Flask-WTF
 email-validator
 werkzeug
+Flask-Migrate
+pandas
+openpyxl

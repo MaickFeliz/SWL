@@ -19,7 +19,12 @@
             </a>
             <div class="space-x-4">
                 {% if current_user.is_authenticated %}
-                <span>Hola, {{ current_user.nombre }}</span>
+                <span>Hola, {{ current_user.full_name }} ({{ current_user.role|capitalize }})</span>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.manage_users') }}" class="hover:underline">Gestión de T.I</a>
+                {% elif current_user.role == 'bibliotecario' %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="hover:underline">Panel de Préstamos</a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}" class="hover:underline">Cerrar Sesión</a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="hover:underline">Ingresar</a>

@@ -21,7 +21,9 @@ def login():
         login_user(user, remember=False)
         
         if user.role == 'admin':
-            return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('admin.manage_users'))
+        elif user.role == 'bibliotecario':
+            return redirect(url_for('admin.admin_dashboard'))
         elif user.role == 'premium':
             return redirect(url_for('main.premium_dashboard'))
         return redirect(url_for('main.index'))
