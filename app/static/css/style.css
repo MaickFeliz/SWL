@@ -1,29 +1,31 @@
 /* 1. FUENTES Y VARIABLES (Estilo LMS Corporate) */
-/* Cambiamos Poppins por Inter, la tipografía por excelencia del software moderno */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --brand-primary: #0f172a; /* Deep blue/slate */
-    --brand-secondary: #3b82f6; /* Bright blue */
-    --brand-accent: #f59e0b; /* Amber warning */
-    --bg-body: #f1f5f9;
+    --brand-primary: #1e3a8a;
+    /* Deep blue corporate */
+    --brand-secondary: #0f172a;
+    /* Slate / dark text */
+    --brand-accent: #2563eb;
+    /* Corporate bright blue accent */
+    --bg-body: #f8fafc;
     --surface-color: #ffffff;
     --border-color: #e2e8f0;
     --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-    --shadow-md: 0 8px 16px rgba(0,0,0,0.08);
+    --text-secondary: #64748b;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Poppins', -apple-system, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 h1,
@@ -37,18 +39,18 @@ h6 {
     letter-spacing: -0.025em;
 }
 
-/* 2. NAVEGACIÓN (Navbar limpia, adiós degradados fiesteros) */
+/* 2. NAVEGACIÓN (Navbar limpia corporativa) */
 .navbar {
-    background-color: var(--brand-primary) !important;
+    background-color: var(--brand-secondary) !important;
     box-shadow: var(--shadow-sm);
-    padding: 0.75rem 0;
-    border-bottom: 3px solid var(--brand-secondary);
+    padding: 0.8rem 0;
+    border-bottom: 2px solid var(--brand-accent);
 }
 
 .navbar-brand {
     font-weight: 600;
     font-size: 1.25rem;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.01em;
 }
 
 /* 3. TARJETAS (Estructura de Panel/Dashboard real) */
@@ -60,10 +62,9 @@ h6 {
     transition: box-shadow 0.2s ease-in-out;
 }
 
-/* Nada de levitar como si fuera magia, solo resaltamos la sombra */
 .card:hover {
     box-shadow: var(--shadow-md);
-    transform: none;
+    transform: translateY(-1px);
 }
 
 .card-header {
@@ -74,49 +75,50 @@ h6 {
     color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
 /* 4. BOTONES (Serios, de acción corporativa) */
 .btn {
     border-radius: var(--radius-sm);
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.2rem;
     font-weight: 500;
     font-size: 0.875rem;
-    letter-spacing: 0;
+    letter-spacing: 0.02em;
     transition: all 0.2s;
     border: 1px solid transparent;
-    box-shadow: var(--shadow-sm);
 }
 
 .btn:hover {
     transform: none;
-    filter: brightness(0.95);
+    filter: brightness(0.9);
 }
 
 .btn-primary {
-    background-color: var(--brand-primary);
-    border-color: var(--brand-primary);
+    background-color: var(--brand-accent);
+    border-color: var(--brand-accent);
 }
 
 .btn-success {
-    background-color: var(--brand-secondary);
-    border-color: var(--brand-secondary);
+    background-color: #059669;
+    /* Darker emerald */
+    border-color: #059669;
 }
 
 .btn-warning {
-    background-color: var(--brand-accent);
-    border-color: var(--brand-accent);
+    background-color: #d97706;
+    /* Darker amber */
+    border-color: #d97706;
     color: white;
 }
 
 .btn-outline-primary {
-    color: var(--brand-primary);
-    border-color: var(--brand-primary);
+    color: var(--brand-accent);
+    border-color: var(--brand-accent);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--brand-primary);
+    background-color: var(--brand-accent);
     color: white;
 }
 
@@ -139,11 +141,11 @@ h6 {
 
 .table thead th {
     border-bottom: 1px solid var(--border-color);
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 1.5rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     letter-spacing: 0.05em;
 }
 
@@ -244,229 +246,122 @@ h6 {
 
 
 /* 8. VISTAS DE AUTENTICACIÓN (Login y Registro Corporativo) */
-
 .auth-container {
-
     display: flex;
-
     min-height: 100vh;
-
     width: 100%;
-
     align-items: center;
-
     justify-content: center;
-
     background-color: var(--bg-body);
-
 }
-
-
 
 .auth-wrapper {
-
     display: grid;
-
     grid-template-columns: 1fr 1.25fr;
-
     max-width: 1000px;
-
     width: 100%;
-
     background-color: var(--surface-color);
-
     box-shadow: var(--shadow-md);
-
     border-radius: var(--radius-lg);
-
     overflow: hidden;
-
     border: 1px solid var(--border-color);
-
 }
-
-
 
 .auth-branding {
-
-    background-color: var(--brand-primary);
-
+    background-color: var(--brand-secondary);
     color: white;
-
     padding: 3rem;
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
-
     align-items: flex-start;
-
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-
 
 .auth-branding img {
-
     max-width: 120px;
-
     margin-bottom: 1.5rem;
-
 }
-
-
 
 .auth-branding h1 {
-
     font-size: 1.75rem;
-
     font-weight: 700;
-
     color: white;
-
     margin-bottom: 0.5rem;
-
+    letter-spacing: -0.02em;
 }
-
-
 
 .auth-branding p {
-
-    font-size: 1rem;
-
-    color: rgba(255, 255, 255, 0.8);
-
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
     max-width: 300px;
-
+    line-height: 1.6;
 }
-
-
 
 .auth-form-container {
-
     padding: 3rem;
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
-
 }
-
-
 
 .auth-form-container h2 {
-
     font-size: 1.5rem;
-
     font-weight: 600;
-
     margin-bottom: 0.5rem;
-
     color: var(--text-primary);
-
 }
-
-
 
 .auth-form-container .form-text {
-
     margin-bottom: 2rem;
-
     font-size: 0.9rem;
-
     color: var(--text-secondary);
-
 }
-
-
 
 .auth-form-container .form-group {
-
     margin-bottom: 1.25rem;
-
 }
-
-
 
 .auth-form-container .form-label {
-
     font-weight: 500;
-
-    font-size: 0.875rem;
-
+    font-size: 0.85rem;
     margin-bottom: 0.5rem;
-
     color: var(--text-secondary);
-
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
-
-
 
 .auth-form-container .btn {
-
     width: 100%;
-
     padding: 0.75rem;
-
     font-size: 1rem;
-
+    margin-top: 1rem;
 }
-
-
 
 .auth-form-container .text-center a {
-
-    color: var(--brand-secondary);
-
+    color: var(--brand-accent);
     font-weight: 500;
-
     text-decoration: none;
-
     transition: color 0.2s;
-
 }
-
-
 
 .auth-form-container .text-center a:hover {
-
     color: var(--brand-primary);
-
     text-decoration: underline;
-
 }
 
-
-
 @media (max-width: 768px) {
-
     .auth-wrapper {
-
         grid-template-columns: 1fr;
-
     }
-
-
 
     .auth-branding {
-
         display: none;
-
-        /* Ocultamos el branding en pantallas pequeñas para dar prioridad al formulario */
-
     }
-
-
 
     .auth-form-container {
-
-        padding: 2rem;
-
+        padding: 2.5rem 1.5rem;
     }
-
 }
 
 .bg-primary-soft {
@@ -480,16 +375,16 @@ h6 {
 }
 
 .icon-square {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 0.75rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
 }
 
 .bg-info-soft {
     background-color: rgba(13, 202, 240, 0.1);
     color: #0c5460;
 }
+
 .border-info-soft {
     border-color: rgba(13, 202, 240, 0.2);
 }
-

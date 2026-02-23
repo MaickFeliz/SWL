@@ -82,7 +82,8 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Rol del Sistema</label>
-                                            <select name="role" class="form-select">
+                                            <select name="role" class="form-select" id="roleSelect{{ user.id }}"
+                                                onchange="toggleProgramField({{ user.id }})">
                                                 <option value="cliente" {{ 'selected' if user.role=='cliente' }}>Cliente
                                                     / Usuario</option>
                                                 <option value="premium" {{ 'selected' if user.role=='premium' }}>Staff /
@@ -90,6 +91,12 @@
                                                 <option value="bibliotecario" {{ 'selected' if
                                                     user.role=='bibliotecario' }}>Bibliotecario</option>
                                             </select>
+                                        </div>
+                                        <div class="mb-3" id="programGroup{{ user.id }}"
+                                            style="display: {{ 'block' if user.role == 'cliente' else 'none' }};">
+                                            <label class="form-label">Código de Grupo</label>
+                                            <input type="text" name="program_name" class="form-control"
+                                                value="{{ user.program_name or '' }}" placeholder="Opcional">
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -139,6 +146,21 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    function toggleProgramField(userId) {
+        var roleSelect = document.getElementById('roleSelect' + userId);
+        var programGroup = document.getElementById('programGroup' + userId);
+        if (roleSelect && programGroup) {
+            if (roleSelect.value === 'cliente') {
+                programGroup.style.display = 'block';
+            } else {
+                programGroup.style.display = 'none';
+                programGroup.querySelector('input').value = '';
+            }
+        }
+    }
+</script>
 
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1">

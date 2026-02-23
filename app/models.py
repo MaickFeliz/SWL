@@ -55,7 +55,7 @@ class Loan(db.Model):
     quantity = db.Column(db.Integer, default=1) # Para mouses o cables
     
     # Contexto (Puntos 2 y 6)
-    environment = db.Column(db.String(50), nullable=True) # Ambiente de formación
+    environment = db.Column(db.String(50), nullable=True) # Área o Sala
 
     # Tiempos
     request_date = db.Column(db.DateTime, default=datetime.utcnow) # Fecha automática solicitud

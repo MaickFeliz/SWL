@@ -36,6 +36,7 @@ python -m venv venv
 source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
 
 # Instalar dependencias
+python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 2. Ejecución
