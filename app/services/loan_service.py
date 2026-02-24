@@ -29,8 +29,8 @@ class LoanService:
     def approve_loan(loan_id, item_code):
         loan = Loan.query.get_or_404(loan_id)
         
-        # Validar que si piden más de 1 equipo, se ingresen todos los seriales separados por coma
-        if loan.quantity > 1 and item_code:
+        # CORRECCIÓN: Solo exigir todos los seriales si es un equipo de cómputo
+        if loan.loan_type == 'computo' and loan.quantity > 1 and item_code:
             seriales = [s.strip() for s in item_code.split(',') if s.strip()]
             if len(seriales) != loan.quantity:
                 return False, f"Se solicitaron {loan.quantity} equipos, pero ingresaste {len(seriales)} serial(es)."
@@ -46,6 +46,10 @@ class LoanService:
         loan = Loan.query.get_or_404(loan_id)
         if loan.status == 'devuelto':
             return False, "El préstamo ya fue devuelto."
+            
+        # NUEVO: Congelar la multa si el préstamo estaba atrasado
+        if loan.is_overdue:
+            loan.final_penalty = loan.penalty_fee
             
         loan.status = 'devuelto'
         loan.return_date = datetime.utcnow()

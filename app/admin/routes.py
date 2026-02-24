@@ -127,17 +127,19 @@ def admin_dashboard():
 @role_required('bibliotecario')
 def approve(id):
     serial = request.form.get('serial')
-    if not serial:
-        flash('Falta el serial o código del elemento', 'danger')
-        return redirect(url_for('admin.admin_dashboard'))
-        
     loan = Loan.query.get_or_404(id)
     
+    # CORRECCIÓN: Solo exigir serial obligatoriamente si es equipo o libro
+    if loan.loan_type in ['computo', 'libro'] and not serial:
+        flash('Falta el serial o código del elemento', 'danger')
+        return redirect(url_for('admin.admin_dashboard', status='pendiente'))
+        
+    # Restar inventario si es un elemento
     if loan.loan_type == 'elemento':
         success, msg = InventoryService.deduct_stock(loan.item_name, loan.quantity)
         if not success:
             flash(msg, 'danger')
-            return redirect(url_for('admin.admin_dashboard'))
+            return redirect(url_for('admin.admin_dashboard', status='pendiente'))
 
     success, msg = LoanService.approve_loan(id, serial)
     

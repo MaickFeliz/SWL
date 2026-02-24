@@ -64,6 +64,9 @@ class Loan(db.Model):
     
     status = db.Column(db.String(20), default='pendiente') # pendiente, activo, devuelto, rechazado, atrasado
     observation = db.Column(db.Text, nullable=True) # Por si devuelven algo dañado
+    
+    # NUEVO: Aquí guardaremos la multa final congelada
+    final_penalty = db.Column(db.Float, default=0.0) 
 
     requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
 
@@ -81,7 +84,7 @@ class Loan(db.Model):
             days_late = (datetime.utcnow() - self.due_date).days
             # Evita cobros negativos si apenas es el mismo día
             if days_late > 0:
-                return days_late * 5000.0
+                return days_late * 100.0
         return 0.0
 
 # 4. USO DE BIBLIOTECA (Registro de visitas)
