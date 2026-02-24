@@ -30,7 +30,7 @@
                 <td>{{ loan.id }}</td>
                 <td>{{ loan.requester.username }}</td>
                 <td>{{ loan.requester.role }}</td>
-                <td>{{ loan.item_type }}</td>
+                <td>{{ loan.item_name }}</td>
                 <td>{{ loan.request_date.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td>
                     <span class="badge bg-{{ 'warning' if loan.status == 'pendiente' else 'success' }}">
@@ -48,7 +48,7 @@
                         <button type="submit" class="btn btn-danger btn-sm">Rechazar</button>
                     </form>
                     {% else %}
-                    <strong>{{ loan.assigned_serial }}</strong>
+                    <strong>{{ loan.item_code }}</strong>
                     {% endif %}
                 </td>
             </tr>
