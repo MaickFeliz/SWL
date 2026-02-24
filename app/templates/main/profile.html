@@ -62,13 +62,15 @@
                             <span class="text-muted">N/A</span>
                             {% endif %}
                         </td>
-                        <td class="pe-4 text-end">
-                            {% if loan.status != 'devuelto' and loan.is_overdue and loan.penalty_fee > 0 %}
-                            <span class="text-danger fw-bold">${{ "{:,.0f}".format(loan.penalty_fee) }} COP</span>
+                        <td>
+                            {% if loan.status == 'devuelto' and loan.final_penalty > 0 %}
+                                <span class="text-danger fw-bold">${{ "{:,.0f}".format(loan.final_penalty) }}</span>
+                            {% elif loan.is_overdue and loan.status != 'devuelto' %}
+                                <span class="text-danger fw-bold">${{ "{:,.0f}".format(loan.penalty_fee) }}</span>
                             {% elif loan.status == 'devuelto' %}
-                            <span class="text-muted">-</span>
+                                <span class="text-success">Al día</span>
                             {% else %}
-                            <span class="text-success">$0</span>
+                                <span class="text-muted">-</span>
                             {% endif %}
                         </td>
                     </tr>

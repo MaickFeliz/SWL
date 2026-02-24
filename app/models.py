@@ -79,12 +79,16 @@ class Loan(db.Model):
 
     @property
     def penalty_fee(self):
-        """Calcula una multa de $5,000 COP por cada día de retraso (Ajustar según necesidad)."""
+        """Calcula una multa de $5,000 COP por cada día de retraso (Exclusivo para libros)."""
+        # NUEVA REGLA: Si no es un libro, no hay multa económica.
+        if self.loan_type != 'libro':
+            return 0.0
+
         if self.is_overdue:
             days_late = (datetime.utcnow() - self.due_date).days
             # Evita cobros negativos si apenas es el mismo día
             if days_late > 0:
-                return days_late * 100.0
+                return days_late * 5000.0
         return 0.0
 
 # 4. USO DE BIBLIOTECA (Registro de visitas)

@@ -2,11 +2,9 @@
 {% block content %}
 
 <div class="print-header">
-    <h1>LMS - Library Management System</h1>
-    <p>Reporte de Control de Préstamos</p>
-    <p>Fecha:
-        <script>document.write(new Date().toLocaleDateString())</script>
-    </p>
+    <h1>SWL - Reporte Administrativo</h1>
+    <p>Reporte de Control de Préstamos e Inventario</p>
+    <p>Fecha: <script>document.write(new Date().toLocaleDateString())</script></p>
 </div>
 
 <div class="no-print mb-4">
@@ -156,13 +154,14 @@
                             <div class="d-flex align-items-center gap-2">
                                 <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST"
                                     class="d-flex align-items-center mb-0">
-                                    <input type="text" name="serial" placeholder="Ingresar Placa/Serial" required
+                                    <input type="text" name="serial" placeholder="Ingresar Placa/Serial" 
+                                        {% if loan.loan_type in ['computo', 'libro'] %}required{% endif %}
                                         class="form-control form-control-sm me-2">
                                     <button type="submit" class="btn btn-success btn-sm flex-shrink-0"><i
                                             class="bi bi-check-circle-fill me-1"></i>Aprobar</button>
                                 </form>
                                 <form action="{{ url_for('admin.reject_loan', id=loan.id) }}" method="POST" class="mb-0">
-                                    <button type="submit" class="btn btn-danger btn-sm flex-shr ink-0"><i
+                                    <button type="submit" class="btn btn-danger btn-sm flex-shrink-0"><i
                                             class="bi bi-x-circle-fill me-1"></i>Rechazar</button>
                                 </form>
                             </div>

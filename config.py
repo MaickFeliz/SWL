@@ -13,8 +13,8 @@ class Config:
     LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'library.log')
 
     # Identidad Corporativa
-    APP_NAME = "LMS - Library Management System"
-    LIBRARY_NAME = "LMS"
+    APP_NAME = "SWL"
+    LIBRARY_NAME = "SWL"
     
     # Configuración de Roles estandarizada
     USER_ROLES = {

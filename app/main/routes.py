@@ -105,6 +105,16 @@ def request_laptop():
 @bp.route('/request/accessory', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_accessory():
+    active_accessories_count = Loan.query.filter(
+        Loan.user_id == current_user.id,
+        Loan.loan_type == 'elemento',
+        Loan.status.in_(['pendiente', 'activo', 'atrasado'])
+    ).count()
+
+    if active_accessories_count >= 2:
+        flash('Has alcanzado el límite de 2 accesorios simultáneos en préstamo. Devuelve alguno antes de pedir otro.', 'warning')
+        return redirect(url_for('main.index'))
+    
     if current_user.role == 'cliente':
         available_items = Inventory.query.filter_by(category='general').all()
     else:
@@ -119,7 +129,6 @@ def request_accessory():
             flash('Stock insuficiente o ítem inválido.', 'danger')
             return redirect(url_for('main.request_accessory'))
 
-        # El stock se restará cuando el admin apruebe el préstamo
         LoanService.create_loan(
             user_id=current_user.id,
             loan_type='elemento',

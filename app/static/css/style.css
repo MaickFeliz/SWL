@@ -1,390 +1,215 @@
-/* 1. FUENTES Y VARIABLES (Estilo LMS Corporate) */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* Biblioteca_SW/app/static/css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    --brand-primary: #1e3a8a;
-    /* Deep blue corporate */
-    --brand-secondary: #0f172a;
-    /* Slate / dark text */
-    --brand-accent: #2563eb;
-    /* Corporate bright blue accent */
-    --bg-body: #f8fafc;
+    /* Nueva Paleta Premium (LMS Library) */
+    --brand-primary: #472825;    /* Dark Coffee - Texto principal y Navbar */
+    --brand-secondary: #96786F;  /* Muted Mocha - Textos secundarios */
+    --brand-accent: #D3AB80;     /* Caramel - Botones primarios y acentos */
+    --surface-alt: #FDE4BC;      /* Light Sand - Fondos de tarjetas secundarias o hover */
+    --bg-body: #FFF4E2;          /* Cream - Fondo general de la aplicación */
+    
+    /* Variables estructurales */
     --surface-color: #ffffff;
-    --border-color: #e2e8f0;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 10px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --border-color: rgba(150, 120, 111, 0.2);
+    --text-primary: #472825;
+    --text-secondary: #7a5e55;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 2px 4px rgba(71, 40, 37, 0.04);
+    --shadow-md: 0 10px 15px -3px rgba(71, 40, 37, 0.08), 0 4px 6px -2px rgba(71, 40, 37, 0.04);
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
-    font-family: 'Poppins', -apple-system, sans-serif;
+    /* Cambiamos Poppins por Plus Jakarta Sans, mucho más limpia para UI moderna */
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: 600;
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
 }
 
-/* 2. NAVEGACIÓN (Navbar limpia corporativa) */
-.navbar {
-    background-color: var(--brand-secondary) !important;
-    box-shadow: var(--shadow-sm);
-    padding: 0.8rem 0;
-    border-bottom: 2px solid var(--brand-accent);
+/* 2. NAVEGACIÓN (Estilo Premium) */
+.custom-navbar {
+    background-color: var(--surface-color) !important;
+    box-shadow: 0 4px 20px rgba(71, 40, 37, 0.05);
+    padding: 1rem 0;
+    border-bottom: 3px solid var(--brand-accent);
 }
 
 .navbar-brand {
-    font-weight: 600;
-    font-size: 1.25rem;
-    letter-spacing: -0.01em;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--brand-primary) !important;
+    letter-spacing: -0.02em;
 }
 
-/* 3. TARJETAS (Estructura de Panel/Dashboard real) */
+.nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 600;
+    transition: var(--transition-fast);
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-sm);
+}
+
+.nav-link:hover {
+    color: var(--brand-primary) !important;
+    background-color: var(--surface-alt);
+}
+
+/* 3. TARJETAS (Glass/Soft style) */
 .card {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     background: var(--surface-color);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease-in-out;
+    transition: var(--transition-fast);
+    overflow: hidden;
 }
 
 .card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    border-color: var(--brand-accent);
 }
 
 .card-header {
-    background-color: var(--surface-color);
-    border-bottom: 1px solid var(--border-color);
-    font-weight: 600;
-    padding: 1rem 1.5rem;
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.8rem;
+    background-color: transparent;
+    border-bottom: 1px dashed var(--border-color);
+    font-weight: 700;
+    padding: 1.25rem 1.5rem;
+    color: var(--brand-primary);
 }
 
-/* 4. BOTONES (Serios, de acción corporativa) */
+/* 4. BOTONES (Premium Action) */
 .btn {
     border-radius: var(--radius-sm);
-    padding: 0.5rem 1.2rem;
-    font-weight: 500;
-    font-size: 0.875rem;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     letter-spacing: 0.02em;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+    transition: var(--transition-fast);
+    border: none;
+    box-shadow: var(--shadow-sm);
 }
 
 .btn:hover {
-    transform: none;
-    filter: brightness(0.9);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-primary {
     background-color: var(--brand-accent);
-    border-color: var(--brand-accent);
+    color: var(--brand-primary);
 }
 
-.btn-success {
-    background-color: #059669;
-    /* Darker emerald */
-    border-color: #059669;
+.btn-primary:hover {
+    background-color: #c2996d;
+    color: var(--brand-primary);
 }
 
-.btn-warning {
-    background-color: #d97706;
-    /* Darker amber */
-    border-color: #d97706;
-    color: white;
+.btn-dark {
+    background-color: var(--brand-primary);
+    color: var(--surface-color);
 }
 
-.btn-outline-primary {
-    color: var(--brand-accent);
-    border-color: var(--brand-accent);
+.btn-dark:hover {
+    background-color: #361e1b;
 }
 
-.btn-outline-primary:hover {
-    background-color: var(--brand-accent);
-    color: white;
-}
+.btn-success { background-color: #7b966f; color: white; }
+.btn-danger { background-color: #c46c6c; color: white; }
+.btn-warning { background-color: var(--brand-accent); color: var(--brand-primary); }
 
-/* 5. TABLAS (Data Grid estilo SaaS) */
+/* 5. TABLAS (Grid moderno y legible) */
 .table-responsive {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     background: var(--surface-color);
     box-shadow: var(--shadow-sm);
 }
 
-.table {
-    margin-bottom: 0;
-    font-size: 0.875rem;
-}
-
-.table thead {
-    background-color: var(--bg-body);
-}
+.table { margin-bottom: 0; }
 
 .table thead th {
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.5rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    background-color: var(--bg-body);
+    border-bottom: 2px solid var(--border-color);
+    padding: 1.2rem 1.5rem;
+    font-weight: 700;
+    color: var(--brand-secondary);
     text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .table tbody td {
-    padding: 1rem 1.5rem;
+    padding: 1.2rem 1.5rem;
     vertical-align: middle;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-primary);
-}
-
-/* 6. FORMULARIOS (Inputs limpios y cuadrados) */
-.form-control,
-.form-select {
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    background-color: var(--surface-color);
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--brand-secondary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-}
-
-/* 7. ETIQUETAS (Badges minimalistas) */
-.badge {
-    border-radius: var(--radius-sm);
-    padding: 0.35em 0.65em;
+    font-size: 0.9rem;
     font-weight: 500;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
 }
 
-/* MODO IMPRESIÓN (Intacto y funcional) */
-@media print {
-
-    .no-print,
-    nav,
-    .btn,
-    form {
-        display: none !important;
-    }
-
-    body {
-        background: white;
-        font-family: serif;
-        color: black;
-    }
-
-    .container {
-        width: 100%;
-        max-width: 100%;
-    }
-
-    .card {
-        border: 1px solid black;
-        box-shadow: none;
-        border-radius: 0;
-    }
-
-    .card-header {
-        background: none;
-        color: black;
-        border-bottom: 1px solid black;
-    }
-
-    table {
-        width: 100%;
-        border: 1px solid black;
-        border-collapse: collapse;
-    }
-
-    th,
-    td {
-        border: 1px solid black;
-        padding: 5px;
-    }
-
-    .print-header {
-        display: block !important;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-}
-
-
-
-.print-header {
-
-    display: none;
-
-}
-
-
-
-/* 8. VISTAS DE AUTENTICACIÓN (Login y Registro Corporativo) */
-.auth-container {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
+.table-hover tbody tr:hover {
     background-color: var(--bg-body);
 }
 
-.auth-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1.25fr;
-    max-width: 1000px;
-    width: 100%;
-    background-color: var(--surface-color);
-    box-shadow: var(--shadow-md);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-}
-
-.auth-branding {
-    background-color: var(--brand-secondary);
-    color: white;
-    padding: 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.auth-branding img {
-    max-width: 120px;
-    margin-bottom: 1.5rem;
-}
-
-.auth-branding h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
-}
-
-.auth-branding p {
+/* 6. FORMULARIOS */
+.form-control, .form-select {
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border-color);
+    padding: 0.7rem 1rem;
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 300px;
-    line-height: 1.6;
-}
-
-.auth-form-container {
-    padding: 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.auth-form-container h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
-.auth-form-container .form-text {
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.auth-form-container .form-group {
-    margin-bottom: 1.25rem;
-}
-
-.auth-form-container .form-label {
+    background-color: var(--bg-body);
     font-weight: 500;
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.auth-form-container .btn {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    margin-top: 1rem;
-}
-
-.auth-form-container .text-center a {
-    color: var(--brand-accent);
-    font-weight: 500;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.auth-form-container .text-center a:hover {
     color: var(--brand-primary);
-    text-decoration: underline;
+    transition: var(--transition-fast);
 }
 
-@media (max-width: 768px) {
-    .auth-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    .auth-branding {
-        display: none;
-    }
-
-    .auth-form-container {
-        padding: 2.5rem 1.5rem;
-    }
+.form-control:focus, .form-select:focus {
+    border-color: var(--brand-accent);
+    background-color: var(--surface-color);
+    box-shadow: 0 0 0 4px rgba(211, 171, 128, 0.2);
 }
 
-.bg-primary-soft {
-    background-color: rgba(0, 50, 77, 0.1);
-    color: var(--brand-primary);
+/* 7. BADGES / ETIQUETAS */
+.badge {
+    border-radius: 20px;
+    padding: 0.4em 0.8em;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+}
+.bg-warning { background-color: var(--surface-alt) !important; color: var(--brand-primary) !important; }
+.bg-primary { background-color: var(--brand-accent) !important; color: var(--brand-primary) !important; }
+.bg-success { background-color: #e5f0e1 !important; color: #436334 !important; }
+.bg-danger { background-color: #fce8e8 !important; color: #a13d3d !important; }
+.bg-secondary { background-color: var(--border-color) !important; color: var(--brand-secondary) !important; }
+
+/* 8. TOAST NOTIFICATIONS */
+.toast {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md) !important;
+    border: none;
+    overflow: hidden;
 }
 
-.bg-secondary-soft {
-    background-color: rgba(108, 117, 125, 0.1);
-    color: var(--text-secondary);
+/* MODO IMPRESIÓN */
+@media print {
+    .no-print, nav, .btn, form { display: none !important; }
+    body { background: white; color: black; }
+    .card { border: none; box-shadow: none; border-radius: 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
 }
-
-.icon-square {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.75rem;
-}
-
-.bg-info-soft {
-    background-color: rgba(13, 202, 240, 0.1);
-    color: #0c5460;
-}
-
-.border-info-soft {
-    border-color: rgba(13, 202, 240, 0.2);
-}
+.print-header { display: none; }
