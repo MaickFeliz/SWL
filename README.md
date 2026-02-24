@@ -1,4 +1,4 @@
-# Sistema de Gestión Bibliotecaria Pro (LMS)
+# Sistema de Gestión Bibliotecaria (LMS)
 Solución integral de código abierto para la administración de inventarios, préstamos de equipos y control de acceso en centros educativos y empresariales.
 
 ## Descripción General
