@@ -1,4 +1,4 @@
-# Sistema de Gestión Bibliotecaria (LMS)
+# Sistema de Gestión Bibliotecaria
 Solución integral de código abierto para la administración de inventarios, préstamos de equipos y control de acceso en centros educativos y empresariales.
 
 ## Descripción General
@@ -59,3 +59,4 @@ app/auth/: Sistema de autenticación y seguridad.
 app/main/: Dashboards de usuario y lógica del modo Kiosco.
 
 instance/: Persistencia de datos local.
+
