@@ -28,12 +28,19 @@ class LoanService:
     @staticmethod
     def approve_loan(loan_id, item_code):
         loan = Loan.query.get_or_404(loan_id)
+        
+        # Validar que si piden más de 1 equipo, se ingresen todos los seriales separados por coma
+        if loan.quantity > 1 and item_code:
+            seriales = [s.strip() for s in item_code.split(',') if s.strip()]
+            if len(seriales) != loan.quantity:
+                return False, f"Se solicitaron {loan.quantity} equipos, pero ingresaste {len(seriales)} serial(es)."
+
         loan.item_code = item_code
         loan.status = 'activo'
         loan.approval_date = datetime.utcnow()
         db.session.commit()
-        return loan
-
+        return True, "Préstamo aprobado correctamente."
+        
     @staticmethod
     def return_loan(loan_id):
         loan = Loan.query.get_or_404(loan_id)
@@ -48,7 +55,19 @@ class LoanService:
     @staticmethod
     def check_overdue_loans():
         """
-        Marca como 'atrasado' los préstamos activos que superen un tiempo determinado (ej. 24h).
+        Marca como 'atrasado' los préstamos activos que superen su fecha límite.
+        Esta función ahora sí hace el trabajo.
         """
-        # TODO: Implementar lógica de cronjob/tiempo
-        pass
+        # Buscamos todos los préstamos activos cuya fecha de vencimiento ya pasó
+        overdue_loans = Loan.query.filter(Loan.status == 'activo', Loan.due_date < datetime.utcnow()).all()
+        
+        count = 0
+        for loan in overdue_loans:
+            loan.status = 'atrasado'
+            count += 1
+            
+        # Solo hacemos commit si realmente hubo préstamos que actualizar
+        if count > 0:
+            db.session.commit()
+            
+        return count

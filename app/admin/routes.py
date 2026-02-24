@@ -8,7 +8,7 @@ from app.models import Loan, User, Inventory
 from datetime import datetime
 from sqlalchemy import or_
 from functools import wraps
-
+from sqlalchemy import func
 from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
@@ -99,6 +99,8 @@ def delete_user(id):
 @bp.route('/dashboard')
 @role_required('bibliotecario', 'admin')
 def admin_dashboard():
+    LoanService.check_overdue_loans()
+    
     status_filter = request.args.get('status', 'pendiente')
     
     pending_count = Loan.query.filter_by(status='pendiente').count()
@@ -106,8 +108,6 @@ def admin_dashboard():
     returned_count = Loan.query.filter_by(status='devuelto').count()
     atrasado_count = Loan.query.filter_by(status='atrasado').count()
     
-    # Items más solicitados (agrupando por nombre en Python o SQL simplificado)
-    from sqlalchemy import func
     top_items = db.session.query(Loan.item_name, func.count(Loan.id).label('total')).group_by(Loan.item_name).order_by(func.count(Loan.id).desc()).limit(5).all()
 
     query = Loan.query.filter(Loan.status == status_filter)
@@ -133,23 +133,26 @@ def approve(id):
         
     loan = Loan.query.get_or_404(id)
     
-    # Restar inventario si es un elemento
     if loan.loan_type == 'elemento':
         success, msg = InventoryService.deduct_stock(loan.item_name, loan.quantity)
         if not success:
             flash(msg, 'danger')
             return redirect(url_for('admin.admin_dashboard'))
 
-    LoanService.approve_loan(id, serial)
-    flash('Préstamo aprobado correctamente', 'success')
-    return redirect(url_for('admin.admin_dashboard', status='activo'))
+    success, msg = LoanService.approve_loan(id, serial)
+    
+    if success:
+        flash(msg, 'success')
+        return redirect(url_for('admin.admin_dashboard', status='activo'))
+    else:
+        flash(msg, 'danger')
+        return redirect(url_for('admin.admin_dashboard', status='pendiente'))
 
 @bp.route('/return/<int:id>')
 @role_required('bibliotecario')
 def return_item(id):
     loan = Loan.query.get_or_404(id)
     
-    # LOGICA DE RESTOCK
     if loan.loan_type == 'elemento' and loan.status != 'devuelto':
         InventoryService.add_stock(loan.item_name, loan.quantity)
 
