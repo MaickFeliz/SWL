@@ -7,7 +7,7 @@ from datetime import datetime
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# 1. REGISTRO (Clientes y Premium)
+#REGISTRO (Clientes y Premium)
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False) # Para login
@@ -31,7 +31,7 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Para manejar el inventario (Punto 3: Mouse, VideoBeam, etc.)
+# Para manejar el inventario
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True) # Ej: Mouse, VideoBeam, HDMI
@@ -41,7 +41,7 @@ class Inventory(db.Model):
     # Tipo de item para filtrar qué pueden pedir los clientes vs premium
     category = db.Column(db.String(20), default='general') # 'general', 'premium_only', 'lego'
 
-# 2, 3, 5 y 6. PRÉSTAMOS (Unificamos lógica pero con campos flexibles)
+    #PRÉSTAMOS (Unificamos lógica pero con campos flexibles)
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -51,10 +51,9 @@ class Loan(db.Model):
     
     # Detalles del elemento
     item_name = db.Column(db.String(100), nullable=False) # Nombre del equipo o Título del libro
-    item_code = db.Column(db.String(50), nullable=True) # Serial del PC o Código del libro
+    item_code = db.Column(db.Text, nullable=True) # Serial del PC o Código del libro
     quantity = db.Column(db.Integer, default=1) # Para mouses o cables
-    
-    # Contexto (Puntos 2 y 6)
+
     environment = db.Column(db.String(50), nullable=True) # Área o Sala
 
     # Tiempos

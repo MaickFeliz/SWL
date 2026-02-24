@@ -162,7 +162,19 @@ def return_item(id):
 
     return redirect(url_for('admin.admin_dashboard', status='devuelto'))
 
-# GESTIÓN DE INVENTARIO
+@bp.route('/reject/<int:id>', methods=['POST'])
+@role_required('bibliotecario')
+def reject_loan(id):
+    loan = Loan.query.get_or_404(id)
+    if loan.status == 'pendiente':
+        loan.status = 'rechazado'
+        loan.observation = 'Rechazado por el bibliotecario.' 
+        db.session.commit()
+        flash('Solicitud rechazada con éxito. A otra cosa.', 'success')
+    else:
+        flash('Solo puedes rechazar solicitudes que estén pendientes.', 'warning')
+    return redirect(url_for('admin.admin_dashboard', status='pendiente'))
+
 @bp.route('/inventory', methods=['GET', 'POST'])
 @role_required('bibliotecario')
 def inventory_manage():

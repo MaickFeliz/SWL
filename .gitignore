@@ -1,4 +1,4 @@
-# Entorno virtual (lo que casi rompe tu PC hace un momento)
+# Entorno virtual
 venv/
 env/
 .venv/
@@ -7,8 +7,8 @@ env/
 __pycache__/
 *.py[cod]
 
-# Configuración de tu editor (no nos interesa tu tema de VS Code)
+# Configuración de tu editor
 .vscode/
 
-# Secretos que NO debes subir si no quieres que te hackeen
+# Secretos
 .env

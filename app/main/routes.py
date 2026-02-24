@@ -82,12 +82,12 @@ def request_laptop():
 
         active_loans_query = Loan.query.filter(
             Loan.user_id == current_user.id,
-            Loan.status.in_(['pendiente', 'aprobado']),
+            Loan.status.in_(['pendiente', 'activo', 'atrasado']), # ¡Usa los estados que realmente existen!
             Loan.loan_type == 'computo'
         )
 
-        if current_user.role == 'cliente' and active_loans_query.first():
-            flash('Ya tienes un equipo pendiente o en uso.', 'warning')
+        if active_loans_query.first():
+            flash('Ya tienes un equipo pendiente, en uso o atrasado. Devuélvelo primero si quieres otro.', 'warning')
             return redirect(url_for('main.premium_dashboard'))
 
         LoanService.create_loan(
