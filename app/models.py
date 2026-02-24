@@ -60,12 +60,30 @@ class Loan(db.Model):
     # Tiempos
     request_date = db.Column(db.DateTime, default=datetime.utcnow) # Fecha automática solicitud
     approval_date = db.Column(db.DateTime, nullable=True)
+    due_date = db.Column(db.DateTime, nullable=True) # Fecha límite para devolución
     return_date = db.Column(db.DateTime, nullable=True)
     
     status = db.Column(db.String(20), default='pendiente') # pendiente, activo, devuelto, rechazado, atrasado
     observation = db.Column(db.Text, nullable=True) # Por si devuelven algo dañado
 
-    requester = db.relationship('User', backref='loans')
+    requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
+
+    @property
+    def is_overdue(self):
+        """Devuelve True si el artículo no ha sido devuelto y ya pasó la fecha límite."""
+        if self.status not in ['devuelto', 'rechazado'] and self.due_date:
+            return datetime.utcnow() > self.due_date
+        return False
+
+    @property
+    def penalty_fee(self):
+        """Calcula una multa de $5,000 COP por cada día de retraso (Ajustar según necesidad)."""
+        if self.is_overdue:
+            days_late = (datetime.utcnow() - self.due_date).days
+            # Evita cobros negativos si apenas es el mismo día
+            if days_late > 0:
+                return days_late * 5000.0
+        return 0.0
 
 # 4. USO DE BIBLIOTECA (Registro de visitas)
 class LibraryLog(db.Model):

@@ -20,6 +20,7 @@
             <div class="space-x-4">
                 {% if current_user.is_authenticated %}
                 <span>Hola, {{ current_user.full_name }} ({{ current_user.role|capitalize }})</span>
+                <a href="{{ url_for('main.profile') }}" class="hover:underline">Mi Perfil</a>
                 {% if current_user.role == 'admin' %}
                 <a href="{{ url_for('admin.manage_users') }}" class="hover:underline">Gestión de T.I</a>
                 {% elif current_user.role == 'bibliotecario' %}

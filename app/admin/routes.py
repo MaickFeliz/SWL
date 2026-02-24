@@ -180,9 +180,26 @@ def inventory_manage():
             
         return redirect(url_for('admin.inventory_manage'))
 
-    items = Inventory.query.all()
+    page = request.args.get('page', 1, type=int)
+    search_query = request.args.get('search', '')
+
+    query = Inventory.query
+    if search_query:
+        query = query.filter(
+            or_(
+                Inventory.name.ilike(f'%{search_query}%'),
+                Inventory.category.ilike(f'%{search_query}%')
+            )
+        )
+    
+    paginated_inventory = query.paginate(page=page, per_page=10, error_out=False)
+
     import_form = ImportForm()
-    return render_template('admin/inventory.html', items=items, import_form=import_form)
+    return render_template('admin/inventory.html', 
+                           items=paginated_inventory.items, 
+                           pagination=paginated_inventory,
+                           search_query=search_query,
+                           import_form=import_form)
 
 @bp.route('/inventory/update/<int:id>', methods=['POST'])
 @role_required('bibliotecario')

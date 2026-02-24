@@ -63,6 +63,13 @@ def premium_dashboard():
     
     return render_template('premium/dashboard.html', loans=loans)
 
+@bp.route('/profile')
+@login_required
+def profile():
+    # Consulta el historial de todos los préstamos del usuario y posibles multas
+    loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
+    return render_template('main/profile.html', loans=loans)
+
 @bp.route('/request/laptop', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_laptop():
