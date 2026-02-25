@@ -3,8 +3,6 @@ from flask_login import login_required, current_user
 from app.admin import bp
 from app import db
 from app.models import Loan, User, Inventory
-from app import db
-from app.models import Loan, User, Inventory
 from datetime import datetime
 from sqlalchemy import or_
 from functools import wraps
@@ -16,7 +14,6 @@ from app.forms import AdminUserForm, ImportForm
 import pandas as pd
 from werkzeug.utils import secure_filename
 
-# app/admin/routes.py
 @bp.route('/users')
 @role_required('admin')
 def manage_users():
@@ -37,7 +34,7 @@ def search_users():
             User.document_id.ilike(f'%{search}%')
         )).all()
     else:
-        users = User.query.order_by(User.full_name).limit(50).all() # Limitamos a 50 para no saturar
+        users = User.query.order_by(User.full_name).limit(50).all()
 
     form = AdminUserForm()
     import_form = ImportForm()
@@ -129,12 +126,10 @@ def approve(id):
     serial = request.form.get('serial')
     loan = Loan.query.get_or_404(id)
     
-    # CORRECCIÓN: Solo exigir serial obligatoriamente si es equipo o libro
     if loan.loan_type in ['computo', 'libro'] and not serial:
         flash('Falta el serial o código del elemento', 'danger')
         return redirect(url_for('admin.admin_dashboard', status='pendiente'))
         
-    # Restar inventario si es un elemento
     if loan.loan_type == 'elemento':
         success, msg = InventoryService.deduct_stock(loan.item_name, loan.quantity)
         if not success:
@@ -155,7 +150,7 @@ def approve(id):
 def return_item(id):
     loan = Loan.query.get_or_404(id)
     
-    if loan.loan_type == 'elemento' and loan.status != 'devuelto':
+    if loan.loan_type == 'elemento' and loan.status in ['activo', 'atrasado']:
         InventoryService.add_stock(loan.item_name, loan.quantity)
 
     success, msg = LoanService.return_loan(id)
@@ -222,7 +217,7 @@ def inventory_manage():
 @role_required('bibliotecario')
 def inventory_update(id):
     item = Inventory.query.get_or_404(id)
-    action = request.form.get('action') # 'add' o 'remove'
+    action = request.form.get('action')
     amount = int(request.form.get('amount'))
 
     if action == 'add':
@@ -230,7 +225,6 @@ def inventory_update(id):
         item.available_quantity += amount
         flash(f'Se agregaron {amount} unidades a {item.name}.', 'success')
     elif action == 'remove':
-        # No dejar bajar de 0
         if item.available_quantity >= amount:
             item.total_quantity -= amount
             item.available_quantity -= amount
@@ -285,7 +279,6 @@ def bulk_import():
                     if not doc or not email or doc == 'nan' or email == 'nan':
                         continue
                         
-                    # Verificar si existe en DB
                     if User.query.filter((User.document_id == doc) | (User.email == email)).first():
                         continue
                         
@@ -325,5 +318,5 @@ def bulk_import():
             flash(f'Error al procesar el archivo: revise el formato de las columnas. {str(e)}', 'danger')
     else:
         flash('Seleccione un archivo CSV o Excel válido.', 'danger')
-        
+    
     return redirect(request.referrer or url_for('admin.admin_dashboard'))

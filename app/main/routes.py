@@ -7,7 +7,6 @@ from app.services.loan_service import LoanService
 from app.utils.decorators import role_required
 from datetime import datetime
 
-# app/main/routes.py
 @bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
     if request.method == 'GET':
@@ -21,7 +20,6 @@ def fast_loan():
             return redirect(url_for('main.fast_loan'))
         
         items = Inventory.query.filter(Inventory.category != 'general').all() if user.role == 'premium' else Inventory.query.all()
-        # Admin/staff has access to all, as well as testing. Actually just provide all items.
         items = Inventory.query.all()
         return render_template('main/fast_loan.html', user=user, items=items)
 
@@ -58,7 +56,6 @@ def index():
 @bp.route('/dashboard')
 @role_required('premium', 'cliente')
 def premium_dashboard():
-    # Consulta los préstamos del usuario actual (tu plantilla los está esperando en el ciclo for)
     loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
     
     return render_template('premium/dashboard.html', loans=loans)
@@ -66,7 +63,6 @@ def premium_dashboard():
 @bp.route('/profile')
 @login_required
 def profile():
-    # Consulta el historial de todos los préstamos del usuario y posibles multas
     loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
     return render_template('main/profile.html', loans=loans)
 
@@ -75,14 +71,15 @@ def profile():
 def request_laptop():
     if request.method == 'POST':
         environment = request.form.get('environment')
+        
         if current_user.role == 'premium':
-            quantity = int(request.form.get('quantity'))
+            quantity = int(request.form.get('quantity', 1)) 
         else:
             quantity = 1
 
         active_loans_query = Loan.query.filter(
             Loan.user_id == current_user.id,
-            Loan.status.in_(['pendiente', 'activo', 'atrasado']), # ¡Usa los estados que realmente existen!
+            Loan.status.in_(['pendiente', 'activo', 'atrasado']), 
             Loan.loan_type == 'computo'
         )
 
@@ -101,7 +98,6 @@ def request_laptop():
         return redirect(url_for('main.premium_dashboard'))
     return render_template('premium/request_laptop.html')
 
-# --- ACCESORIOS (MOUSE/VIDEOBEAM) ---
 @bp.route('/request/accessory', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_accessory():
