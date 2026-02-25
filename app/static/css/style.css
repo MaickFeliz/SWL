@@ -1,15 +1,12 @@
-/* Biblioteca_SW/app/static/css/style.css */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Nueva Paleta Académica (SENA Library) */
-    --brand-primary: #1C3144;    /* Azul Tinta - Profesional, para headers y textos principales */
-    --brand-secondary: #3F88C5;  /* Azul Acero - Acentos secundarios y enlaces */
-    --brand-accent: #D00000;     /* Carmesí Clásico - Para llamar la atención en botones primarios */
-    --surface-alt: #E2E8F0;      /* Gris Papel - Fondos de tarjetas secundarias o hover */
-    --bg-body: #F4F6F8;          /* Pergamino Claro - Fondo general, ideal para la lectura */
+    --brand-primary: #1C3144;    
+    --brand-secondary: #3F88C5;  
+    --brand-accent: #D00000;     
+    --surface-alt: #E2E8F0;      
+    --bg-body: #F4F6F8;          
     
-    /* Variables estructurales */
     --surface-color: #ffffff;
     --border-color: rgba(28, 49, 68, 0.12);
     --text-primary: #111827;
@@ -36,7 +33,6 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.02em;
 }
 
-/* NAVEGACIÓN */
 .custom-navbar {
     background-color: var(--surface-color) !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -63,7 +59,6 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--surface-alt);
 }
 
-/* TARJETAS */
 .card {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -87,7 +82,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--brand-primary);
 }
 
-/* BOTONES */
 .btn {
     border-radius: var(--radius-sm);
     padding: 0.5rem 1.25rem;
@@ -109,12 +103,11 @@ h1, h2, h3, h4, h5, h6 {
 .btn-danger { background-color: var(--brand-accent); color: white; }
 .btn-success { background-color: #2b7a4b; color: white; }
 
-/* TABLAS */
 .table-responsive {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--surface-color);
-    overflow: hidden; /* Evita que los bordes de la tabla se salgan del div redondeado */
+    overflow: hidden; 
 }
 
 .table { margin-bottom: 0; }
@@ -137,7 +130,6 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.9rem;
 }
 
-/* FORMULARIOS */
 .form-control, .form-select {
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
@@ -153,7 +145,6 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 3px rgba(63, 136, 197, 0.2);
 }
 
-/* BADGES */
 .badge {
     border-radius: 6px;
     padding: 0.4em 0.8em;
@@ -161,7 +152,6 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.75rem;
 }
 
-/* RESPONSIVIDAD REAL (Lo que te dio pereza hacer) */
 @media (max-width: 768px) {
     .custom-navbar { padding: 0.5rem 1rem; }
     .navbar-brand span { font-size: 1.1rem; }
@@ -169,14 +159,12 @@ h1, h2, h3, h4, h5, h6 {
     .card-header { padding: 0.75rem 1rem; }
     .card-body { padding: 1rem; }
     
-    /* Botones de bloque en móvil para que no se vean ridículos y apilados */
     .btn-mobile-block {
         display: block;
         width: 100%;
         margin-bottom: 0.5rem;
     }
     
-    /* Asegurar que las tablas tengan scroll en móvil */
     .table-responsive {
         border-radius: 0;
         border-left: none;
@@ -189,15 +177,21 @@ h1, h2, h3, h4, h5, h6 {
         margin-top: 0.5rem;
     }
     
-    /* El botón de salir necesita margen arriba en móviles */
     .nav-item.ms-2 { margin-left: 0 !important; margin-top: 0.5rem; }
 }
 
-/* MODO IMPRESIÓN */
 @media print {
     .no-print, nav, .btn, form { display: none !important; }
     body { background: white; color: black; }
     .card { border: none; box-shadow: none; }
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ddd; padding: 8px; }
+}
+
+.custom-back-btn {
+    transition: all 0.2s ease-in-out;
+}
+.custom-back-btn:hover {
+    color: var(--brand-secondary) !important;
+    transform: translateX(-5px);
 }

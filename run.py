@@ -5,21 +5,19 @@ app = create_app()
 
 if __name__ == '__main__':
     with app.app_context():
-        # 1. Crear Admin (Ya lo tenías)
-        if not User.query.filter_by(username='admin').first():
+        if not User.query.filter_by(document_id='1000000000').first():
             print("Creando superusuario 'admin'...")
             admin = User(
-                username='admin', 
                 document_id='1000000000', 
                 full_name='Administrador Principal', 
                 role='admin', 
-                phone='0000000000'
+                phone='0000000000',
+                email='admin@biblioteca.com'
             )
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
 
-        # 2. CREAR INVENTARIO BASE
         initial_items = [
             {'name': 'Mouse USB', 'total': 50, 'category': 'general'},
             {'name': 'VideoBeam', 'total': 10, 'category': 'premium'},
@@ -36,7 +34,7 @@ if __name__ == '__main__':
                 new_item = Inventory(
                     name=item['name'],
                     total_quantity=item['total'],
-                    available_quantity=item['total'], # Al principio están todos
+                    available_quantity=item['total'],
                     category=item['category']
                 )
                 db.session.add(new_item)

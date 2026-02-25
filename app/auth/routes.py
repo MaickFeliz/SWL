@@ -16,7 +16,7 @@ def login():
         
         if user is None or not user.check_password(form.password.data):
             flash('Documento o contraseña inválidos.', 'danger')
-            return redirect(url_for('auth.login'))
+            return render_template('auth/login.html', form=form)
         
         login_user(user, remember=False)
         
@@ -46,7 +46,6 @@ def register():
             return render_template('auth/register.html', form=form)
 
         user = User(
-            username=form.email.data,  # Usar email como username para login
             full_name=form.full_name.data,
             document_id=form.document_id.data,
             email=form.email.data,
@@ -60,8 +59,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        flash(
-            '¡Registro exitoso! Ahora puede iniciar sesión con su correo electrónico.', 'success')
+        flash('¡Registro exitoso! Ahora puede iniciar sesión con su número de documento.', 'success')
         return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html', form=form)
