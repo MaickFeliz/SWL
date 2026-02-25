@@ -1,84 +1,49 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="auth-container">
-    <div class="auth-wrapper">
-        <div class="auth-branding">
 
-            <h1>Cree su Cuenta</h1>
-            <p>Únase a nuestra plataforma para acceder a todos los recursos y servicios de la biblioteca.</p>
-        </div>
-        <div class="auth-form-container">
-            <h2>Registro de Usuario</h2>
-            <p class="form-text">Complete el formulario para solicitar su acceso.</p>
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        {{ form.full_name.label(class="form-label") }}
-                        {{ form.full_name(class="form-control") }}
+{% block content %}
+<div class="row justify-content-center align-items-center mb-5">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-md border-0">
+            <div class="card-header bg-transparent text-center py-4 border-0">
+                <h3 class="mb-0 fw-bold" style="color: var(--brand-primary);">Crear Cuenta</h3>
+                <p class="text-muted small mb-0">Únete a la Biblioteca SWL</p>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.full_name.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                        {{ form.full_name(class="form-control", placeholder="Nombre completo") }}
                     </div>
-                    <div class="col-md-6 form-group">
-                        {{ form.document_id.label(class="form-label") }}
-                        {{ form.document_id(class="form-control") }}
+                    
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                        {{ form.email(class="form-control", placeholder="correo@sena.edu.co") }}
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 form-group">
-                        {{ form.email.label(class="form-label") }}
-                        {{ form.email(class="form-control") }}
-                    </div>
-                    <div class="col-md-6 form-group">
-                        {{ form.phone.label(class="form-label") }}
-                        {{ form.phone(class="form-control") }}
-                    </div>
-                </div>
-                <div class="form-group">
-                    {{ form.role.label(class="form-label") }}
-                    {{ form.role(class="form-select", id="roleSelect") }}
-                </div>
-                <div id="clienteFields" style="display: none;">
+
                     <div class="row">
-                        <div class="col-md-12 form-group">
-                            {{ form.program_name.label(class="form-label") }}
-                            {{ form.program_name(class="form-control") }}
+                        <div class="col-md-6 mb-3">
+                            {{ form.password.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                            {{ form.password(class="form-control", placeholder="••••••••") }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            {{ form.confirm_password.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                            {{ form.confirm_password(class="form-control", placeholder="••••••••") }}
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-control") }}
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg fw-bold py-2") }}
+                    </div>
+                </form>
+                <div class="text-center mt-4 pt-3 border-top">
+                    <p class="text-muted small mb-0">¿Ya tienes cuenta? 
+                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold" style="color: var(--brand-secondary);">Ingresa aquí</a>
+                    </p>
                 </div>
-                <div class="form-group">
-                    {{ form.confirm_password.label(class="form-label") }}
-                    {{ form.confirm_password(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
-            <div class="text-center mt-3">
-                <p>¿Ya tiene una cuenta? <a href="{{ url_for('auth.login') }}">Inicie sesión aquí</a></p>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const roleSelect = document.getElementById('roleSelect');
-        const clienteFields = document.getElementById('clienteFields');
-
-        function toggleFields() {
-            if (roleSelect.value === 'cliente') {
-                clienteFields.style.display = 'block';
-            } else {
-                clienteFields.style.display = 'none';
-            }
-        }
-
-        roleSelect.addEventListener('change', toggleFields);
-        toggleFields(); // Ejecutar al cargar la página
-    });
-</script>
 {% endblock %}

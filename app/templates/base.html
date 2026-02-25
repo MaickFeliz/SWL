@@ -15,45 +15,51 @@
     <nav class="navbar navbar-expand-lg custom-navbar sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
-                <img src="/app/static/img/1.png" alt="Logo SWL" height="45" style="border-radius: 8px;">
-                <span>{{ config['APP_NAME'] }}</span>
+                <img src="/app/static/img/1.png" alt="Logo SWL" height="40" style="border-radius: 6px; object-fit: contain;">
+                <span class="d-none d-sm-inline">{{ config['APP_NAME'] }}</span>
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center gap-2">
+                <ul class="navbar-nav align-items-lg-center gap-2 w-100 justify-content-lg-end">
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item me-3 d-none d-lg-block">
+                    <li class="nav-item me-lg-3 text-center text-lg-start mb-2 mb-lg-0">
                         <span class="text-secondary fw-medium">
                             <i class="bi bi-person-circle me-1"></i>Hola, {{ current_user.full_name }}
                         </span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.profile') }}"><i class="bi bi-person-badge me-1"></i>Mi Perfil</a>
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('main.profile') }}">
+                            <i class="bi bi-person-badge me-1"></i>Mi Perfil
+                        </a>
                     </li>
                     
                     {% if current_user.role == 'admin' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.manage_users') }}"><i class="bi bi-people-fill me-1"></i>Gestión T.I</a>
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.manage_users') }}">
+                            <i class="bi bi-people-fill me-1"></i>Gestión T.I
+                        </a>
                     </li>
                     {% elif current_user.role == 'bibliotecario' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}"><i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos</a>
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.admin_dashboard') }}">
+                            <i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos
+                        </a>
                     </li>
                     {% endif %}
                     
-                    <li class="nav-item ms-2">
-                        <a class="btn btn-outline-danger btn-sm rounded-pill fw-bold" href="{{ url_for('auth.logout') }}">
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <a class="btn btn-outline-danger btn-sm rounded-pill fw-bold w-100" href="{{ url_for('auth.logout') }}">
                             <i class="bi bi-box-arrow-right me-1"></i>Salir
                         </a>
                     </li>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="btn btn-primary rounded-pill px-4 fw-bold" href="{{ url_for('auth.login') }}">
+                    <li class="nav-item w-100 w-lg-auto text-center">
+                        <a class="btn btn-primary rounded-pill px-4 fw-bold w-100" href="{{ url_for('auth.login') }}">
                             <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
                         </a>
                     </li>
@@ -108,7 +114,7 @@
         <div class="container">
             <div class="d-flex justify-content-center align-items-center gap-2">
                 <i class="bi bi-book-half fs-4"></i>
-                <span class="fw-medium">© 2026 SWL - Desarrollado para el SENA</span>
+                <span class="fw-medium">© 2026 SWL - Desarrollado por Madelyn y Maick</span>
             </div>
         </div>
     </footer>

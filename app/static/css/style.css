@@ -2,28 +2,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Nueva Paleta Premium (LMS Library) */
-    --brand-primary: #472825;    /* Dark Coffee - Texto principal y Navbar */
-    --brand-secondary: #96786F;  /* Muted Mocha - Textos secundarios */
-    --brand-accent: #D3AB80;     /* Caramel - Botones primarios y acentos */
-    --surface-alt: #FDE4BC;      /* Light Sand - Fondos de tarjetas secundarias o hover */
-    --bg-body: #FFF4E2;          /* Cream - Fondo general de la aplicación */
+    /* Nueva Paleta Académica (SENA Library) */
+    --brand-primary: #1C3144;    /* Azul Tinta - Profesional, para headers y textos principales */
+    --brand-secondary: #3F88C5;  /* Azul Acero - Acentos secundarios y enlaces */
+    --brand-accent: #D00000;     /* Carmesí Clásico - Para llamar la atención en botones primarios */
+    --surface-alt: #E2E8F0;      /* Gris Papel - Fondos de tarjetas secundarias o hover */
+    --bg-body: #F4F6F8;          /* Pergamino Claro - Fondo general, ideal para la lectura */
     
     /* Variables estructurales */
     --surface-color: #ffffff;
-    --border-color: rgba(150, 120, 111, 0.2);
-    --text-primary: #472825;
-    --text-secondary: #7a5e55;
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --shadow-sm: 0 2px 4px rgba(71, 40, 37, 0.04);
-    --shadow-md: 0 10px 15px -3px rgba(71, 40, 37, 0.08), 0 4px 6px -2px rgba(71, 40, 37, 0.04);
+    --border-color: rgba(28, 49, 68, 0.12);
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(28, 49, 68, 0.1);
+    --shadow-md: 0 10px 15px -3px rgba(28, 49, 68, 0.08), 0 4px 6px -2px rgba(28, 49, 68, 0.04);
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
-    /* Cambiamos Poppins por Plus Jakarta Sans, mucho más limpia para UI moderna */
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-primary);
@@ -33,23 +32,22 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.03em;
+    color: var(--brand-primary);
+    letter-spacing: -0.02em;
 }
 
-/* 2. NAVEGACIÓN (Estilo Premium) */
+/* NAVEGACIÓN */
 .custom-navbar {
     background-color: var(--surface-color) !important;
-    box-shadow: 0 4px 20px rgba(71, 40, 37, 0.05);
-    padding: 1rem 0;
-    border-bottom: 3px solid var(--brand-accent);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 0.8rem 0;
+    border-bottom: 4px solid var(--brand-primary);
 }
 
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     color: var(--brand-primary) !important;
-    letter-spacing: -0.02em;
 }
 
 .nav-link {
@@ -60,156 +58,146 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: var(--radius-sm);
 }
 
-.nav-link:hover {
+.nav-link:hover, .nav-link.active {
     color: var(--brand-primary) !important;
     background-color: var(--surface-alt);
 }
 
-/* 3. TARJETAS (Glass/Soft style) */
+/* TARJETAS */
 .card {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     background: var(--surface-color);
     box-shadow: var(--shadow-sm);
     transition: var(--transition-fast);
-    overflow: hidden;
+    height: 100%;
 }
 
 .card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-3px);
-    border-color: var(--brand-accent);
+    transform: translateY(-2px);
+    border-color: var(--brand-secondary);
 }
 
 .card-header {
-    background-color: transparent;
-    border-bottom: 1px dashed var(--border-color);
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
     font-weight: 700;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     color: var(--brand-primary);
 }
 
-/* 4. BOTONES (Premium Action) */
+/* BOTONES */
 .btn {
     border-radius: var(--radius-sm);
-    padding: 0.6rem 1.5rem;
+    padding: 0.5rem 1.25rem;
     font-weight: 600;
     font-size: 0.9rem;
-    letter-spacing: 0.02em;
     transition: var(--transition-fast);
     border: none;
-    box-shadow: var(--shadow-sm);
 }
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 }
 
-.btn-primary {
-    background-color: var(--brand-accent);
-    color: var(--brand-primary);
-}
+.btn-primary { background-color: var(--brand-primary); color: white; }
+.btn-primary:hover { background-color: #132230; color: white; }
+.btn-outline-primary { border: 2px solid var(--brand-primary); color: var(--brand-primary); background: transparent; }
+.btn-outline-primary:hover { background-color: var(--brand-primary); color: white; }
+.btn-danger { background-color: var(--brand-accent); color: white; }
+.btn-success { background-color: #2b7a4b; color: white; }
 
-.btn-primary:hover {
-    background-color: #c2996d;
-    color: var(--brand-primary);
-}
-
-.btn-dark {
-    background-color: var(--brand-primary);
-    color: var(--surface-color);
-}
-
-.btn-dark:hover {
-    background-color: #361e1b;
-}
-
-.btn-success { background-color: #7b966f; color: white; }
-.btn-danger { background-color: #c46c6c; color: white; }
-.btn-warning { background-color: var(--brand-accent); color: var(--brand-primary); }
-
-/* 5. TABLAS (Grid moderno y legible) */
+/* TABLAS */
 .table-responsive {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--surface-color);
-    box-shadow: var(--shadow-sm);
+    overflow: hidden; /* Evita que los bordes de la tabla se salgan del div redondeado */
 }
 
 .table { margin-bottom: 0; }
-
 .table thead th {
-    background-color: var(--bg-body);
+    background-color: var(--surface-alt);
     border-bottom: 2px solid var(--border-color);
-    padding: 1.2rem 1.5rem;
+    padding: 1rem;
     font-weight: 700;
-    color: var(--brand-secondary);
+    color: var(--brand-primary);
     text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
 }
 
 .table tbody td {
-    padding: 1.2rem 1.5rem;
+    padding: 1rem;
     vertical-align: middle;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-primary);
     font-size: 0.9rem;
-    font-weight: 500;
 }
 
-.table-hover tbody tr:hover {
-    background-color: var(--bg-body);
-}
-
-/* 6. FORMULARIOS */
+/* FORMULARIOS */
 .form-control, .form-select {
     border-radius: var(--radius-sm);
-    border: 2px solid var(--border-color);
-    padding: 0.7rem 1rem;
-    font-size: 0.95rem;
-    background-color: var(--bg-body);
-    font-weight: 500;
-    color: var(--brand-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1rem;
+    background-color: #fafafa;
+    color: var(--text-primary);
     transition: var(--transition-fast);
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--brand-accent);
+    border-color: var(--brand-secondary);
     background-color: var(--surface-color);
-    box-shadow: 0 0 0 4px rgba(211, 171, 128, 0.2);
+    box-shadow: 0 0 0 3px rgba(63, 136, 197, 0.2);
 }
 
-/* 7. BADGES / ETIQUETAS */
+/* BADGES */
 .badge {
-    border-radius: 20px;
+    border-radius: 6px;
     padding: 0.4em 0.8em;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.75rem;
-    letter-spacing: 0.04em;
 }
-.bg-warning { background-color: var(--surface-alt) !important; color: var(--brand-primary) !important; }
-.bg-primary { background-color: var(--brand-accent) !important; color: var(--brand-primary) !important; }
-.bg-success { background-color: #e5f0e1 !important; color: #436334 !important; }
-.bg-danger { background-color: #fce8e8 !important; color: #a13d3d !important; }
-.bg-secondary { background-color: var(--border-color) !important; color: var(--brand-secondary) !important; }
 
-/* 8. TOAST NOTIFICATIONS */
-.toast {
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md) !important;
-    border: none;
-    overflow: hidden;
+/* RESPONSIVIDAD REAL (Lo que te dio pereza hacer) */
+@media (max-width: 768px) {
+    .custom-navbar { padding: 0.5rem 1rem; }
+    .navbar-brand span { font-size: 1.1rem; }
+    
+    .card-header { padding: 0.75rem 1rem; }
+    .card-body { padding: 1rem; }
+    
+    /* Botones de bloque en móvil para que no se vean ridículos y apilados */
+    .btn-mobile-block {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Asegurar que las tablas tengan scroll en móvil */
+    .table-responsive {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .navbar-collapse {
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        margin-top: 0.5rem;
+    }
+    
+    /* El botón de salir necesita margen arriba en móviles */
+    .nav-item.ms-2 { margin-left: 0 !important; margin-top: 0.5rem; }
 }
 
 /* MODO IMPRESIÓN */
 @media print {
     .no-print, nav, .btn, form { display: none !important; }
     body { background: white; color: black; }
-    .card { border: none; box-shadow: none; border-radius: 0; }
+    .card { border: none; box-shadow: none; }
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ddd; padding: 8px; }
-    .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
 }
-.print-header { display: none; }

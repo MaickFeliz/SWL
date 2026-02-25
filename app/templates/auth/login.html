@@ -1,31 +1,34 @@
 {% extends "base.html" %}
-{% block content %}
-<div class="auth-container">
-    <div class="auth-wrapper">
-        <div class="auth-branding">
 
-            <h1>Bienvenido al Sistema de Biblioteca</h1>
-            <p>Gestione eficientemente los recursos bibliotecarios y préstamos del centro de formación.</p>
-        </div>
-        <div class="auth-form-container">
-            <h2>Iniciar Sesión</h2>
-            <p class="form-text">Ingrese sus credenciales para acceder al sistema.</p>
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    <label for="document_id" class="form-label">Número de Identificación</label>
-                    {{ form.document_id(class="form-control", placeholder="Ej: 123456789") }}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card shadow-md border-0">
+            <div class="card-header bg-transparent text-center py-4 border-0">
+                <img src="{{ url_for('static', filename='img/1.png') }}" alt="Logo SWL" height="70" class="mb-3 rounded">
+                <h3 class="mb-0 fw-bold" style="color: var(--brand-primary);">Ingreso al Sistema</h3>
+                <p class="text-muted small mb-0">Gestión de Biblioteca SENA</p>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                        {{ form.email(class="form-control form-control-lg", placeholder="correo@sena.edu.co") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.password.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
+                        {{ form.password(class="form-control form-control-lg", placeholder="••••••••") }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg fw-bold py-2") }}
+                    </div>
+                </form>
+                <div class="text-center mt-4 pt-3 border-top">
+                    <p class="text-muted small mb-0">¿No tienes cuenta? 
+                        <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold" style="color: var(--brand-secondary);">Regístrate aquí</a>
+                    </p>
                 </div>
-                <div class="form-group">
-                    <label for="password" class="form-label">Contraseña</label>
-                    {{ form.password(class="form-control", placeholder="••••••••") }}
-                </div>
-                <div class="form-group">
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
-            <div class="text-center mt-3">
-                <p>¿No tiene una cuenta? <a href="{{ url_for('auth.register') }}">Regístrese aquí</a></p>
             </div>
         </div>
     </div>
