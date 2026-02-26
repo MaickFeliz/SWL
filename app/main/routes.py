@@ -19,8 +19,8 @@ def fast_loan():
             flash('Usuario no encontrado. Debes estar registrado para esta acción.', 'danger')
             return redirect(url_for('main.fast_loan'))
         
+        # CORRECCIÓN: Se mantiene el filtro correcto sin sobrescribirlo
         items = Inventory.query.filter(Inventory.category != 'general').all() if user.role == 'premium' else Inventory.query.all()
-        items = Inventory.query.all()
         return render_template('main/fast_loan.html', user=user, items=items)
 
     if request.form.get('confirm_loan'):
@@ -48,16 +48,19 @@ def fast_loan():
 @bp.route('/')
 def index():
     if current_user.is_authenticated:
-        if current_user.role == 'bibliotecario':
+        # CORRECCIÓN: Enrutamiento claro para cada tipo de rol
+        if current_user.role == 'admin':
+            return redirect(url_for('admin.manage_users'))
+        elif current_user.role == 'bibliotecario':
             return redirect(url_for('admin.admin_dashboard'))
-        return redirect(url_for('main.premium_dashboard'))
+        elif current_user.role in ['premium', 'cliente']:
+            return redirect(url_for('main.premium_dashboard'))
     return render_template('main/index.html')
 
 @bp.route('/dashboard')
 @role_required('premium', 'cliente')
 def premium_dashboard():
     loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
-    
     return render_template('premium/dashboard.html', loans=loans)
 
 @bp.route('/profile')
@@ -166,7 +169,6 @@ def register_visit():
             name = user.full_name
             role = user.role
         else:
-            
             if not manual_name:
                 flash('Documento no registrado. Por favor ingrese su Nombre.', 'warning')
                 return render_template('main/visit.html', pre_doc=document_id)

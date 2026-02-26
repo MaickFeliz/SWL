@@ -16,9 +16,10 @@ class Config:
     APP_NAME = "SWL"
     LIBRARY_NAME = "SWL"
     
-    # Configuración de Roles estandarizada
+    # CORRECCIÓN: Configuración de Roles estandarizada con los que usa la DB
     USER_ROLES = {
-        'admin': 'Administrador',
-        'staff': 'Bibliotecario',
-        'user': 'Estudiante/Usuario'
+        'admin': 'Administrador del Sistema',
+        'bibliotecario': 'Bibliotecario / Staff',
+        'premium': 'Usuario Premium',
+        'cliente': 'Estudiante / Cliente Regular'
     }

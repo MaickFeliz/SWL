@@ -20,12 +20,14 @@ def login():
         
         login_user(user, remember=False)
         
+        # CORRECCIÓN: Redirecciones estandarizadas según el rol real
         if user.role == 'admin':
             return redirect(url_for('admin.manage_users'))
         elif user.role == 'bibliotecario':
             return redirect(url_for('admin.admin_dashboard'))
-        elif user.role == 'premium':
+        elif user.role in ['premium', 'cliente']:
             return redirect(url_for('main.premium_dashboard'))
+            
         return redirect(url_for('main.index'))
         
     return render_template('auth/login.html', form=form)
@@ -37,7 +39,6 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
-        # Validar que no exista ni el documento ni el email
         if User.query.filter_by(document_id=form.document_id.data).first():
             flash('El número de documento ya está registrado.', 'warning')
             return render_template('auth/register.html', form=form)
@@ -63,7 +64,6 @@ def register():
         return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html', form=form)
-
 
 @bp.route('/logout')
 def logout():
