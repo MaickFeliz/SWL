@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Catálogo</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.catalog_manage') }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" name="title_or_name" class="form-control"
+                            placeholder="Nombre / Título (Ej. MacBook Pro)" required>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="category" class="form-control" required>
+                            <option value="computo">Equipo de Cómputo</option>
+                            <option value="accesorio">Accesorio / General</option>
+                            <option value="libro">Libro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="author_or_brand" class="form-control" placeholder="Marca / Autor">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Crear</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre / Título</th>
+                <th>Categoría</th>
+                <th>Marca/Autor</th>
+                <th>Stock Disponible</th>
+                <th>Total Físico</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.title_or_name }}</td>
+                <td>{{ item.category|capitalize }}</td>
+                <td>{{ item.author_or_brand or 'N/A' }}</td>
+                <td><span class="badge bg-success">{{ item.available_count }}</span></td>
+                <td>{{ item.total_count }}</td>
+                <td>
+                    <a href="{{ url_for('admin.manage_instances', catalog_id=item.id) }}"
+                        class="btn btn-sm btn-info">Ver Códigos/Seriales</a>
+                    <form method="POST" action="{{ url_for('admin.catalog_delete', id=item.id) }}"
+                        style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('¿Eliminar catálogo?')">X</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

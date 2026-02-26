@@ -1,76 +1,74 @@
 from app import db
-from app.models import Loan, Inventory
+from app.models import Loan, ItemInstance
 from datetime import datetime, timedelta
-from flask import current_app
 
 class LoanService:
     @staticmethod
-    def create_loan(user_id, loan_type, item_name, quantity=1, item_code=None, environment=None, days=15):
-        try:
-            due_date = datetime.utcnow() + timedelta(days=days)
-            new_loan = Loan(
-                user_id=user_id,
-                loan_type=loan_type,
-                item_name=item_name,
-                item_code=item_code,
-                quantity=quantity,
-                environment=environment,
-                status='pendiente',
-                due_date=due_date
-            )
-            db.session.add(new_loan)
-            db.session.commit()
-            return new_loan
-        except Exception as e:
-            db.session.rollback()
-            raise e
+    def create_loan(user_id, instance_id, environment=None, days=15):
+        # Calculamos la fecha límite de entrega
+        due_date = datetime.utcnow() + timedelta(days=days)
+        
+        # Creamos el préstamo atado a la instancia física real
+        new_loan = Loan(
+            user_id=user_id,
+            instance_id=instance_id,
+            environment=environment,
+            status='pendiente',
+            due_date=due_date
+        )
+        db.session.add(new_loan)
+        
+        # Recuerda: NO HAGAS COMMIT AQUÍ. 
+        # El controlador (routes.py) se encarga de confirmar la transacción completa.
+        return new_loan
 
     @staticmethod
-    def approve_loan(loan_id, item_code):
-        loan = Loan.query.get_or_404(loan_id)
+    def approve_loan(loan_id):
+        loan = Loan.query.get(loan_id)
+        if not loan or loan.status != 'pendiente':
+            return False, "Préstamo no válido o ya procesado."
         
-        # CORRECCIÓN: Solo exigir todos los seriales si es un equipo de cómputo
-        if loan.loan_type == 'computo' and loan.quantity > 1 and item_code:
-            seriales = [s.strip() for s in item_code.split(',') if s.strip()]
-            if len(seriales) != loan.quantity:
-                return False, f"Se solicitaron {loan.quantity} equipos, pero ingresaste {len(seriales)} serial(es)."
-
-        loan.item_code = item_code
         loan.status = 'activo'
         loan.approval_date = datetime.utcnow()
-        db.session.commit()
-        return True, "Préstamo aprobado correctamente."
         
+        # El estado de la instancia física ya se puso en 'prestado' 
+        # en el InventoryService al momento de hacer la solicitud.
+        db.session.commit()
+        return True, "Préstamo aprobado con éxito."
+
     @staticmethod
     def return_loan(loan_id):
-        loan = Loan.query.get_or_404(loan_id)
-        if loan.status == 'devuelto':
-            return False, "El préstamo ya fue devuelto."
-            
-        # NUEVO: Congelar la multa si el préstamo estaba atrasado
+        loan = Loan.query.get(loan_id)
+        if not loan or loan.status not in ['activo', 'atrasado']:
+            return False, "Préstamo no válido o no está activo."
+        
+        # Si el préstamo está atrasado, calculamos y guardamos la multa final
         if loan.is_overdue:
             loan.final_penalty = loan.penalty_fee
             
         loan.status = 'devuelto'
         loan.return_date = datetime.utcnow()
-        db.session.commit()
-        return True, "Préstamo marcado como devuelto."
         
+        # ¡Paso crucial! Liberamos la instancia física para que otro usuario la pueda pedir
+        if loan.item_instance:
+            loan.item_instance.status = 'disponible'
+            
+        db.session.commit()
+        return True, "Artículo devuelto exitosamente al inventario."
+
     @staticmethod
     def check_overdue_loans():
-        """
-        Marca como 'atrasado' los préstamos activos que superen su fecha límite.
-        Esta función ahora sí hace el trabajo.
-        """
-        # Buscamos todos los préstamos activos cuya fecha de vencimiento ya pasó
-        overdue_loans = Loan.query.filter(Loan.status == 'activo', Loan.due_date < datetime.utcnow()).all()
+        # Buscamos todos los préstamos activos cuya fecha de entrega ya pasó
+        overdue_loans = Loan.query.filter(
+            Loan.status == 'activo', 
+            Loan.due_date < datetime.utcnow()
+        ).all()
         
         count = 0
         for loan in overdue_loans:
             loan.status = 'atrasado'
             count += 1
             
-        # Solo hacemos commit si realmente hubo préstamos que actualizar
         if count > 0:
             db.session.commit()
             

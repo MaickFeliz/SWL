@@ -11,15 +11,11 @@ def load_user(user_id):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
-    
     document_id = db.Column(db.String(20), unique=True, nullable=False) 
     full_name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20))
-    
     role = db.Column(db.String(20), nullable=False) 
     program_name = db.Column(db.String(100), nullable=True)
-
-    # CORRECCIÓN: Ampliación a 255 caracteres para el hash de la contraseña
     password_hash = db.Column(db.String(255))
 
     def set_password(self, password):
@@ -28,26 +24,38 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Para manejar el inventario
-class Inventory(db.Model):
+# 1. EL CATÁLOGO (Lo genérico)
+class Catalog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True) 
-    total_quantity = db.Column(db.Integer, default=0)
-    available_quantity = db.Column(db.Integer, default=0)
+    title_or_name = db.Column(db.String(150), nullable=False) 
+    category = db.Column(db.String(50), nullable=False) 
+    author_or_brand = db.Column(db.String(100), nullable=True) 
     
-    category = db.Column(db.String(20), default='general') 
+    instances = db.relationship('ItemInstance', backref='catalog_item', lazy='dynamic', cascade="all, delete-orphan")
 
-# PRÉSTAMOS
+    @property
+    def available_count(self):
+        return self.instances.filter_by(status='disponible').count()
+        
+    @property
+    def total_count(self):
+        return self.instances.count()
+
+# 2. LAS INSTANCIAS (El objeto físico real)
+class ItemInstance(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    catalog_id = db.Column(db.Integer, db.ForeignKey('catalog.id'), nullable=False)
+    unique_code = db.Column(db.String(50), unique=True, nullable=False) 
+    status = db.Column(db.String(20), default='disponible') # disponible, prestado, mantenimiento, perdido
+    condition = db.Column(db.String(100), nullable=True) 
+    
+    loans = db.relationship('Loan', backref='item_instance', lazy='dynamic')
+
+# 3. EL PRÉSTAMO REAL
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    loan_type = db.Column(db.String(20), nullable=False) 
-    
-    item_name = db.Column(db.String(100), nullable=False) 
-    item_code = db.Column(db.Text, nullable=True) 
-    quantity = db.Column(db.Integer, default=1) 
-
+    instance_id = db.Column(db.Integer, db.ForeignKey('item_instance.id'), nullable=False)
     environment = db.Column(db.String(50), nullable=True) 
 
     request_date = db.Column(db.DateTime, default=datetime.utcnow) 
@@ -55,9 +63,8 @@ class Loan(db.Model):
     due_date = db.Column(db.DateTime, nullable=True) 
     return_date = db.Column(db.DateTime, nullable=True)
     
-    status = db.Column(db.String(20), default='pendiente') 
-    observation = db.Column(db.Text, nullable=True) 
-    
+    status = db.Column(db.String(20), default='pendiente')
+    observation = db.Column(db.Text, nullable=True)
     final_penalty = db.Column(db.Float, default=0.0) 
 
     requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
@@ -70,7 +77,8 @@ class Loan(db.Model):
 
     @property
     def penalty_fee(self):
-        if self.loan_type != 'libro':
+        # Leemos la categoría directamente de la instancia vinculada
+        if not self.item_instance or self.item_instance.catalog_item.category != 'libro':
             return 0.0
 
         if self.is_overdue:
@@ -79,14 +87,11 @@ class Loan(db.Model):
                 return days_late * 5000.0
         return 0.0
 
-# USO DE BIBLIOTECA (Registro de visitas)
+# 4. USO DE BIBLIOTECA
 class LibraryLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
     visitor_name = db.Column(db.String(100), nullable=False)
     visitor_id = db.Column(db.String(20), nullable=False)
     role = db.Column(db.String(20), nullable=False) 
-    
     entry_time = db.Column(db.DateTime, default=datetime.utcnow)
-    
     activity = db.Column(db.String(50), nullable=False)

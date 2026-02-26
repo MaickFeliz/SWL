@@ -38,6 +38,14 @@
                         </a>
                     </li>
                     
+                    {% if current_user.role in ['admin', 'bibliotecario'] %}
+                    <li class="nav-item">
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.catalog_manage') }}">
+                            <i class="bi bi-collection-fill me-1"></i>Catálogo de Equipos
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                     {% if current_user.role == 'admin' %}
                     <li class="nav-item">
                         <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.manage_users') }}">

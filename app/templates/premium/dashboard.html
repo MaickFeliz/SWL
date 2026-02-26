@@ -14,7 +14,6 @@
     <p class="text-secondary">Bienvenido, {{ current_user.full_name }}.</p>
 </div>
 
-<!-- ACTION CARDS -->
 <div class="row mb-5">
     <div class="col-md-4">
         <div class="card card-body text-center shadow-sm h-100">
@@ -45,7 +44,6 @@
     </div>
 </div>
 
-<!-- LOANS TABLE -->
 <div class="card shadow-md">
     <div class="card-header">
         <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Mis Solicitudes Recientes</h5>
@@ -64,16 +62,16 @@
                 <tbody>
                     {% for loan in loans %}
                     <tr>
-                        <td><strong>{{ loan.item_name }}</strong></td>
+                        <td><strong>{{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}</strong></td>
                         <td>
                             <span class="badge 
                                 {% if loan.status == 'pendiente' %}bg-warning text-dark
-                                {% elif loan.status == 'aprobado' %}bg-success
+                                {% elif loan.status == 'activo' %}bg-success
                                 {% else %}bg-secondary{% endif %}">
                                 {{ loan.status|capitalize }}
                             </span>
                         </td>
-                        <td><span class="badge bg-primary-soft">{{ loan.item_code or 'Esperando...' }}</span></td>
+                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance else 'Esperando asignación' }}</span></td>
                         <td>{{ loan.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
                     </tr>
                     {% endfor %}

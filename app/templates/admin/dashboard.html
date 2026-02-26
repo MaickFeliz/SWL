@@ -4,7 +4,9 @@
 <div class="print-header">
     <h1>SWL - Reporte Administrativo</h1>
     <p>Reporte de Control de Préstamos e Inventario</p>
-    <p>Fecha: <script>document.write(new Date().toLocaleDateString())</script></p>
+    <p>Fecha:
+        <script>document.write(new Date().toLocaleDateString())</script>
+    </p>
 </div>
 
 <div class="no-print mb-4">
@@ -16,7 +18,6 @@
     <p class="text-secondary">Gestión de préstamos y devoluciones.</p>
 </div>
 
-<!-- STATS CARDS -->
 <div class="row mb-4 no-print">
     <div class="col-md-3">
         <div class="card border-start shadow-sm h-100"
@@ -75,7 +76,6 @@
     </div>
 </div>
 
-<!-- TOP ITEMS & TASKS -->
 <div class="row mb-4 no-print">
     <div class="col-12">
         <div class="card shadow-sm h-100">
@@ -86,7 +86,7 @@
                 {% for item in top_items %}
                 <div class="text-center">
                     <div class="h4 mb-0 font-weight-bold" style="color: #3b82f6;">{{ item.total }}</div>
-                    <div class="text-xs text-muted text-uppercase">{{ item.item_name }}</div>
+                    <div class="text-xs text-muted text-uppercase">{{ item.title_or_name }}</div>
                 </div>
                 {% else %}
                 <span class="text-muted">No hay datos suficientes registrados.</span>
@@ -96,7 +96,6 @@
     </div>
 </div>
 
-<!-- LOANS TABLE -->
 <div class="card shadow-md no-print">
     <div class="card-header">
         <ul class="nav nav-pills card-header-pills">
@@ -136,38 +135,36 @@
                         </td>
                         <td><span class="badge bg-light text-dark">{{ loan.requester.role|capitalize }}</span></td>
                         <td>
-                            {{ loan.item_name }}
-                            {% if loan.quantity > 1 %}
-                            <span class="badge bg-dark rounded-pill">x{{ loan.quantity }}</span>
-                            {% endif %}
+                            {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'N/A' }}
                             {% if loan.environment %}
                             <br><small class="text-muted"><i class="bi bi-geo-alt-fill me-1"></i>{{ loan.environment
                                 }}</small>
                             {% endif %}
                         </td>
 
-                        <td><span class="badge bg-primary-soft">{{ loan.item_code or '---' }}</span></td>
+                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance
+                                else '---' }}</span></td>
 
                         <td>{{ loan.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td class="text-center">
                             {% if loan.status == 'pendiente' %}
-                            <div class="d-flex align-items-center gap-2">
-                                <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST"
-                                    class="d-flex align-items-center mb-0">
-                                    <input type="text" name="serial" placeholder="Ingresar Placa/Serial" 
-                                        {% if loan.loan_type in ['computo', 'libro'] %}required{% endif %}
-                                        class="form-control form-control-sm me-2">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST" class="mb-0">
                                     <button type="submit" class="btn btn-success btn-sm flex-shrink-0"><i
                                             class="bi bi-check-circle-fill me-1"></i>Aprobar</button>
                                 </form>
-                                <form action="{{ url_for('admin.reject_loan', id=loan.id) }}" method="POST" class="mb-0">
+                                <form action="{{ url_for('admin.reject_loan', id=loan.id) }}" method="POST"
+                                    class="mb-0">
                                     <button type="submit" class="btn btn-danger btn-sm flex-shrink-0"><i
                                             class="bi bi-x-circle-fill me-1"></i>Rechazar</button>
                                 </form>
                             </div>
-                            {% elif loan.status == 'activo' %}
-                            <a href="{{ url_for('admin.return_item', id=loan.id) }}" class="btn btn-info btn-sm"><i
-                                    class="bi bi-arrow-down-left-circle-fill me-1"></i>Recibir</a>
+                            {% elif loan.status in ['activo', 'atrasado'] %}
+                            <form action="{{ url_for('admin.return_item', id=loan.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-info btn-sm"><i
+                                        class="bi bi-arrow-down-left-circle-fill me-1"></i>Recibir (Devolución)</button>
+                            </form>
                             {% else %}
                             <span class="badge bg-secondary-soft"><i class="bi bi-check-all me-1"></i>Cerrado</span>
                             {% endif %}

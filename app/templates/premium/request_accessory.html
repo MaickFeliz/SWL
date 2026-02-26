@@ -13,12 +13,12 @@
 
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="item_id" class="form-label">Selecciona el Elemento</label>
-                        <select name="item_id" id="item_id" class="form-select form-select-lg" required>
+                        <label for="catalog_id" class="form-label">Selecciona el Elemento</label>
+                        <select name="catalog_id" id="catalog_id" class="form-select form-select-lg" required>
                             <option value="" selected disabled>-- Ver elementos disponibles --</option>
                             {% for item in items %}
-                            <option value="{{ item.id }}" {% if item.available_quantity==0 %}disabled{% endif %}>
-                                {{ item.name }} (Disponibles: {{ item.available_quantity }})
+                            <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                                {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
                             </option>
                             {% endfor %}
                         </select>

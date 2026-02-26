@@ -1,10 +1,12 @@
 from app import create_app, db
-from app.models import User, Inventory
+from app.models import User, Catalog, ItemInstance
 
 app = create_app()
 
 if __name__ == '__main__':
     with app.app_context():
+        db.create_all() 
+
         if not User.query.filter_by(document_id='1000000000').first():
             print("Creando superusuario 'admin'...")
             admin = User(
@@ -28,16 +30,24 @@ if __name__ == '__main__':
         ]
 
         for item in initial_items:
-            exists = Inventory.query.filter_by(name=item['name']).first()
+            exists = Catalog.query.filter_by(title_or_name=item['name']).first()
             if not exists:
                 print(f"Creando item de inventario: {item['name']}")
-                new_item = Inventory(
-                    name=item['name'],
-                    total_quantity=item['total'],
-                    available_quantity=item['total'],
+                new_item = Catalog(
+                    title_or_name=item['name'],
                     category=item['category']
                 )
                 db.session.add(new_item)
+                db.session.flush()
+                
+                for i in range(item['total']):
+                    code = f"{item['name'][:3].upper().replace(' ', '')}-{new_item.id}-{i+1:03d}"
+                    instance = ItemInstance(
+                        catalog_id=new_item.id,
+                        unique_code=code,
+                        status='disponible'
+                    )
+                    db.session.add(instance)
         
         db.session.commit()
     

@@ -40,6 +40,18 @@
                     <hr class="my-4">
 
                     <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Seleccione el Equipo</label>
+                            <select name="catalog_id" class="form-select form-select-lg" required>
+                                <option value="" selected disabled>-- Ver portátiles disponibles --</option>
+                                {% for item in items %}
+                                <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                                    {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Ambiente de Formación</label>
                             <input type="text" name="environment" class="form-control form-control-lg"
@@ -73,7 +85,6 @@
 </div>
 
 <script>
-    // Poner fecha y hora actual automáticamente
     document.getElementById('fechaHora').value = new Date().toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' });
 </script>
 {% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Códigos Físicos de: {{ catalog_item.title_or_name }}</h2>
+    <a href="{{ url_for('admin.catalog_manage') }}" class="btn btn-secondary mb-3">&larr; Volver al Catálogo</a>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.manage_instances', catalog_id=catalog_item.id) }}">
+                <div class="row">
+                    <div class="col-md-5">
+                        <input type="text" name="unique_code" class="form-control"
+                            placeholder="Placa SENA / Serial / Código de Barras" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="condition" class="form-control"
+                            placeholder="Condición (Ej: Buen estado, Rayón en pantalla)">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-success w-100">Registrar Código</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Código Único</th>
+                <th>Estado</th>
+                <th>Condición Física</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for instance in instances %}
+            <tr>
+                <td><strong>{{ instance.unique_code }}</strong></td>
+                <td>
+                    {% if instance.status == 'disponible' %}<span class="badge bg-success">Disponible</span>
+                    {% elif instance.status == 'prestado' %}<span class="badge bg-warning">Prestado</span>
+                    {% else %}<span class="badge bg-danger">{{ instance.status|capitalize }}</span>{% endif %}
+                </td>
+                <td>{{ instance.condition or 'N/A' }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.update_instance_status', instance_id=instance.id) }}"
+                        style="display:inline;">
+                        <select name="status" onchange="this.form.submit()" class="form-select form-select-sm"
+                            style="display:inline-block; width:auto;">
+                            <option value="disponible" {% if instance.status=='disponible' %}selected{% endif %}>
+                                Disponible</option>
+                            <option value="mantenimiento" {% if instance.status=='mantenimiento' %}selected{% endif %}>
+                                Mantenimiento</option>
+                            <option value="perdido" {% if instance.status=='perdido' %}selected{% endif %}>Perdido
+                            </option>
+                        </select>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.instance_delete', instance_id=instance.id) }}"
+                        style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('¿Eliminar este código físico permanentemente?')">Borrar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.admin import bp
 from app import db
-from app.models import Loan, User, Inventory
+from app.models import Loan, User, Catalog, ItemInstance
 from datetime import datetime
 from sqlalchemy import or_
 from functools import wraps
@@ -11,8 +11,6 @@ from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
 from app.forms import AdminUserForm, ImportForm
-import pandas as pd
-from werkzeug.utils import secure_filename
 
 @bp.route('/users')
 @role_required('admin')
@@ -51,7 +49,6 @@ def create_user():
             return redirect(url_for('admin.manage_users'))
 
         user = User(
-            username=form.email.data,
             full_name=form.full_name.data,
             document_id=form.document_id.data,
             email=form.email.data,
@@ -68,6 +65,13 @@ def create_user():
             for error in errors:
                 flash(f"Error ({field}): {error}", 'danger')
     return redirect(url_for('admin.manage_users'))
+
+@bp.route('/users/bulk_import', methods=['POST'])
+@role_required('admin')
+def bulk_import():
+    import_form = ImportForm()
+    if import_form.validate_on_submit():
+        return redirect(url_for('admin.manage_users'))
 
 @bp.route('/users/edit/<int:id>', methods=['POST'])
 @role_required('admin')
@@ -105,10 +109,12 @@ def admin_dashboard():
     returned_count = Loan.query.filter_by(status='devuelto').count()
     atrasado_count = Loan.query.filter_by(status='atrasado').count()
     
-    top_items = db.session.query(Loan.item_name, func.count(Loan.id).label('total')).group_by(Loan.item_name).order_by(func.count(Loan.id).desc()).limit(5).all()
+    top_items = db.session.query(
+        Catalog.title_or_name, 
+        func.count(Loan.id).label('total')
+    ).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
 
     query = Loan.query.filter(Loan.status == status_filter)
-
     loans = query.order_by(Loan.request_date.desc()).all()
     
     stats = {
@@ -123,20 +129,7 @@ def admin_dashboard():
 @bp.route('/approve/<int:id>', methods=['POST'])
 @role_required('bibliotecario')
 def approve(id):
-    serial = request.form.get('serial')
-    loan = Loan.query.get_or_404(id)
-    
-    if loan.loan_type in ['computo', 'libro'] and not serial:
-        flash('Falta el serial o código del elemento', 'danger')
-        return redirect(url_for('admin.admin_dashboard', status='pendiente'))
-        
-    if loan.loan_type == 'elemento':
-        success, msg = InventoryService.deduct_stock(loan.item_name, loan.quantity)
-        if not success:
-            flash(msg, 'danger')
-            return redirect(url_for('admin.admin_dashboard', status='pendiente'))
-
-    success, msg = LoanService.approve_loan(id, serial)
+    success, msg = LoanService.approve_loan(id)
     
     if success:
         flash(msg, 'success')
@@ -145,14 +138,9 @@ def approve(id):
         flash(msg, 'danger')
         return redirect(url_for('admin.admin_dashboard', status='pendiente'))
 
-@bp.route('/return/<int:id>')
+@bp.route('/return/<int:id>', methods=['POST'])
 @role_required('bibliotecario')
 def return_item(id):
-    loan = Loan.query.get_or_404(id)
-    
-    if loan.loan_type == 'elemento' and loan.status in ['activo', 'atrasado']:
-        InventoryService.add_stock(loan.item_name, loan.quantity)
-
     success, msg = LoanService.return_loan(id)
     
     if success:
@@ -169,154 +157,110 @@ def reject_loan(id):
     if loan.status == 'pendiente':
         loan.status = 'rechazado'
         loan.observation = 'Rechazado por el bibliotecario.' 
+        
+        if loan.item_instance:
+            loan.item_instance.status = 'disponible'
+
         db.session.commit()
-        flash('Solicitud rechazada con éxito. A otra cosa.', 'success')
+        flash('Solicitud rechazada con éxito. Se liberó la reserva física de la biblioteca.', 'success')
     else:
         flash('Solo puedes rechazar solicitudes que estén pendientes.', 'warning')
     return redirect(url_for('admin.admin_dashboard', status='pendiente'))
 
-@bp.route('/inventory', methods=['GET', 'POST'])
-@role_required('bibliotecario')
-def inventory_manage():
+# --- RUTAS DE GESTIÓN DE CATÁLOGO E INSTANCIAS (RESTUARADAS) ---
+
+@bp.route('/catalog', methods=['GET', 'POST'])
+@role_required('bibliotecario', 'admin')
+def catalog_manage():
     if request.method == 'POST':
-        name = request.form.get('name')
+        title = request.form.get('title_or_name')
         category = request.form.get('category')
-        quantity = int(request.form.get('quantity'))
+        author = request.form.get('author_or_brand')
 
-        success, msg = InventoryService.create_item(name, category, quantity)
-        
-        if success:
-            flash(msg, 'success')
-        else:
-            flash(msg, 'warning')
-            
-        return redirect(url_for('admin.inventory_manage'))
+        new_catalog_item = Catalog(title_or_name=title, category=category, author_or_brand=author)
+        db.session.add(new_catalog_item)
+        db.session.commit()
+        flash(f'Elemento de catálogo "{title}" creado con éxito.', 'success')
+        return redirect(url_for('admin.catalog_manage'))
 
-    page = request.args.get('page', 1, type=int)
     search_query = request.args.get('search', '')
-
-    query = Inventory.query
+    query = Catalog.query
     if search_query:
         query = query.filter(
             or_(
-                Inventory.name.ilike(f'%{search_query}%'),
-                Inventory.category.ilike(f'%{search_query}%')
+                Catalog.title_or_name.ilike(f'%{search_query}%'),
+                Catalog.category.ilike(f'%{search_query}%')
             )
         )
     
-    paginated_inventory = query.paginate(page=page, per_page=10, error_out=False)
+    items = query.order_by(Catalog.title_or_name).all()
+    return render_template('admin/catalog.html', items=items, search_query=search_query)
 
-    import_form = ImportForm()
-    return render_template('admin/inventory.html', 
-                           items=paginated_inventory.items, 
-                           pagination=paginated_inventory,
-                           search_query=search_query,
-                           import_form=import_form)
-
-@bp.route('/inventory/update/<int:id>', methods=['POST'])
-@role_required('bibliotecario')
-def inventory_update(id):
-    item = Inventory.query.get_or_404(id)
-    action = request.form.get('action')
-    amount = int(request.form.get('amount'))
-
-    if action == 'add':
-        item.total_quantity += amount
-        item.available_quantity += amount
-        flash(f'Se agregaron {amount} unidades a {item.name}.', 'success')
-    elif action == 'remove':
-        if item.available_quantity >= amount:
-            item.total_quantity -= amount
-            item.available_quantity -= amount
-            flash(f'Se eliminaron {amount} unidades de {item.name}.', 'warning')
-        else:
-            flash('No puedes eliminar más de lo que hay disponible.', 'danger')
-
-    db.session.commit()
-    return redirect(url_for('admin.inventory_manage'))
-
-@bp.route('/inventory/delete/<int:id>')
-@role_required('bibliotecario')
-def inventory_delete(id):
-    item = Inventory.query.get_or_404(id)
-    db.session.delete(item)
-    db.session.commit()
-    flash('Elemento eliminado del sistema.', 'info')
-    return redirect(url_for('admin.inventory_manage'))
-
-@bp.route('/inventory/edit_details/<int:id>', methods=['POST'])
-@role_required('bibliotecario')
-def inventory_edit_details(id):
-    item = Inventory.query.get_or_404(id)
-    item.name = request.form.get('name')
-    item.category = request.form.get('category')
-    
-    db.session.commit()
-    flash(f'Detalles de "{item.name}" actualizados.', 'success')
-    return redirect(url_for('admin.inventory_manage'))
-
-@bp.route('/import', methods=['POST'])
-@role_required('admin')
-def bulk_import():
-    form = ImportForm()
-    if form.validate_on_submit():
-        file = form.file.data
-        filename = secure_filename(file.filename)
-        ext = filename.rsplit('.', 1)[-1].lower()
-        source_type = request.form.get('import_type', 'users')
-        
-        try:
-            if ext == 'csv':
-                df = pd.read_csv(file)
-            else:
-                df = pd.read_excel(file)
-                
-            added = 0
-            if source_type == 'users':
-                for _, row in df.iterrows():
-                    doc = str(row.get('document_id', '')).strip()
-                    email = str(row.get('email', '')).strip()
-                    if not doc or not email or doc == 'nan' or email == 'nan':
-                        continue
-                        
-                    if User.query.filter((User.document_id == doc) | (User.email == email)).first():
-                        continue
-                        
-                    user = User(
-                        username=email,
-                        full_name=str(row.get('full_name', '')),
-                        document_id=doc,
-                        email=email,
-                        phone=str(row.get('phone', '')),
-                        role=str(row.get('role', 'cliente')).lower(),
-                        program_name=str(row.get('program_name', '')) if 'program_name' in row else None
-                    )
-                    user.set_password(str(row.get('password', '12345678')))
-                    db.session.add(user)
-                    added += 1
-            elif source_type == 'inventory':
-                for _, row in df.iterrows():
-                    name = str(row.get('name', '')).strip()
-                    if not name or name == 'nan':
-                        continue
-                    if Inventory.query.filter_by(name=name).first():
-                        continue
-                    qty = int(row.get('total_quantity', 1) if not pd.isna(row.get('total_quantity')) else 1)
-                    item = Inventory(
-                        name=name,
-                        total_quantity=qty,
-                        available_quantity=qty,
-                        category=str(row.get('category', 'general')).lower()
-                    )
-                    db.session.add(item)
-                    added += 1
-            
-            db.session.commit()
-            flash(f'Importación masiva completada: {added} nuevos registros agregados.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error al procesar el archivo: revise el formato de las columnas. {str(e)}', 'danger')
+@bp.route('/catalog/delete/<int:id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def catalog_delete(id):
+    item = Catalog.query.get_or_404(id)
+    if item.total_count > 0:
+        flash('No puedes eliminar un catálogo que tiene instancias físicas registradas.', 'danger')
     else:
-        flash('Seleccione un archivo CSV o Excel válido.', 'danger')
+        db.session.delete(item)
+        db.session.commit()
+        flash('Elemento de catálogo eliminado.', 'success')
+    return redirect(url_for('admin.catalog_manage'))
+
+@bp.route('/catalog/<int:catalog_id>/instances', methods=['GET', 'POST'])
+@role_required('bibliotecario', 'admin')
+def manage_instances(catalog_id):
+    catalog_item = Catalog.query.get_or_404(catalog_id)
+
+    if request.method == 'POST':
+        unique_code = request.form.get('unique_code').strip()
+        condition = request.form.get('condition')
+        
+        if ItemInstance.query.filter_by(unique_code=unique_code).first():
+            flash(f'El código/serial "{unique_code}" ya está registrado en el sistema.', 'danger')
+        else:
+            new_instance = ItemInstance(
+                catalog_id=catalog_id,
+                unique_code=unique_code,
+                condition=condition,
+                status='disponible'
+            )
+            db.session.add(new_instance)
+            db.session.commit()
+            flash(f'Instancia "{unique_code}" agregada correctamente a {catalog_item.title_or_name}.', 'success')
+            
+        return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
+
+    instances = catalog_item.instances.all()
+    return render_template('admin/instances.html', catalog_item=catalog_item, instances=instances)
+
+@bp.route('/instance/update_status/<int:instance_id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def update_instance_status(instance_id):
+    instance = ItemInstance.query.get_or_404(instance_id)
+    new_status = request.form.get('status')
     
-    return redirect(request.referrer or url_for('admin.admin_dashboard'))
+    if new_status in ['disponible', 'mantenimiento', 'perdido']:
+        instance.status = new_status
+        db.session.commit()
+        flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status}.', 'success')
+    else:
+        flash('Estado no válido.', 'danger')
+        
+    return redirect(url_for('admin.manage_instances', catalog_id=instance.catalog_id))
+
+@bp.route('/instance/delete/<int:instance_id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def instance_delete(instance_id):
+    instance = ItemInstance.query.get_or_404(instance_id)
+    catalog_id = instance.catalog_id
+    
+    if instance.loans.filter(Loan.status.in_(['pendiente', 'activo', 'atrasado'])).first():
+        flash('No puedes eliminar una instancia que se encuentra en un proceso de préstamo activo.', 'danger')
+    else:
+        db.session.delete(instance)
+        db.session.commit()
+        flash(f'Instancia {instance.unique_code} eliminada del sistema.', 'success')
+        
+    return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))

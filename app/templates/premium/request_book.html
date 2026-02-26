@@ -7,28 +7,29 @@
                 <div class="text-center mb-4">
                     <i class="bi bi-book-half fs-1 text-info"></i>
                     <h2 class="card-title mt-2">Solicitud de Libro</h2>
-                    <p class="card-text text-muted">Ingresa los datos del libro que deseas consultar en sala.</p>
+                    <p class="card-text text-muted">Selecciona el libro que deseas consultar en sala.</p>
                 </div>
 
                 <form method="POST">
-                    <div class="mb-3">
-                        <label for="book_title" class="form-label">Título del Libro</label>
-                        <input type="text" name="book_title" id="book_title" class="form-control form-control-lg"
-                            placeholder="Ej: Cien Años de Soledad" required>
-                    </div>
-
                     <div class="mb-4">
-                        <label for="book_code" class="form-label">Código del Libro (Cota)</label>
-                        <input type="text" name="book_code" id="book_code" class="form-control form-control-lg"
-                            placeholder="Ej: LIT-863-GAR" required>
-                        <small class="form-text text-muted">Encuentra este código en la etiqueta del lomo del
-                            libro.</small>
+                        <label for="catalog_id" class="form-label">Seleccione el Libro</label>
+                        <select name="catalog_id" id="catalog_id" class="form-select form-select-lg" required>
+                            <option value="" selected disabled>-- Libros disponibles en el catálogo --</option>
+                            {% for item in items %}
+                            <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                                {{ item.title_or_name }} {% if item.author_or_brand %} - {{ item.author_or_brand }}{%
+                                endif %}
+                                (Disponibles: {{ item.available_count }})
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <div class="alert alert-info bg-info-soft border-info-soft">
                         <i class="bi bi-info-circle-fill me-2"></i>
                         <small>Recuerda que los libros son solo para consulta en sala y deben ser devueltos antes de
-                            retirarte de la biblioteca.</small>
+                            retirarte de la biblioteca. El sistema apartará una copia física para ti
+                            automáticamente.</small>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">

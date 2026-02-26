@@ -1,52 +1,37 @@
 from app import db
-from app.models import Inventory
+from app.models import Catalog, ItemInstance
 from flask import current_app
 
 class InventoryService:
     @staticmethod
-    def deduct_stock(item_name, quantity):
-        item = Inventory.query.filter_by(name=item_name).first()
-        if not item:
-            return False, "Ítem no encontrado en el inventario."
+    def reserve_instances(catalog_id, quantity):
+        catalog = Catalog.query.get(int(catalog_id))
+        if not catalog:
+            return False, [], "Catálogo no encontrado."
             
-        if item.available_quantity < quantity:
-            return False, f"Stock insuficiente. Disponibles: {item.available_quantity}"
-            
-        item.available_quantity -= quantity
-        db.session.commit()
+        # Buscar las instancias físicas que estén disponibles
+        available_instances = catalog.instances.filter_by(status='disponible').limit(quantity).all()
         
-        # Log critical warning si el stock llega a cero
-        if item.available_quantity == 0:
-            current_app.logger.warning(f"¡ALERTA DE STOCK! El ítem '{item.name}' ha llegado a cero unidades disponibles.")
+        if len(available_instances) < quantity:
+            return False, [], f"Stock insuficiente. Disponibles: {catalog.available_count}"
             
-        return True, "Stock descontado exitosamente."
+        reserved_ids = []
+        for instance in available_instances:
+            # Cambiamos su estado de inmediato para que nadie más lo tome
+            instance.status = 'prestado' 
+            reserved_ids.append(instance.id)
+            
+        if catalog.available_count == 0:
+            current_app.logger.warning(f"¡ALERTA DE STOCK! El catálogo '{catalog.title_or_name}' se ha quedado sin unidades disponibles.")
+            
+        return True, reserved_ids, "Instancias físicas reservadas exitosamente."
 
     @staticmethod
-    def add_stock(item_name, quantity):
-        item = Inventory.query.filter_by(name=item_name).first()
-        if not item:
-            return False, "Ítem no encontrado para restaurar stock."
+    def release_instance(instance_id):
+        instance = ItemInstance.query.get(instance_id)
+        if not instance:
+            return False, "Instancia física no encontrada."
             
-        item.available_quantity += quantity
+        instance.status = 'disponible'
+        return True, "Instancia liberada y devuelta al inventario."
         
-        # Evitar sobreflujo del total original (opcional, pero buena práctica)
-        if item.available_quantity > item.total_quantity:
-             item.available_quantity = item.total_quantity
-             
-        db.session.commit()
-        return True, "Stock restaurado."
-        
-    @staticmethod
-    def create_item(name, category, quantity):
-        if Inventory.query.filter_by(name=name).first():
-            return False, "El elemento ya existe."
-            
-        new_item = Inventory(
-            name=name, 
-            category=category, 
-            total_quantity=quantity, 
-            available_quantity=quantity
-        )
-        db.session.add(new_item)
-        db.session.commit()
-        return True, "Elemento creado."

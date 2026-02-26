@@ -49,7 +49,7 @@
                             <button class="nav-link" id="nav-elem-tab" data-bs-toggle="tab" data-bs-target="#nav-elem"
                                 type="button" role="tab" aria-controls="nav-elem" aria-selected="false"
                                 onclick="setTyp('elemento')">
-                                <i class="bi bi-box-seam me-2"></i>Elemento de Inventario
+                                <i class="bi bi-box-seam me-2"></i>Elemento de Catálogo
                             </button>
                         </div>
                     </nav>
@@ -62,15 +62,30 @@
                                 <input type="text" name="environment" class="form-control form-control-lg"
                                     placeholder="Ej: 204 / Sistemas 1">
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Seleccione el Equipo</label>
+                                <select name="catalog_id" class="form-select form-select-lg">
+                                    {% for item in items %}
+                                    {% if item.category == 'computo' %}
+                                    <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                                        {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
                         <div class="tab-pane fade" id="nav-elem" role="tabpanel" aria-labelledby="nav-elem-tab">
                             <div class="mb-3">
                                 <label class="form-label">Seleccione Elemento</label>
-                                <select name="inventory_id" class="form-select form-select-lg">
+                                <select name="catalog_id" class="form-select form-select-lg">
                                     {% for item in items %}
-                                    <option value="{{ item.id }}" {% if item.available_quantity==0 %}disabled{% endif
-                                        %}>{{ item.name }} (Disponibles: {{ item.available_quantity }})</option>
+                                    {% if item.category != 'computo' %}
+                                    <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                                        {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
+                                    </option>
+                                    {% endif %}
                                     {% endfor %}
                                 </select>
                             </div>
