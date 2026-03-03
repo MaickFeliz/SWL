@@ -1,6 +1,7 @@
 from app import db
 from app.models import Catalog, ItemInstance
 from flask import current_app
+from sqlalchemy.sql import func
 
 class InventoryService:
     @staticmethod
@@ -9,15 +10,16 @@ class InventoryService:
         if not catalog:
             return False, [], "Catálogo no encontrado."
             
-        # Buscar las instancias físicas que estén disponibles
-        available_instances = catalog.instances.filter_by(status='disponible').limit(quantity).all()
+        # BLOQUEO DE FILA: Evita condiciones de carrera en bases de datos reales
+        available_instances = catalog.instances.filter_by(status='disponible')\
+            .limit(quantity).with_for_update().all()
         
         if len(available_instances) < quantity:
-            return False, [], f"Stock insuficiente. Disponibles: {catalog.available_count}"
+            return False, [], f"Stock insuficiente. Disponibles: {len(available_instances)}"
             
         reserved_ids = []
         for instance in available_instances:
-            # Cambiamos su estado de inmediato para que nadie más lo tome
+            # Cambiamos su estado de inmediato
             instance.status = 'prestado' 
             reserved_ids.append(instance.id)
             
@@ -34,4 +36,24 @@ class InventoryService:
             
         instance.status = 'disponible'
         return True, "Instancia liberada y devuelta al inventario."
-        
+
+class CatalogService:
+    @staticmethod
+    def get_paginated_catalog(page, per_page=12, category_filter=None, exclude_category=None):
+        """
+        Retorna los ítems del catálogo paginados junto con su conteo de stock,
+        solucionando el problema N+1 mediante un JOIN y GROUP BY.
+        """
+        query = db.session.query(
+            Catalog, 
+            func.count(ItemInstance.id).label('available_count')
+        ).outerjoin(
+            ItemInstance, (ItemInstance.catalog_id == Catalog.id) & (ItemInstance.status == 'disponible')
+        ).group_by(Catalog.id)
+
+        if category_filter:
+            query = query.filter(Catalog.category == category_filter)
+        if exclude_category:
+            query = query.filter(Catalog.category != exclude_category)
+
+        return query.paginate(page=page, per_page=per_page, error_out=False)

@@ -1,4 +1,5 @@
 from app import db, login_manager
+from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -84,7 +85,9 @@ class Loan(db.Model):
         if self.is_overdue:
             days_late = (datetime.utcnow() - self.due_date).days
             if days_late > 0:
-                return days_late * 5000.0
+                # Obtenemos el valor de la multa desde la configuración
+                fee = current_app.config.get('PENALTY_FEE_PER_DAY', 5000.0)
+                return days_late * fee
         return 0.0
 
 # 4. USO DE BIBLIOTECA

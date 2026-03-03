@@ -65,7 +65,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Seleccione el Equipo</label>
                                 <select name="catalog_id" class="form-select form-select-lg">
-                                    {% for item in items %}
+                                    {% for item in items.items %}
                                     {% if item.category == 'computo' %}
                                     <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
                                         {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
@@ -80,7 +80,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Seleccione Elemento</label>
                                 <select name="catalog_id" class="form-select form-select-lg">
-                                    {% for item in items %}
+                                    {% for item in items.items %}
                                     {% if item.category != 'computo' %}
                                     <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
                                         {{ item.title_or_name }} (Disponibles: {{ item.available_count }})

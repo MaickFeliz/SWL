@@ -1,15 +1,18 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.main import bp  # CORRECCIÓN 1: Blueprint correcto para evitar colisión de rutas
+from markupsafe import escape
+from app.services.inventory_service import InventoryService, CatalogService
+from app.main import bp
 from app import db
 from app.models import Loan, Catalog, ItemInstance, User, LibraryLog
 from app.services.loan_service import LoanService
-from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
 from datetime import datetime
 
 @bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
+    page = request.args.get('page', 1, type=int) # Paginación
+    
     if request.method == 'GET':
         return render_template('main/fast_loan.html')
 
@@ -20,50 +23,32 @@ def fast_loan():
             flash('Usuario no encontrado. Debes estar registrado.', 'danger')
             return redirect(url_for('main.fast_loan'))
         
-        items = Catalog.query.filter(Catalog.category != 'general').all() if user.role == 'premium' else Catalog.query.all()
-        return render_template('main/fast_loan.html', user=user, items=items)
+        # Paginación y prevención de problema N+1
+        exclude_cat = 'general' if user.role == 'premium' else None
+        paginated_items = CatalogService.get_paginated_catalog(page=page, per_page=12, exclude_category=exclude_cat)
+        
+        return render_template('main/fast_loan.html', user=user, items=paginated_items)
 
     if request.form.get('confirm_loan'):
         user_id = request.form.get('user_id')
         item_type = request.form.get('item_type')
         environment = request.form.get('environment')
+        catalog_id = request.form.get('catalog_id')
+        quantity = 1 if item_type == 'computo' else int(request.form.get('quantity', 1))
+
+        if quantity <= 0:
+            flash('La cantidad solicitada debe ser mayor a cero.', 'danger')
+            return redirect(url_for('main.fast_loan'))
 
         try:
-            if item_type == 'computo':
-                # CORRECCIÓN 2: El sistema ahora es dinámico y lee el ID del catálogo, no un texto quemado
-                catalog_id = request.form.get('catalog_id')
-                catalog_item = Catalog.query.get(catalog_id)
+            # La lógica de validación ahora confía más en el servicio
+            success, reserved_ids, msg = InventoryService.reserve_instances(catalog_id, quantity)
+            if not success:
+                flash(msg, 'warning')
+                return redirect(url_for('main.fast_loan'))
                 
-                if not catalog_item or catalog_item.category != 'computo' or catalog_item.available_count < 1:
-                    flash('Equipo de cómputo inválido o sin stock físico disponible.', 'warning')
-                    return redirect(url_for('main.fast_loan'))
-                
-                success, reserved_ids, msg = InventoryService.reserve_instances(catalog_item.id, 1)
-                if not success:
-                    flash(msg, 'danger')
-                    return redirect(url_for('main.fast_loan'))
-                    
-                LoanService.create_loan(user_id=user_id, instance_id=reserved_ids[0], environment=environment)
-            else:
-                catalog_id = request.form.get('catalog_id')
-                quantity = int(request.form.get('quantity', 1))
-                if quantity <= 0:
-                    flash('La cantidad solicitada debe ser mayor a cero.', 'danger')
-                    return redirect(url_for('main.fast_loan'))
-                    
-                catalog_item = Catalog.query.get(catalog_id)
-                
-                if not catalog_item or catalog_item.available_count < quantity:
-                    flash('Stock físico insuficiente para realizar el préstamo.', 'warning')
-                    return redirect(url_for('main.fast_loan'))
-                
-                success, reserved_ids, msg = InventoryService.reserve_instances(catalog_item.id, quantity)
-                if not success:
-                    flash(msg, 'danger')
-                    return redirect(url_for('main.fast_loan'))
-                    
-                for inst_id in reserved_ids:
-                    LoanService.create_loan(user_id=user_id, instance_id=inst_id, environment=environment)
+            for inst_id in reserved_ids:
+                LoanService.create_loan(user_id=user_id, instance_id=inst_id, environment=environment)
             
             db.session.commit()
             flash('Préstamo rápido registrado con éxito.', 'success')
@@ -74,6 +59,33 @@ def fast_loan():
 
         return redirect(url_for('main.index'))
     return redirect(url_for('main.fast_loan'))
+
+@bp.route('/visit', methods=['GET', 'POST'])
+def register_visit():
+    if request.method == 'POST':
+        # Sanitización de entradas manuales contra XSS
+        document_id = escape(request.form.get('document_id', '').strip())
+        activity = escape(request.form.get('activity', '').strip())
+        manual_name = escape(request.form.get('visitor_name', '').strip())
+        
+        user = User.query.filter_by(document_id=document_id).first()
+        
+        if user:
+            name, role = user.full_name, user.role
+        else:
+            if not manual_name:
+                flash('Documento no registrado. Por favor ingrese su Nombre.', 'warning')
+                return render_template('main/visit.html', pre_doc=document_id)
+            name, role = manual_name, 'Visitante'
+            
+        visit = LibraryLog(visitor_name=name, visitor_id=document_id, role=role, activity=activity)
+        db.session.add(visit)
+        db.session.commit()
+        
+        flash(f'Bienvenido/a {name}. Actividad: {activity}', 'success')
+        return redirect(url_for('main.register_visit'))
+        
+    return render_template('main/visit.html')
 
 @bp.route('/')
 def index():
@@ -224,28 +236,4 @@ def request_book():
         return redirect(url_for('main.premium_dashboard'))
     return render_template('premium/request_book.html', items=available_books)
 
-@bp.route('/visit', methods=['GET', 'POST'])
-def register_visit():
-    if request.method == 'POST':
-        document_id = request.form.get('document_id')
-        activity = request.form.get('activity')
-        manual_name = request.form.get('visitor_name')
-        user = User.query.filter_by(document_id=document_id).first()
-        
-        if user:
-            name, role = user.full_name, user.role
-        else:
-            if not manual_name:
-                flash('Documento no registrado. Por favor ingrese su Nombre.', 'warning')
-                return render_template('main/visit.html', pre_doc=document_id)
-            name, role = manual_name, 'Visitante'
-            
-        visit = LibraryLog(visitor_name=name, visitor_id=document_id, role=role, activity=activity)
-        db.session.add(visit)
-        db.session.commit()
-        
-        flash(f'Bienvenido/a {name}. Actividad: {activity}', 'success')
-        return redirect(url_for('main.register_visit'))
-        
-    return render_template('main/visit.html')
     
