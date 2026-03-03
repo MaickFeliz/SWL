@@ -9,15 +9,18 @@
             <form method="POST" action="{{ url_for('admin.manage_instances', catalog_id=catalog_item.id) }}">
                 {{ form.hidden_tag() }}
                 <div class="row">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         {{ form.unique_code(class="form-control", placeholder="Placa SENA / Serial / Código de Barras")
                         }}
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         {{ form.condition(class="form-control", placeholder="Condición (Ej: Buen estado, Rayón en
                         pantalla)") }}
                     </div>
                     <div class="col-md-2">
+                        {{ form.status(class="form-select") }}
+                    </div>
+                    <div class="col-md-2 mt-2 mt-md-0">
                         {{ form.submit(class="btn btn-success w-100", value="Registrar Código") }}
                     </div>
                 </div>

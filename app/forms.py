@@ -22,7 +22,7 @@ class FastLoanSearchForm(FlaskForm):
 class FastLoanForm(FlaskForm):
     user_id = HiddenField('user_id', validators=[DataRequired()])
     item_type = HiddenField('item_type', validators=[DataRequired()])
-    catalog_id = SelectField('Seleccione el Elemento', coerce=int, validators=[DataRequired()])
+    catalog_id = SelectField('Seleccione el Equipo', coerce=int, validators=[DataRequired()])
     quantity = IntegerField('Cantidad', default=1, validators=[DataRequired(), NumberRange(min=1)])
     environment = SelectField('Ambiente', choices=[('interno', 'Interno'), ('externo', 'Externo')], validators=[Optional()])
     submit_loan = SubmitField('Confirmar Préstamo')
@@ -36,4 +36,13 @@ class CatalogForm(FlaskForm):
 class InstanceForm(FlaskForm):
     unique_code = StringField('Placa SENA / Serial / Código de Barras', validators=[DataRequired()])
     condition = StringField('Condición', validators=[Optional()])
+    status = SelectField(
+        'Estado',
+        choices=[
+            ('disponible', 'Disponible'),
+            ('mantenimiento', 'Mantenimiento'),
+            ('perdido', 'Perdido'),
+        ],
+        validators=[DataRequired()],
+    )
     submit = SubmitField('Registrar Código')

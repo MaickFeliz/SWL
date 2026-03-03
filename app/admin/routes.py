@@ -228,7 +228,8 @@ def manage_instances(catalog_id):
     if form.validate_on_submit():
         unique_code = form.unique_code.data.strip()
         condition = form.condition.data
-        
+        status = form.status.data
+
         if ItemInstance.query.filter_by(unique_code=unique_code).first():
             flash(f'El código/serial "{unique_code}" ya está registrado en el sistema.', 'danger')
         else:
@@ -236,7 +237,7 @@ def manage_instances(catalog_id):
                 catalog_id=catalog_id,
                 unique_code=unique_code,
                 condition=condition,
-                status='disponible'
+                status=status,
             )
             try:
                 db.session.add(new_instance)
@@ -245,7 +246,7 @@ def manage_instances(catalog_id):
             except Exception as e:
                 db.session.rollback()
                 flash('Ha ocurrido un error en la base de datos al guardar.', 'danger')
-            
+
         return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
 
     instances = catalog_item.instances.all()
