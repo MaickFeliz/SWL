@@ -138,17 +138,28 @@ def approve(id):
         flash(msg, 'danger')
         return redirect(url_for('admin.admin_dashboard', status='pendiente'))
 
-@bp.route('/return/<int:id>', methods=['POST'])
-@role_required('bibliotecario')
-def return_item(id):
-    success, msg = LoanService.return_loan(id)
+@bp.route('/loan/<int:loan_id>/return', methods=['POST'])
+@role_required('admin', 'bibliotecario')
+def return_loan(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
     
-    if success:
-        flash(msg, 'success')
-    else:
-        flash(msg, 'warning')
-
-    return redirect(url_for('admin.admin_dashboard', status='devuelto'))
+    if loan.status != 'devuelto':
+        # 1. Congelamos la multa actual para el historial
+        loan.final_penalty = loan.penalty_fee
+        loan.status = 'devuelto'
+        loan.return_date = datetime.utcnow()
+        
+        # 2. LIBERAMOS LA INSTANCIA FÍSICA USANDO EL SERVICIO TRANSSACIONAL
+        success, msg = InventoryService.release_instance(loan.instance_id)
+        
+        if success:
+            db.session.commit()
+            flash('Ítem devuelto y reingresado al inventario con éxito.', 'success')
+        else:
+            db.session.rollback()
+            flash(f'Error al liberar inventario: {msg}', 'danger')
+            
+    return redirect(request.referrer or url_for('admin.dashboard'))
 
 @bp.route('/reject/<int:id>', methods=['POST'])
 @role_required('bibliotecario')

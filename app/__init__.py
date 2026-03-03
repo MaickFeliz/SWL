@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_apscheduler import APScheduler
 from config import Config
 import os
 import logging
@@ -11,6 +12,7 @@ from flask import session
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+scheduler = APScheduler()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = "Por favor, inicie sesión para acceder al sistema."
 
@@ -21,6 +23,23 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    
+    # <-- INICIO DE CONFIGURACIÓN DEL SCHEDULER -->
+    scheduler.init_app(app)
+    
+    # Importamos el servicio dentro del contexto para evitar importaciones circulares
+    from app.services.loan_service import LoanService 
+    
+    # Programamos la tarea para que corra todos los días a las 00:01 AM
+    @scheduler.task('cron', id='actualizar_moras', hour=0, minute=1)
+    def tarea_actualizar_moras():
+        with app.app_context():
+            # Asumiendo que tienes este método creado en tu LoanService
+            LoanService.check_overdue_loans() 
+            app.logger.info("Revisión de préstamos atrasados ejecutada con éxito.")
+            
+    scheduler.start()
+    # <-- FIN DE CONFIGURACIÓN DEL SCHEDULER -->
 
     # Configuración del Directorio de Logs
     if not os.path.exists('logs'):

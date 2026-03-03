@@ -11,41 +11,28 @@
                     <p class="card-text text-muted">Registra tu visita para hacer uso de los espacios y recursos.</p>
                 </div>
 
-                <form method="POST">
+                <form method="POST" action="{{ url_for('main.register_visit') }}" class="mt-4">
                     {{ form.hidden_tag() }}
+
                     <div class="mb-3">
-                        <label for="document_id" class="form-label">Documento de Identidad</label>
-                        {{ form.document_id(class="form-control form-control-lg", placeholder="Escanea o digita tu
-                        cédula", value=pre_doc or '', autofocus=True) }}
-                        <div class="form-text">Si ya eres usuario del sistema, solo ingresa tu documento.</div>
+                        {{ form.document_id.label(class="form-label") }}
+                        {{ form.document_id(class="form-control", value=pre_doc if pre_doc else '') }}
                     </div>
 
                     {% if pre_doc %}
-                    <div class="mb-3">
-                        <label for="visitor_name" class="form-label">Nombre Completo (Si eres visitante)</label>
-                        {{ form.visitor_name(class="form-control form-control-lg", placeholder="Escribe tu nombre
-                        completo") }}
+                    <div class="mb-3 text-warning">
+                        <label>Documento no encontrado. Por favor, ingrese su nombre para registrarse como
+                            Visitante:</label>
+                        {{ form.visitor_name(class="form-control", placeholder="Ej: Juan Pérez") }}
                     </div>
                     {% endif %}
 
-                    <div class="mb-4">
-                        <label for="activity" class="form-label">Actividad a Realizar</label>
-                        <select name="activity" id="activity" class="form-select form-select-lg" required>
-                            <option value="" disabled selected>-- Selecciona una actividad --</option>
-                            <option value="Lectura">Lectura / Consulta en Sala</option>
-                            <option value="PC mesa">Uso de Computador de Mesa</option>
-                            <option value="Reunión">Reunión / Trabajo en Grupo</option>
-                            <option value="Asesoría">Asesoría con Bibliotecario</option>
-                            <option value="Capacitación">Asistencia a Capacitación</option>
-                            <option value="Tablero">Uso de Tablero Acrílico</option>
-                            <option value="Otro">Otro</option>
-                        </select>
+                    <div class="mb-3">
+                        {{ form.activity.label(class="form-label") }}
+                        {{ form.activity(class="form-control", placeholder="Ej: Lectura, Computadores, Estudio...") }}
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg"><i
-                                class="bi bi-check2-circle me-2"></i>Registrar mi Ingreso</button>
-                    </div>
+                    {{ form.submit(class="btn btn-primary w-100") }}
                 </form>
             </div>
             <div class="card-footer text-center text-muted bg-light">

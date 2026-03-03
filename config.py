@@ -11,6 +11,9 @@ class Config:
         'sqlite:///' + os.path.join(basedir, 'instance', 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    SCHEDULER_API_ENABLED = False
+    SCHEDULER_TIMEZONE = "America/Bogota" 
+    
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     
     # --- PARÁMETROS DE NEGOCIO ---

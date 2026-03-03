@@ -12,14 +12,11 @@
                 </div>
 
                 {% if not user %}
-                <form method="POST">
+                <form method="POST" action="{{ url_for('main.fast_loan') }}">
                     {{ search_form.hidden_tag() }}
-                    <div class="input-group input-group-lg">
-                        {{ search_form.document_id(class="form-control", placeholder="Ingrese el documento de identidad
-                        del solicitante", autofocus=True) }}
-                        <button class="btn btn-primary" type="submit" name="submit_search" value="Buscar Usuario"><i
-                                class="bi bi-search me-2"></i>Buscar
-                            Usuario</button>
+                    <div class="input-group mb-3">
+                        {{ search_form.document_id(class="form-control", placeholder="Número de Documento") }}
+                        {{ search_form.submit_search(class="btn btn-outline-secondary") }}
                     </div>
                 </form>
                 {% else %}
@@ -36,81 +33,70 @@
                     </div>
                 </div>
 
-                <form method="POST">
+                <form method="POST" action="{{ url_for('main.fast_loan') }}">
                     {{ loan_form.hidden_tag() }}
                     {{ loan_form.user_id(value=user.id) }}
+                    {{ loan_form.catalog_id(id="modal_catalog_id") }}
+                    {{ loan_form.item_type(id="modal_item_type") }}
 
-                    <nav>
-                        <div class="nav nav-tabs nav-fill mb-4" id="nav-tab" role="tablist">
-                            <button class="nav-link active" id="nav-pc-tab" data-bs-toggle="tab"
-                                data-bs-target="#nav-pc" type="button" role="tab" aria-controls="nav-pc"
-                                aria-selected="true" onclick="setTyp('computo')">
-                                <i class="bi bi-laptop me-2"></i>Portátil
-                            </button>
-                            <button class="nav-link" id="nav-elem-tab" data-bs-toggle="tab" data-bs-target="#nav-elem"
-                                type="button" role="tab" aria-controls="nav-elem" aria-selected="false"
-                                onclick="setTyp('elemento')">
-                                <i class="bi bi-box-seam me-2"></i>Elemento de Catálogo
-                            </button>
-                        </div>
-                    </nav>
-                    {{ loan_form.item_type(id="item_type", value="computo") }}
-
-                    <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="nav-pc" role="tabpanel" aria-labelledby="nav-pc-tab">
-                            <div class="mb-3">
-                                <label class="form-label">Ambiente de Formación</label>
-                                {{ loan_form.environment(class="form-select form-select-lg") }}
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Seleccione el Equipo</label>
-                                <select name="catalog_id" class="form-select form-select-lg">
-                                    {% for item in items.items %}
-                                    {% if item.category == 'computo' %}
-                                    <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
-                                        {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
-                                    </option>
-                                    {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane fade" id="nav-elem" role="tabpanel" aria-labelledby="nav-elem-tab">
-                            <div class="mb-3">
-                                <label class="form-label">Seleccione Elemento</label>
-                                <select name="catalog_id" class="form-select form-select-lg">
-                                    {% for item in items.items %}
-                                    {% if item.category != 'computo' %}
-                                    <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
-                                        {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
-                                    </option>
-                                    {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Cantidad</label>
-                                {{ loan_form.quantity(class="form-control form-control-lg", min="1") }}
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        {{ loan_form.quantity.label(class="form-label") }}
+                        {{ loan_form.quantity(class="form-control", id="modal_quantity") }}
                     </div>
 
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" name="submit_loan" value="Confirmar Préstamo"
-                            class="btn btn-success btn-lg"><i class="bi bi-check-circle-fill me-2"></i>Confirmar y
-                            Realizar Préstamo</button>
-                        <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-secondary">Limpiar y Empezar de
-                            Nuevo</a>
+                    <div class="mb-3">
+                        {{ loan_form.environment.label(class="form-label") }}
+                        {{ loan_form.environment(class="form-select") }}
                     </div>
+
+                    {{ loan_form.submit_loan(class="btn btn-success w-100") }}
                 </form>
+                <div class="mb-3">
+                    <label class="form-label">Seleccione el Equipo</label>
+                    <select name="catalog_id" class="form-select form-select-lg">
+                        {% for item in items.items %}
+                        {% if item.category == 'computo' %}
+                        <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                            {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-                <script>
-                    function setTyp(val) { document.getElementById('item_type').value = val; }
-                </script>
-                {% endif %}
+            <div class="tab-pane fade" id="nav-elem" role="tabpanel" aria-labelledby="nav-elem-tab">
+                <div class="mb-3">
+                    <label class="form-label">Seleccione Elemento</label>
+                    <select name="catalog_id" class="form-select form-select-lg">
+                        {% for item in items.items %}
+                        {% if item.category != 'computo' %}
+                        <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
+                            {{ item.title_or_name }} (Disponibles: {{ item.available_count }})
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cantidad</label>
+                    {{ loan_form.quantity(class="form-control form-control-lg", min="1") }}
+                </div>
             </div>
         </div>
+
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" name="submit_loan" value="Confirmar Préstamo" class="btn btn-success btn-lg"><i
+                    class="bi bi-check-circle-fill me-2"></i>Confirmar y
+                Realizar Préstamo</button>
+            <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-secondary">Limpiar y Empezar de
+                Nuevo</a>
+        </div>
+        </form>
+
+        {% endif %}
     </div>
+</div>
+</div>
 </div>
 {% endblock %}
