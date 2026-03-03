@@ -10,7 +10,7 @@ from sqlalchemy import func
 from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
-from app.forms import AdminUserForm, ImportForm
+from app.forms import AdminUserForm, ImportForm, CatalogForm, InstanceForm
 
 @bp.route('/users')
 @role_required('admin')
@@ -100,8 +100,7 @@ def delete_user(id):
 @bp.route('/dashboard')
 @role_required('bibliotecario', 'admin')
 def admin_dashboard():
-    LoanService.check_overdue_loans()
-    
+    # El scheduler ya procesa check_overdue_loans() en segundo plano
     status_filter = request.args.get('status', 'pendiente')
     
     pending_count = Loan.query.filter_by(status='pendiente').count()
@@ -183,15 +182,16 @@ def reject_loan(id):
 @bp.route('/catalog', methods=['GET', 'POST'])
 @role_required('bibliotecario', 'admin')
 def catalog_manage():
-    if request.method == 'POST':
-        title = request.form.get('title_or_name')
-        category = request.form.get('category')
-        author = request.form.get('author_or_brand')
-
-        new_catalog_item = Catalog(title_or_name=title, category=category, author_or_brand=author)
+    form = CatalogForm()
+    if form.validate_on_submit():
+        new_catalog_item = Catalog(
+            title_or_name=form.title_or_name.data,
+            category=form.category.data,
+            author_or_brand=form.author_or_brand.data
+        )
         db.session.add(new_catalog_item)
         db.session.commit()
-        flash(f'Elemento de catálogo "{title}" creado con éxito.', 'success')
+        flash(f'Elemento de catálogo "{form.title_or_name.data}" creado con éxito.', 'success')
         return redirect(url_for('admin.catalog_manage'))
 
     search_query = request.args.get('search', '')
@@ -205,7 +205,7 @@ def catalog_manage():
         )
     
     items = query.order_by(Catalog.title_or_name).all()
-    return render_template('admin/catalog.html', items=items, search_query=search_query)
+    return render_template('admin/catalog.html', items=items, search_query=search_query, form=form)
 
 @bp.route('/catalog/delete/<int:id>', methods=['POST'])
 @role_required('bibliotecario', 'admin')
@@ -223,10 +223,11 @@ def catalog_delete(id):
 @role_required('bibliotecario', 'admin')
 def manage_instances(catalog_id):
     catalog_item = Catalog.query.get_or_404(catalog_id)
+    form = InstanceForm()
 
-    if request.method == 'POST':
-        unique_code = request.form.get('unique_code').strip()
-        condition = request.form.get('condition')
+    if form.validate_on_submit():
+        unique_code = form.unique_code.data.strip()
+        condition = form.condition.data
         
         if ItemInstance.query.filter_by(unique_code=unique_code).first():
             flash(f'El código/serial "{unique_code}" ya está registrado en el sistema.', 'danger')
@@ -237,14 +238,18 @@ def manage_instances(catalog_id):
                 condition=condition,
                 status='disponible'
             )
-            db.session.add(new_instance)
-            db.session.commit()
-            flash(f'Instancia "{unique_code}" agregada correctamente a {catalog_item.title_or_name}.', 'success')
+            try:
+                db.session.add(new_instance)
+                db.session.commit()
+                flash(f'Instancia "{unique_code}" agregada correctamente a {catalog_item.title_or_name}.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('Ha ocurrido un error en la base de datos al guardar.', 'danger')
             
         return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
 
     instances = catalog_item.instances.all()
-    return render_template('admin/instances.html', catalog_item=catalog_item, instances=instances)
+    return render_template('admin/instances.html', catalog_item=catalog_item, instances=instances, form=form)
 
 @bp.route('/instance/update_status/<int:instance_id>', methods=['POST'])
 @role_required('bibliotecario', 'admin')

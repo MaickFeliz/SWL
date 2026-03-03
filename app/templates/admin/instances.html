@@ -7,17 +7,18 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="POST" action="{{ url_for('admin.manage_instances', catalog_id=catalog_item.id) }}">
+                {{ form.hidden_tag() }}
                 <div class="row">
                     <div class="col-md-5">
-                        <input type="text" name="unique_code" class="form-control"
-                            placeholder="Placa SENA / Serial / Código de Barras" required>
+                        {{ form.unique_code(class="form-control", placeholder="Placa SENA / Serial / Código de Barras")
+                        }}
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="condition" class="form-control"
-                            placeholder="Condición (Ej: Buen estado, Rayón en pantalla)">
+                        {{ form.condition(class="form-control", placeholder="Condición (Ej: Buen estado, Rayón en
+                        pantalla)") }}
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-success w-100">Registrar Código</button>
+                        {{ form.submit(class="btn btn-success w-100", value="Registrar Código") }}
                     </div>
                 </div>
             </form>

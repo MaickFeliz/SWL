@@ -12,23 +12,28 @@ from app.forms import RequestItemForm, VisitForm, FastLoanSearchForm, FastLoanFo
 
 @bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
-    page = request.args.get('page', 1, type=int)
-    
-    # Instanciamos ambos formularios de la vista
     search_form = FastLoanSearchForm()
     loan_form = FastLoanForm()
 
+    user_id = request.form.get('user_id')
+    user = None
+    if user_id:
+        user = User.query.get(user_id)
+    elif search_form.validate_on_submit() and search_form.submit_search.data:
+        user = User.query.filter_by(document_id=search_form.document_id.data).first()
+
+    exclude_cat = 'general' if user and user.role == 'premium' else None
+    all_items = CatalogService.get_catalog_with_counts(exclude_category=exclude_cat)
+    # Populate the choices for SelectField here so validation doesn't fail
+    loan_form.catalog_id.choices = [(i.id, f"{i.title_or_name} (Disponibles: {i.available_count})") for i in all_items if i.available_count > 0]
+
     # 1. FLUJO DE BÚSQUEDA DE USUARIO
     if search_form.validate_on_submit() and search_form.submit_search.data:
-        user = User.query.filter_by(document_id=search_form.document_id.data).first()
         if not user:
             flash('Usuario no encontrado. Debes estar registrado.', 'danger')
             return redirect(url_for('main.fast_loan'))
         
-        exclude_cat = 'general' if user.role == 'premium' else None
-        paginated_items = CatalogService.get_paginated_catalog(page=page, per_page=12, exclude_category=exclude_cat)
-        
-        return render_template('main/fast_loan.html', user=user, items=paginated_items, search_form=search_form, loan_form=loan_form)
+        return render_template('main/fast_loan.html', user=user, search_form=search_form, loan_form=loan_form)
 
     # 2. FLUJO DE CONFIRMACIÓN DE PRÉSTAMO
     if loan_form.validate_on_submit() and loan_form.submit_loan.data:
@@ -38,7 +43,6 @@ def fast_loan():
         catalog_id = loan_form.catalog_id.data
         quantity = 1 if item_type == 'computo' else loan_form.quantity.data
 
-        # Delegamos la validación al servicio, eliminando la necesidad de buscar variables raras
         success, reserved_ids, msg = InventoryService.reserve_instances(catalog_id, quantity)
         if not success:
             flash(msg, 'warning')

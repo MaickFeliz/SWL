@@ -6,23 +6,19 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="POST" action="{{ url_for('admin.catalog_manage') }}">
+                {{ form.hidden_tag() }}
                 <div class="row">
                     <div class="col-md-4">
-                        <input type="text" name="title_or_name" class="form-control"
-                            placeholder="Nombre / Título (Ej. MacBook Pro)" required>
+                        {{ form.title_or_name(class="form-control", placeholder="Nombre / Título (Ej. MacBook Pro)") }}
                     </div>
                     <div class="col-md-3">
-                        <select name="category" class="form-control" required>
-                            <option value="computo">Equipo de Cómputo</option>
-                            <option value="accesorio">Accesorio / General</option>
-                            <option value="libro">Libro</option>
-                        </select>
+                        {{ form.category(class="form-select") }}
                     </div>
                     <div class="col-md-3">
-                        <input type="text" name="author_or_brand" class="form-control" placeholder="Marca / Autor">
+                        {{ form.author_or_brand(class="form-control", placeholder="Marca / Autor") }}
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Crear</button>
+                        {{ form.submit(class="btn btn-primary w-100", value="Crear") }}
                     </div>
                 </div>
             </form>
