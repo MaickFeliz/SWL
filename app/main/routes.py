@@ -8,66 +8,64 @@ from app.models import Loan, Catalog, ItemInstance, User, LibraryLog
 from app.services.loan_service import LoanService
 from app.utils.decorators import role_required
 from datetime import datetime
-from app.forms import RequestItemForm, VisitForm
+from app.forms import RequestItemForm, VisitForm, FastLoanSearchForm, FastLoanForm
 
 @bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
-    page = request.args.get('page', 1, type=int) # Paginación
+    page = request.args.get('page', 1, type=int)
     
-    if request.method == 'GET':
-        return render_template('main/fast_loan.html')
+    # Instanciamos ambos formularios de la vista
+    search_form = FastLoanSearchForm()
+    loan_form = FastLoanForm()
 
-    if request.form.get('search_doc'):
-        document_id = request.form.get('document_id')
-        user = User.query.filter_by(document_id=document_id).first()
+    # 1. FLUJO DE BÚSQUEDA DE USUARIO
+    if search_form.validate_on_submit() and search_form.submit_search.data:
+        user = User.query.filter_by(document_id=search_form.document_id.data).first()
         if not user:
             flash('Usuario no encontrado. Debes estar registrado.', 'danger')
             return redirect(url_for('main.fast_loan'))
         
-        # Paginación y prevención de problema N+1
         exclude_cat = 'general' if user.role == 'premium' else None
         paginated_items = CatalogService.get_paginated_catalog(page=page, per_page=12, exclude_category=exclude_cat)
         
-        return render_template('main/fast_loan.html', user=user, items=paginated_items)
+        return render_template('main/fast_loan.html', user=user, items=paginated_items, search_form=search_form, loan_form=loan_form)
 
-    if request.form.get('confirm_loan'):
-        user_id = request.form.get('user_id')
-        item_type = request.form.get('item_type')
-        environment = request.form.get('environment')
-        catalog_id = request.form.get('catalog_id')
-        quantity = 1 if item_type == 'computo' else int(request.form.get('quantity', 1))
+    # 2. FLUJO DE CONFIRMACIÓN DE PRÉSTAMO
+    if loan_form.validate_on_submit() and loan_form.submit_loan.data:
+        user_id = loan_form.user_id.data
+        item_type = loan_form.item_type.data
+        environment = loan_form.environment.data
+        catalog_id = loan_form.catalog_id.data
+        quantity = 1 if item_type == 'computo' else loan_form.quantity.data
 
-        if quantity <= 0:
-            flash('La cantidad solicitada debe ser mayor a cero.', 'danger')
+        # Delegamos la validación al servicio, eliminando la necesidad de buscar variables raras
+        success, reserved_ids, msg = InventoryService.reserve_instances(catalog_id, quantity)
+        if not success:
+            flash(msg, 'warning')
             return redirect(url_for('main.fast_loan'))
-
+            
         try:
-            # La lógica de validación ahora confía más en el servicio
-            success, reserved_ids, msg = InventoryService.reserve_instances(catalog_id, quantity)
-            if not success:
-                flash(msg, 'warning')
-                return redirect(url_for('main.fast_loan'))
-                
             for inst_id in reserved_ids:
                 LoanService.create_loan(user_id=user_id, instance_id=inst_id, environment=environment)
-            
             db.session.commit()
             flash('Préstamo rápido registrado con éxito.', 'success')
-            
         except Exception as e:
             db.session.rollback()
             flash('Error al procesar la solicitud. Intente nuevamente.', 'danger')
 
         return redirect(url_for('main.index'))
-    return redirect(url_for('main.fast_loan'))
+        
+    return render_template('main/fast_loan.html', search_form=search_form, loan_form=loan_form)
 
 @bp.route('/visit', methods=['GET', 'POST'])
 def register_visit():
-    if request.method == 'POST':
-        # Sanitización de entradas manuales contra XSS
-        document_id = escape(request.form.get('document_id', '').strip())
-        activity = escape(request.form.get('activity', '').strip())
-        manual_name = escape(request.form.get('visitor_name', '').strip())
+    form = VisitForm()
+    
+    # Procesamos la visita modernamente con WTForms
+    if form.validate_on_submit():
+        document_id = form.document_id.data.strip()
+        activity = form.activity.data.strip()
+        manual_name = form.visitor_name.data.strip() if form.visitor_name.data else ''
         
         user = User.query.filter_by(document_id=document_id).first()
         
@@ -76,7 +74,7 @@ def register_visit():
         else:
             if not manual_name:
                 flash('Documento no registrado. Por favor ingrese su Nombre.', 'warning')
-                return render_template('main/visit.html', pre_doc=document_id)
+                return render_template('main/visit.html', form=form, pre_doc=document_id)
             name, role = manual_name, 'Visitante'
             
         visit = LibraryLog(visitor_name=name, visitor_id=document_id, role=role, activity=activity)
@@ -86,7 +84,7 @@ def register_visit():
         flash(f'Bienvenido/a {name}. Actividad: {activity}', 'success')
         return redirect(url_for('main.register_visit'))
         
-    return render_template('main/visit.html')
+    return render_template('main/visit.html', form=form)
 
 @bp.route('/')
 def index():
@@ -188,31 +186,32 @@ def request_accessory():
 @bp.route('/request/book', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_book():
-    available_books = Catalog.query.filter_by(category='libro').all()
+    form = RequestItemForm()
+    # Usamos el servicio para evitar el N+1
+    available_books = CatalogService.get_catalog_with_counts(category_filter='libro')
 
-    if request.method == 'POST':
-        catalog_id = request.form.get('catalog_id')
-        book_item = Catalog.query.get(catalog_id)
+    if form.validate_on_submit():
+        catalog_id = form.catalog_id.data
         
-        if not book_item or book_item.category != 'libro' or book_item.available_count < 1:
-            flash('Ese libro no existe o no hay copias disponibles en este momento.', 'danger')
+        # ¡BOMBA DESACTIVADA!
+        # No consultamos el modelo Catalog en el controlador, y evitamos llamar a .available_count
+        # El servicio de inventario hace todo el chequeo físico transaccional por nosotros.
+        success, reserved_ids, msg = InventoryService.reserve_instances(catalog_id, 1)
+        
+        if not success:
+            flash(msg, 'danger')
             return redirect(url_for('main.request_book'))
-
+            
         try:
-            # CORRECCIÓN 3: Uso centralizado del servicio transaccional para evitar libros fantasma
-            success, reserved_ids, msg = InventoryService.reserve_instances(book_item.id, 1)
-            if not success:
-                flash(msg, 'danger')
-                return redirect(url_for('main.request_book'))
-                
             LoanService.create_loan(user_id=current_user.id, instance_id=reserved_ids[0])
             db.session.commit()
             flash('Solicitud de libro registrada. Acércate al mostrador.', 'success')
         except Exception as e:
             db.session.rollback()
-            flash('Ocurrió un error al registrar la solicitud transaccional.', 'danger')
+            flash('Ocurrió un error al registrar la solicitud.', 'danger')
             
         return redirect(url_for('main.premium_dashboard'))
-    return render_template('premium/request_book.html', items=available_books)
+        
+    return render_template('premium/request_book.html', items=available_books, form=form)
 
     

@@ -13,11 +13,12 @@
 
                 {% if not user %}
                 <form method="POST">
-                    <input type="hidden" name="search_doc" value="1">
+                    {{ search_form.hidden_tag() }}
                     <div class="input-group input-group-lg">
-                        <input type="number" name="document_id" class="form-control"
-                            placeholder="Ingrese el documento de identidad del solicitante" required autofocus>
-                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-2"></i>Buscar
+                        {{ search_form.document_id(class="form-control", placeholder="Ingrese el documento de identidad
+                        del solicitante", autofocus=True) }}
+                        <button class="btn btn-primary" type="submit" name="submit_search" value="Buscar Usuario"><i
+                                class="bi bi-search me-2"></i>Buscar
                             Usuario</button>
                     </div>
                 </form>
@@ -36,8 +37,8 @@
                 </div>
 
                 <form method="POST">
-                    <input type="hidden" name="confirm_loan" value="1">
-                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    {{ loan_form.hidden_tag() }}
+                    {{ loan_form.user_id(value=user.id) }}
 
                     <nav>
                         <div class="nav nav-tabs nav-fill mb-4" id="nav-tab" role="tablist">
@@ -53,14 +54,13 @@
                             </button>
                         </div>
                     </nav>
-                    <input type="hidden" name="item_type" id="item_type" value="computo">
+                    {{ loan_form.item_type(id="item_type", value="computo") }}
 
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-pc" role="tabpanel" aria-labelledby="nav-pc-tab">
                             <div class="mb-3">
                                 <label class="form-label">Ambiente de Formación</label>
-                                <input type="text" name="environment" class="form-control form-control-lg"
-                                    placeholder="Ej: 204 / Sistemas 1">
+                                {{ loan_form.environment(class="form-select form-select-lg") }}
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Seleccione el Equipo</label>
@@ -91,15 +91,15 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Cantidad</label>
-                                <input type="number" name="quantity" class="form-control form-control-lg" value="1"
-                                    min="1">
+                                {{ loan_form.quantity(class="form-control form-control-lg", min="1") }}
                             </div>
                         </div>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-success btn-lg"><i
-                                class="bi bi-check-circle-fill me-2"></i>Confirmar y Realizar Préstamo</button>
+                        <button type="submit" name="submit_loan" value="Confirmar Préstamo"
+                            class="btn btn-success btn-lg"><i class="bi bi-check-circle-fill me-2"></i>Confirmar y
+                            Realizar Préstamo</button>
                         <a href="{{ url_for('main.fast_loan') }}" class="btn btn-outline-secondary">Limpiar y Empezar de
                             Nuevo</a>
                     </div>
