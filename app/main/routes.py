@@ -8,6 +8,7 @@ from app.models import Loan, Catalog, ItemInstance, User, LibraryLog
 from app.services.loan_service import LoanService
 from app.utils.decorators import role_required
 from datetime import datetime
+from app.forms import RequestItemForm, VisitForm
 
 @bp.route('/fast_loan', methods=['GET', 'POST'])
 def fast_loan():
@@ -113,98 +114,76 @@ def profile():
 @bp.route('/request/laptop', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_laptop():
-    available_computers = Catalog.query.filter_by(category='computo').all()
+    form = RequestItemForm()
+    # Usamos el servicio para evitar el N+1
+    available_computers = CatalogService.get_catalog_with_counts(category_filter='computo')
 
-    if request.method == 'POST':
-        environment = request.form.get('environment')
-        quantity = int(request.form.get('quantity', 1)) if current_user.role == 'premium' else 1
-        catalog_id = request.form.get('catalog_id')
-
-        if quantity <= 0:
-            flash('Cantidad inválida.', 'danger')
+    if form.validate_on_submit(): # Validación segura CSRF
+        # 1. Validación de reglas de negocio en el servicio
+        can_request, msg = LoanService.can_request_laptop(current_user.id)
+        if not can_request:
+            flash(msg, 'warning')
             return redirect(url_for('main.premium_dashboard'))
 
-        active_loans_count = Loan.query.join(ItemInstance).join(Catalog).filter(
-            Loan.user_id == current_user.id,
-            Loan.status.in_(['pendiente', 'activo', 'atrasado']), 
-            Catalog.category == 'computo'
-        ).count()
+        # 2. Configuración de parámetros
+        quantity = form.quantity.data if current_user.role == 'premium' else 1
+        catalog_id = form.catalog_id.data
+        environment = form.environment.data
 
-        if active_loans_count > 0:
-            flash('Ya tienes un equipo pendiente, en uso o atrasado.', 'warning')
+        # 3. Reserva Transaccional
+        success, reserved_ids, r_msg = InventoryService.reserve_instances(catalog_id, quantity)
+        if not success:
+            flash(r_msg, 'danger')
             return redirect(url_for('main.premium_dashboard'))
-
-        # CORRECCIÓN 2: Lógica dinámica de búsqueda de computadores
-        laptop_item = Catalog.query.get(catalog_id)
-        if not laptop_item or laptop_item.category != 'computo' or laptop_item.available_count < quantity:
-            flash('Stock físico insuficiente o equipo inválido. Intenta más tarde.', 'warning')
-            return redirect(url_for('main.premium_dashboard'))
-
+            
         try:
-            success, reserved_ids, msg = InventoryService.reserve_instances(laptop_item.id, quantity)
-            if not success:
-                flash(msg, 'danger')
-                return redirect(url_for('main.premium_dashboard'))
-                
             for inst_id in reserved_ids:
                 LoanService.create_loan(user_id=current_user.id, instance_id=inst_id, environment=environment)
-                
             db.session.commit()
             flash('Solicitud de portátil enviada correctamente.', 'success')
         except Exception as e:
             db.session.rollback()
-            flash('Error al enviar la solicitud.', 'danger')
+            flash('Error al generar el préstamo.', 'danger')
             
         return redirect(url_for('main.premium_dashboard'))
-    return render_template('premium/request_laptop.html', items=available_computers)
+        
+    return render_template('premium/request_laptop.html', items=available_computers, form=form)
 
 @bp.route('/request/accessory', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')
 def request_accessory():
-    active_accessories_count = Loan.query.join(ItemInstance).join(Catalog).filter(
-        Loan.user_id == current_user.id,
-        Catalog.category != 'computo',
-        Catalog.category != 'libro',
-        Loan.status.in_(['pendiente', 'activo', 'atrasado'])
-    ).count()
-
-    if active_accessories_count >= 2:
-        flash('Has alcanzado el límite de 2 accesorios simultáneos.', 'warning')
+    form = RequestItemForm()
+    # Validación de negocio
+    can_request, msg = LoanService.can_request_accessory(current_user.id)
+    if not can_request:
+        flash(msg, 'warning')
         return redirect(url_for('main.index'))
     
-    available_items = Catalog.query.filter_by(category='general').all() if current_user.role == 'cliente' else Catalog.query.all()
+    # N+1 resuelto
+    exclude_cat = 'computo' if current_user.role == 'cliente' else None
+    available_items = CatalogService.get_catalog_with_counts(exclude_category=exclude_cat)
 
-    if request.method == 'POST':
-        catalog_id = request.form.get('catalog_id')
-        quantity = int(request.form.get('quantity'))
+    if form.validate_on_submit():
+        catalog_id = form.catalog_id.data
+        quantity = form.quantity.data
         
-        if quantity <= 0:
-            flash('Cantidad debe ser mayor a cero.', 'danger')
-            return redirect(url_for('main.request_accessory'))
-            
-        catalog_item = Catalog.query.get(catalog_id)
-        
-        if not catalog_item or catalog_item.available_count < quantity:
-            flash('Stock físico insuficiente o ítem inválido.', 'danger')
+        success, reserved_ids, r_msg = InventoryService.reserve_instances(catalog_id, quantity)
+        if not success:
+            flash(r_msg, 'danger')
             return redirect(url_for('main.request_accessory'))
 
         try:
-            success, reserved_ids, msg = InventoryService.reserve_instances(catalog_item.id, quantity)
-            if not success:
-                flash(msg, 'danger')
-                return redirect(url_for('main.request_accessory'))
-                
             for inst_id in reserved_ids:
                 LoanService.create_loan(user_id=current_user.id, instance_id=inst_id)
-                
             db.session.commit()
-            flash(f'Solicitud de {catalog_item.title_or_name} realizada.', 'success')
+            flash('Solicitud realizada con éxito.', 'success')
         except Exception as e:
             db.session.rollback()
             flash('Error al procesar la solicitud.', 'danger')
             
         return redirect(url_for('main.premium_dashboard'))
-    return render_template('premium/request_accessory.html', items=available_items)
+        
+    return render_template('premium/request_accessory.html', items=available_items, form=form)
 
 @bp.route('/request/book', methods=['GET', 'POST'])
 @role_required('premium', 'cliente')

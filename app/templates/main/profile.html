@@ -53,11 +53,11 @@
                                 {{ loan.status|capitalize }}
                             </span>
                         </td>
-                        <td>{{ loan.request_date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y') if loan.request_date_co else '' }}</td>
                         <td>
-                            {% if loan.due_date %}
-                            <span class="{% if loan.is_overdue %}text-danger fw-bold{% endif %}">
-                                {{ loan.due_date.strftime('%d/%m/%Y') }}
+                            {% if loan.due_date_co %}
+                            <span class="{{ 'text-danger fw-bold' if loan.is_overdue else 'text-dark' }}">
+                                {{ loan.due_date_co.strftime('%d/%m/%Y') }}
                             </span>
                             {% else %}
                             <span class="text-muted">N/A</span>

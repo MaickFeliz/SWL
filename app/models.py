@@ -2,7 +2,7 @@ from app import db, login_manager
 from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -34,14 +34,6 @@ class Catalog(db.Model):
     
     instances = db.relationship('ItemInstance', backref='catalog_item', lazy='dynamic', cascade="all, delete-orphan")
 
-    @property
-    def available_count(self):
-        return self.instances.filter_by(status='disponible').count()
-        
-    @property
-    def total_count(self):
-        return self.instances.count()
-
 # 2. LAS INSTANCIAS (El objeto físico real)
 class ItemInstance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,6 +61,14 @@ class Loan(db.Model):
     final_penalty = db.Column(db.Float, default=0.0) 
 
     requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
+
+    @property
+    def request_date_co(self):
+        return self.request_date - timedelta(hours=5) if self.request_date else None
+
+    @property
+    def due_date_co(self):
+        return self.due_date - timedelta(hours=5) if self.due_date else None
 
     @property
     def is_overdue(self):

@@ -62,7 +62,8 @@
                 <tbody>
                     {% for loan in loans %}
                     <tr>
-                        <td><strong>{{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}</strong></td>
+                        <td><strong>{{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else
+                                'Desconocido' }}</strong></td>
                         <td>
                             <span class="badge 
                                 {% if loan.status == 'pendiente' %}bg-warning text-dark
@@ -71,8 +72,9 @@
                                 {{ loan.status|capitalize }}
                             </span>
                         </td>
-                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance else 'Esperando asignación' }}</span></td>
-                        <td>{{ loan.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance
+                                else 'Esperando asignación' }}</span></td>
+                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

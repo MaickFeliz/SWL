@@ -1,8 +1,31 @@
 from app import db
-from app.models import Loan, ItemInstance
+from app.models import Loan, Catalog, ItemInstance
 from datetime import datetime, timedelta
 
 class LoanService:
+    @staticmethod
+    def can_request_laptop(user_id):
+        active_loans = Loan.query.join(ItemInstance).join(Catalog).filter(
+            Loan.user_id == user_id,
+            Loan.status.in_(['pendiente', 'activo', 'atrasado']), 
+            Catalog.category == 'computo'
+        ).count()
+        if active_loans > 0:
+            return False, "Ya tienes un equipo pendiente, en uso o atrasado."
+        return True, "Ok"
+
+    @staticmethod
+    def can_request_accessory(user_id):
+        active_accessories = Loan.query.join(ItemInstance).join(Catalog).filter(
+            Loan.user_id == user_id,
+            Catalog.category != 'computo',
+            Catalog.category != 'libro',
+            Loan.status.in_(['pendiente', 'activo', 'atrasado'])
+        ).count()
+        if active_accessories >= 2:
+            return False, "Has alcanzado el límite de 2 accesorios simultáneos."
+        return True, "Ok"
+
     @staticmethod
     def create_loan(user_id, instance_id, environment=None, days=15):
         # Calculamos la fecha límite de entrega

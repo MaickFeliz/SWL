@@ -145,7 +145,7 @@
                         <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance
                                 else '---' }}</span></td>
 
-                        <td>{{ loan.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}</td>
                         <td class="text-center">
                             {% if loan.status == 'pendiente' %}
                             <div class="d-flex align-items-center justify-content-center gap-2">
