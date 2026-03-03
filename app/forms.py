@@ -1,8 +1,14 @@
-# app/forms.py
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, IntegerField, SelectField, SubmitField, HiddenField, PasswordField
-from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length
+from wtforms import (
+    StringField,
+    IntegerField,
+    SelectField,
+    SubmitField,
+    HiddenField,
+    PasswordField,
+)
+from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length, EqualTo
 
 class RequestItemForm(FlaskForm):
     catalog_id = HiddenField('catalog_id', validators=[DataRequired()])
@@ -103,3 +109,32 @@ class UpdateInstanceStatusForm(FlaskForm):
         validators=[DataRequired()],
     )
     submit = SubmitField('Actualizar')
+
+
+class LoginForm(FlaskForm):
+    document_id = StringField('Documento', validators=[DataRequired(), Length(max=20)])
+    password = PasswordField('Contraseña', validators=[DataRequired()])
+    submit = SubmitField('Ingresar')
+
+
+class RegistrationForm(FlaskForm):
+    full_name = StringField('Nombre completo', validators=[DataRequired(), Length(max=100)])
+    email = StringField('Correo electrónico', validators=[DataRequired(), Email(), Length(max=120)])
+    document_id = StringField('Documento', validators=[DataRequired(), Length(max=20)])
+    phone = StringField('Teléfono', validators=[Optional(), Length(max=20)])
+    role = SelectField(
+        'Rol',
+        choices=[
+            ('cliente', 'Cliente / Usuario'),
+            ('premium', 'Staff / Premium'),
+            ('bibliotecario', 'Bibliotecario'),
+        ],
+        validators=[DataRequired()],
+    )
+    program_name = StringField('Programa / Grupo', validators=[Optional(), Length(max=100)])
+    password = PasswordField('Contraseña', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField(
+        'Confirmar contraseña',
+        validators=[DataRequired(), EqualTo('password', message='Las contraseñas no coinciden.')],
+    )
+    submit = SubmitField('Registrarse')
