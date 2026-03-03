@@ -10,7 +10,7 @@ from sqlalchemy import func
 from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
 from app.utils.decorators import role_required
-from app.forms import AdminUserForm, ImportForm, CatalogForm, InstanceForm
+from app.forms import AdminUserForm, EditUserForm, ImportForm, CatalogForm, InstanceForm, UpdateInstanceStatusForm
 
 @bp.route('/users')
 @role_required('admin')
@@ -20,23 +20,40 @@ def manage_users():
     
     form = AdminUserForm()
     import_form = ImportForm()
-    return render_template('admin/users.html', users=users_pagination, form=form, import_form=import_form)
+    edit_forms = {u.id: EditUserForm(obj=u) for u in users_pagination.items}
+    return render_template(
+        'admin/users.html',
+        users=users_pagination,
+        form=form,
+        import_form=import_form,
+        edit_forms=edit_forms,
+    )
 
 @bp.route('/users/search')
 @role_required('admin')
 def search_users():
+    page = request.args.get('page', 1, type=int)
     search = request.args.get('search')
+    query = User.query
     if search:
-        users = User.query.filter(or_(
-            User.full_name.ilike(f'%{search}%'),
-            User.document_id.ilike(f'%{search}%')
-        )).all()
-    else:
-        users = User.query.order_by(User.full_name).limit(50).all()
+        query = query.filter(
+            or_(
+                User.full_name.ilike(f'%{search}%'),
+                User.document_id.ilike(f'%{search}%'),
+            )
+        )
+    users_pagination = query.order_by(User.full_name).paginate(page=page, per_page=10, error_out=False)
 
     form = AdminUserForm()
     import_form = ImportForm()
-    return render_template('admin/users.html', users=users, form=form, import_form=import_form)
+    edit_forms = {u.id: EditUserForm(obj=u) for u in users_pagination.items}
+    return render_template(
+        'admin/users.html',
+        users=users_pagination,
+        form=form,
+        import_form=import_form,
+        edit_forms=edit_forms,
+    )
 
 @bp.route('/users/create', methods=['POST'])
 @role_required('admin')
@@ -77,12 +94,29 @@ def bulk_import():
 @role_required('admin')
 def edit_user(id):
     user = User.query.get_or_404(id)
-    user.full_name = request.form.get('full_name')
-    user.phone = request.form.get('phone')
-    user.role = request.form.get('role')
-    
-    db.session.commit()
-    flash(f'Usuario {user.full_name} actualizado.', 'success')
+    form = EditUserForm()
+
+    if form.validate_on_submit():
+        user.full_name = form.full_name.data
+        user.phone = form.phone.data
+        user.role = form.role.data
+        user.program_name = form.program_name.data if form.role.data == 'cliente' else None
+
+        # Actualización opcional de contraseña
+        if form.password.data:
+            user.set_password(form.password.data)
+
+        try:
+            db.session.commit()
+            flash(f'Usuario {user.full_name} actualizado.', 'success')
+        except Exception:
+            db.session.rollback()
+            flash('Ocurrió un error al actualizar el usuario.', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({field}): {error}", 'danger')
+
     return redirect(url_for('admin.manage_users'))
 
 @bp.route('/users/delete/<int:id>', methods=['POST'])
@@ -224,6 +258,7 @@ def catalog_delete(id):
 def manage_instances(catalog_id):
     catalog_item = Catalog.query.get_or_404(catalog_id)
     form = InstanceForm()
+    status_forms = {inst.id: UpdateInstanceStatusForm(status=inst.status) for inst in catalog_item.instances.all()}
 
     if form.validate_on_submit():
         unique_code = form.unique_code.data.strip()
@@ -250,20 +285,37 @@ def manage_instances(catalog_id):
         return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
 
     instances = catalog_item.instances.all()
-    return render_template('admin/instances.html', catalog_item=catalog_item, instances=instances, form=form)
+    return render_template(
+        'admin/instances.html',
+        catalog_item=catalog_item,
+        instances=instances,
+        form=form,
+        status_forms=status_forms,
+    )
 
 @bp.route('/instance/update_status/<int:instance_id>', methods=['POST'])
 @role_required('bibliotecario', 'admin')
 def update_instance_status(instance_id):
     instance = ItemInstance.query.get_or_404(instance_id)
-    new_status = request.form.get('status')
-    
-    if new_status in ['disponible', 'mantenimiento', 'perdido']:
-        instance.status = new_status
-        db.session.commit()
-        flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status}.', 'success')
+    form = UpdateInstanceStatusForm()
+
+    if form.validate_on_submit():
+        new_status = form.status.data
+
+        if new_status in ['disponible', 'mantenimiento', 'perdido']:
+            instance.status = new_status
+            try:
+                db.session.commit()
+                flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status}.', 'success')
+            except Exception:
+                db.session.rollback()
+                flash('Error al actualizar el estado de la instancia.', 'danger')
+        else:
+            flash('Estado no válido.', 'danger')
     else:
-        flash('Estado no válido.', 'danger')
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({field}): {error}", 'danger')
         
     return redirect(url_for('admin.manage_instances', catalog_id=instance.catalog_id))
 

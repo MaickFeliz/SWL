@@ -1,7 +1,8 @@
 # app/forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SelectField, SubmitField, HiddenField
-from wtforms.validators import DataRequired, NumberRange, Optional
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, IntegerField, SelectField, SubmitField, HiddenField, PasswordField
+from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length
 
 class RequestItemForm(FlaskForm):
     catalog_id = HiddenField('catalog_id', validators=[DataRequired()])
@@ -46,3 +47,59 @@ class InstanceForm(FlaskForm):
         validators=[DataRequired()],
     )
     submit = SubmitField('Registrar Código')
+
+
+class AdminUserForm(FlaskForm):
+    full_name = StringField('Nombre completo', validators=[DataRequired()])
+    document_id = StringField('Documento', validators=[DataRequired()])
+    email = StringField('Correo electrónico', validators=[DataRequired(), Email()])
+    phone = StringField('Teléfono', validators=[Optional()])
+    role = SelectField(
+        'Rol',
+        choices=[
+            ('cliente', 'Cliente / Usuario'),
+            ('premium', 'Staff / Premium'),
+            ('bibliotecario', 'Bibliotecario'),
+        ],
+        validators=[DataRequired()],
+    )
+    program_name = StringField('Programa / Grupo', validators=[Optional()])
+    password = PasswordField('Contraseña', validators=[DataRequired(), Length(min=8)])
+    submit = SubmitField('Guardar')
+
+
+class EditUserForm(FlaskForm):
+    full_name = StringField('Nombre completo', validators=[DataRequired()])
+    phone = StringField('Teléfono', validators=[Optional()])
+    role = SelectField(
+        'Rol',
+        choices=[
+            ('cliente', 'Cliente / Usuario'),
+            ('premium', 'Staff / Premium'),
+            ('bibliotecario', 'Bibliotecario'),
+        ],
+        validators=[DataRequired()],
+    )
+    program_name = StringField('Programa / Grupo', validators=[Optional()])
+    # Campos opcionales / de solo lectura desde el punto de vista de validación
+    document_id = StringField('Documento', validators=[Optional()])
+    email = StringField('Correo electrónico', validators=[Optional(), Email()])
+    password = PasswordField('Nueva contraseña', validators=[Optional(), Length(min=8)])
+    submit = SubmitField('Guardar Cambios')
+
+
+class ImportForm(FlaskForm):
+    file = FileField('Archivo', validators=[DataRequired(), FileAllowed(['csv', 'xlsx'], 'Formatos permitidos: CSV, XLSX')])
+
+
+class UpdateInstanceStatusForm(FlaskForm):
+    status = SelectField(
+        'Estado',
+        choices=[
+            ('disponible', 'Disponible'),
+            ('mantenimiento', 'Mantenimiento'),
+            ('perdido', 'Perdido'),
+        ],
+        validators=[DataRequired()],
+    )
+    submit = SubmitField('Actualizar')

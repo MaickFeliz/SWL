@@ -50,15 +50,8 @@
                 <td>
                     <form method="POST" action="{{ url_for('admin.update_instance_status', instance_id=instance.id) }}"
                         style="display:inline;">
-                        <select name="status" onchange="this.form.submit()" class="form-select form-select-sm"
-                            style="display:inline-block; width:auto;">
-                            <option value="disponible" {% if instance.status=='disponible' %}selected{% endif %}>
-                                Disponible</option>
-                            <option value="mantenimiento" {% if instance.status=='mantenimiento' %}selected{% endif %}>
-                                Mantenimiento</option>
-                            <option value="perdido" {% if instance.status=='perdido' %}selected{% endif %}>Perdido
-                            </option>
-                        </select>
+                        {{ status_forms[instance.id].hidden_tag() }}
+                        {{ status_forms[instance.id].status(class="form-select form-select-sm", style="display:inline-block; width:auto;", onchange="this.form.submit()") }}
                     </form>
                     <form method="POST" action="{{ url_for('admin.instance_delete', instance_id=instance.id) }}"
                         style="display:inline;">
