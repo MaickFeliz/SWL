@@ -60,3 +60,4 @@ app/main/: Dashboards de usuario y lógica del modo Kiosco.
 
 instance/: Persistencia de datos local.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MaickFeliz/SWL)
