@@ -10,6 +10,11 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length, EqualTo
 
+
+def strip_filter(value):
+    return value.strip() if value else None
+
+
 class RequestItemForm(FlaskForm):
     catalog_id = HiddenField('catalog_id', validators=[DataRequired()])
     quantity = IntegerField('Cantidad', default=1, validators=[DataRequired(), NumberRange(min=1)])
@@ -17,9 +22,21 @@ class RequestItemForm(FlaskForm):
     submit = SubmitField('Solicitar')
 
 class VisitForm(FlaskForm):
-    document_id = StringField('Documento', validators=[DataRequired()])
-    visitor_name = StringField('Nombre del Visitante', validators=[Optional(), Length(max=100)])
-    activity = StringField('Actividad', validators=[DataRequired(), Length(max=50)])
+    document_id = StringField(
+        'Documento',
+        validators=[DataRequired()],
+        filters=[strip_filter],
+    )
+    visitor_name = StringField(
+        'Nombre del Visitante',
+        validators=[Optional(), Length(max=100)],
+        filters=[strip_filter],
+    )
+    activity = StringField(
+        'Actividad',
+        validators=[DataRequired(), Length(max=50)],
+        filters=[strip_filter],
+    )
     submit = SubmitField('Registrar Visita')
 
 # NUEVOS FORMULARIOS PARA PRÉSTAMO RÁPIDO

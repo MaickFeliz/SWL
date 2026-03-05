@@ -67,9 +67,9 @@ def register_visit():
     
     # Procesamos la visita modernamente con WTForms
     if form.validate_on_submit():
-        document_id = form.document_id.data.strip()
-        activity = form.activity.data.strip()
-        manual_name = form.visitor_name.data.strip() if form.visitor_name.data else ''
+        document_id = form.document_id.data
+        activity = form.activity.data
+        manual_name = form.visitor_name.data or ''
         
         user = User.query.filter_by(document_id=document_id).first()
         
