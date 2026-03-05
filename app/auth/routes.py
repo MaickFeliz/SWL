@@ -1,5 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from app.auth import bp
 from app import db
 from app.models import User
@@ -13,11 +15,17 @@ def login():
     
     if form.validate_on_submit():
         user = User.query.filter_by(document_id=form.document_id.data).first()
-        
-        if user is None or not user.check_password(form.password.data):
+
+        if user:
+            is_valid_password = user.check_password(form.password.data)
+        else:
+            check_password_hash(generate_password_hash(''), form.password.data)
+            is_valid_password = False
+
+        if not user or not is_valid_password:
             flash('Documento o contraseña inválidos.', 'danger')
             return render_template('auth/login.html', form=form)
-        
+
         login_user(user, remember=False)
         
         # CORRECCIÓN: Redirecciones estandarizadas según el rol real

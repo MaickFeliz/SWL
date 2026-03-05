@@ -1,8 +1,12 @@
+from decimal import Decimal
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
 from app import db, login_manager
 from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from sqlalchemy import Numeric
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,43 +41,55 @@ class Catalog(db.Model):
 # 2. LAS INSTANCIAS (El objeto físico real)
 class ItemInstance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    catalog_id = db.Column(db.Integer, db.ForeignKey('catalog.id'), nullable=False)
-    unique_code = db.Column(db.String(50), unique=True, nullable=False) 
-    status = db.Column(db.String(20), default='disponible') # disponible, prestado, mantenimiento, perdido
+    catalog_id = db.Column(db.Integer, db.ForeignKey('catalog.id'), nullable=False, index=True)
+    unique_code = db.Column(db.String(50), unique=True, nullable=False)
+    status = db.Column(db.String(20), default='disponible', index=True)  # disponible, prestado, mantenimiento, perdido
     condition = db.Column(db.String(100), nullable=True) 
     
     loans = db.relationship('Loan', backref='item_instance', lazy='dynamic')
 
+def _utc_now():
+    return datetime.now(timezone.utc)
+
+
 # 3. EL PRÉSTAMO REAL
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    instance_id = db.Column(db.Integer, db.ForeignKey('item_instance.id'), nullable=False)
-    environment = db.Column(db.String(50), nullable=True) 
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    instance_id = db.Column(db.Integer, db.ForeignKey('item_instance.id'), nullable=False, index=True)
+    environment = db.Column(db.String(50), nullable=True)
 
-    request_date = db.Column(db.DateTime, default=datetime.utcnow) 
+    request_date = db.Column(db.DateTime, default=_utc_now)
     approval_date = db.Column(db.DateTime, nullable=True)
-    due_date = db.Column(db.DateTime, nullable=True) 
+    due_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
-    
-    status = db.Column(db.String(20), default='pendiente')
+
+    status = db.Column(db.String(20), default='pendiente', index=True)
     observation = db.Column(db.Text, nullable=True)
-    final_penalty = db.Column(db.Float, default=0.0) 
+    final_penalty = db.Column(Numeric(10, 2), default=Decimal('0.00')) 
 
     requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
 
     @property
     def request_date_co(self):
-        return self.request_date - timedelta(hours=5) if self.request_date else None
+        if not self.request_date:
+            return None
+        utc_dt = self.request_date if self.request_date.tzinfo else self.request_date.replace(tzinfo=timezone.utc)
+        return utc_dt.astimezone(ZoneInfo('America/Bogota'))
 
     @property
     def due_date_co(self):
-        return self.due_date - timedelta(hours=5) if self.due_date else None
+        if not self.due_date:
+            return None
+        utc_dt = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
+        return utc_dt.astimezone(ZoneInfo('America/Bogota'))
 
     @property
     def is_overdue(self):
         if self.status not in ['devuelto', 'rechazado'] and self.due_date:
-            return datetime.utcnow() > self.due_date
+            now = datetime.now(timezone.utc)
+            due = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
+            return now > due
         return False
 
     @property
@@ -83,7 +99,9 @@ class Loan(db.Model):
             return 0.0
 
         if self.is_overdue:
-            days_late = (datetime.utcnow() - self.due_date).days
+            now = datetime.now(timezone.utc)
+            due = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
+            days_late = (now - due).days
             if days_late > 0:
                 # Obtenemos el valor de la multa desde la configuración
                 fee = current_app.config.get('PENALTY_FEE_PER_DAY', 5000.0)
@@ -96,5 +114,5 @@ class LibraryLog(db.Model):
     visitor_name = db.Column(db.String(100), nullable=False)
     visitor_id = db.Column(db.String(20), nullable=False)
     role = db.Column(db.String(20), nullable=False) 
-    entry_time = db.Column(db.DateTime, default=datetime.utcnow)
+    entry_time = db.Column(db.DateTime, default=_utc_now)
     activity = db.Column(db.String(50), nullable=False)

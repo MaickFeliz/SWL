@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta, timezone
+
+from flask import current_app
+
 from app import db
 from app.models import Loan, Catalog, ItemInstance
-from datetime import datetime, timedelta
 
 class LoanService:
     @staticmethod
@@ -27,9 +30,9 @@ class LoanService:
         return True, "Ok"
 
     @staticmethod
-    def create_loan(user_id, instance_id, environment=None, days=15):
-        # Calculamos la fecha límite de entrega
-        due_date = datetime.utcnow() + timedelta(days=days)
+    def create_loan(user_id, instance_id, environment=None, days=None):
+        loan_days = days if days is not None else current_app.config.get('DEFAULT_LOAN_DAYS', 15)
+        due_date = datetime.now(timezone.utc) + timedelta(days=loan_days)
         
         # Creamos el préstamo atado a la instancia física real
         new_loan = Loan(
@@ -52,7 +55,7 @@ class LoanService:
             return False, "Préstamo no válido o ya procesado."
         
         loan.status = 'activo'
-        loan.approval_date = datetime.utcnow()
+        loan.approval_date = datetime.now(timezone.utc)
         
         # El estado de la instancia física ya se puso en 'prestado' 
         # en el InventoryService al momento de hacer la solicitud.
@@ -70,7 +73,7 @@ class LoanService:
             loan.final_penalty = loan.penalty_fee
             
         loan.status = 'devuelto'
-        loan.return_date = datetime.utcnow()
+        loan.return_date = datetime.now(timezone.utc)
         
         # ¡Paso crucial! Liberamos la instancia física para que otro usuario la pueda pedir
         if loan.item_instance:
@@ -83,8 +86,8 @@ class LoanService:
     def check_overdue_loans():
         # Buscamos todos los préstamos activos cuya fecha de entrega ya pasó
         overdue_loans = Loan.query.filter(
-            Loan.status == 'activo', 
-            Loan.due_date < datetime.utcnow()
+            Loan.status == 'activo',
+            Loan.due_date < datetime.now(timezone.utc)
         ).all()
         
         count = 0

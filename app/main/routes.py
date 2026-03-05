@@ -11,6 +11,7 @@ from datetime import datetime
 from app.forms import RequestItemForm, VisitForm, FastLoanSearchForm, FastLoanForm
 
 @bp.route('/fast_loan', methods=['GET', 'POST'])
+@login_required
 def fast_loan():
     search_form = FastLoanSearchForm()
     loan_form = FastLoanForm()
@@ -37,7 +38,16 @@ def fast_loan():
 
     # 2. FLUJO DE CONFIRMACIÓN DE PRÉSTAMO
     if loan_form.validate_on_submit() and loan_form.submit_loan.data:
-        user_id = loan_form.user_id.data
+        target_user_id = loan_form.user_id.data
+        if current_user.role not in ('admin', 'bibliotecario'):
+            try:
+                tid = int(target_user_id)
+            except (TypeError, ValueError):
+                tid = None
+            if tid is None or tid != current_user.id:
+                flash('Operación no autorizada.', 'danger')
+                return redirect(url_for('main.index'))
+        user_id = target_user_id
         item_type = loan_form.item_type.data
         environment = loan_form.environment.data
         catalog_id = loan_form.catalog_id.data

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.admin import bp
 from app import db
 from app.models import Loan, User, Catalog, ItemInstance
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import or_
 from functools import wraps
 from sqlalchemy import func
@@ -136,28 +136,29 @@ def delete_user(id):
 def admin_dashboard():
     # El scheduler ya procesa check_overdue_loans() en segundo plano
     status_filter = request.args.get('status', 'pendiente')
-    
+    page = request.args.get('page', 1, type=int)
+
     pending_count = Loan.query.filter_by(status='pendiente').count()
     activo_count = Loan.query.filter_by(status='activo').count()
     returned_count = Loan.query.filter_by(status='devuelto').count()
     atrasado_count = Loan.query.filter_by(status='atrasado').count()
-    
+
     top_items = db.session.query(
-        Catalog.title_or_name, 
+        Catalog.title_or_name,
         func.count(Loan.id).label('total')
     ).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
 
     query = Loan.query.filter(Loan.status == status_filter)
-    loans = query.order_by(Loan.request_date.desc()).all()
-    
+    loans_pagination = query.order_by(Loan.request_date.desc()).paginate(page=page, per_page=20, error_out=False)
+
     stats = {
         'pending': pending_count,
         'activo': activo_count,
         'returned': returned_count,
         'atrasado': atrasado_count
     }
-    
-    return render_template('admin/dashboard.html', loans=loans, current_status=status_filter, stats=stats, top_items=top_items)
+
+    return render_template('admin/dashboard.html', loans_pagination=loans_pagination, current_status=status_filter, stats=stats, top_items=top_items)
 
 @bp.route('/approve/<int:id>', methods=['POST'])
 @role_required('bibliotecario')
@@ -180,7 +181,7 @@ def return_loan(loan_id):
         # 1. Congelamos la multa actual para el historial
         loan.final_penalty = loan.penalty_fee
         loan.status = 'devuelto'
-        loan.return_date = datetime.utcnow()
+        loan.return_date = datetime.now(timezone.utc)
         
         # 2. LIBERAMOS LA INSTANCIA FÍSICA USANDO EL SERVICIO TRANSSACIONAL
         success, msg = InventoryService.release_instance(loan.instance_id)
@@ -245,7 +246,7 @@ def catalog_manage():
 @role_required('bibliotecario', 'admin')
 def catalog_delete(id):
     item = Catalog.query.get_or_404(id)
-    if item.total_count > 0:
+    if item.instances.count() > 0:
         flash('No puedes eliminar un catálogo que tiene instancias físicas registradas.', 'danger')
     else:
         db.session.delete(item)
