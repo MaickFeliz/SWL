@@ -18,7 +18,8 @@ class RequestItemForm(FlaskForm):
 
 class VisitForm(FlaskForm):
     document_id = StringField('Documento', validators=[DataRequired()])
-    activity = StringField('Actividad', validators=[DataRequired()])
+    visitor_name = StringField('Nombre del Visitante', validators=[Optional(), Length(max=100)])
+    activity = StringField('Actividad', validators=[DataRequired(), Length(max=50)])
     submit = SubmitField('Registrar Visita')
 
 # NUEVOS FORMULARIOS PARA PRÉSTAMO RÁPIDO
