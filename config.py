@@ -30,9 +30,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    SCHEDULER_API_ENABLED = False
-    SCHEDULER_TIMEZONE = "America/Bogota"
-
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
 
     PENALTY_FEE_PER_DAY = float(os.getenv("PENALTY_FEE_PER_DAY", 5000.0))

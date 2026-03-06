@@ -1,5 +1,4 @@
 from flask import Flask, session
-from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_migrate import Migrate
@@ -13,7 +12,6 @@ from config import Config
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-scheduler = APScheduler()
 mail = Mail()
 
 login_manager.login_view = "auth.login"
@@ -29,55 +27,6 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
-
-    # <-- INICIO DE CONFIGURACIÓN DEL SCHEDULER -->
-    scheduler.init_app(app)
-
-    from app.services.loan_service import LoanService
-    from app.services.email_service import EmailService
-
-    @scheduler.task("cron", id="actualizar_moras", hour=0, minute=1)
-    def tarea_actualizar_moras() -> None:
-        """Tarea diaria que actualiza moras y dispara notificaciones por correo."""
-        with app.app_context():
-            from app.models import Loan, LoanStatus  # import local para evitar ciclos
-
-            now_updated = LoanService.check_overdue_loans()
-            app.logger.info(
-                "Revisión de préstamos atrasados ejecutada. Nuevos atrasos: %s",
-                now_updated,
-            )
-
-            overdue_loans = Loan.query.filter(Loan.status == LoanStatus.OVERDUE).all()
-            for loan in overdue_loans:
-                try:
-                    if not loan.requester or not loan.due_date:
-                        continue
-
-                    days_late = max(
-                        0,
-                        (datetime.now(timezone.utc) - loan.due_date).days
-                        if loan.due_date
-                        else 0,
-                    )
-                    penalty = loan.penalty_fee
-
-                    EmailService.send_overdue_warning(
-                        user=loan.requester,
-                        loan=loan,
-                        days_overdue=days_late,
-                        penalty=penalty,
-                        app=app,
-                    )
-                except Exception as exc:  # noqa: BLE001
-                    app.logger.exception(
-                        "Error al enviar notificación de mora para el préstamo %s: %s",
-                        loan.id,
-                        exc,
-                    )
-
-    scheduler.start()
-    # <-- FIN DE CONFIGURACIÓN DEL SCHEDULER -->
 
     if not os.path.exists("logs"):
         os.mkdir("logs")
@@ -107,5 +56,8 @@ def create_app(config_class: type[Config] = Config) -> Flask:
 
     from app.admin import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix="/admin")
+
+    from app import cli as app_cli  # noqa: F401 — registra comandos CLI
+    app_cli.register_commands(app)
 
     return app
