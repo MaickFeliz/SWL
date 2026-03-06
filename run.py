@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Catalog, ItemInstance
+from app.models import User, Catalog, ItemInstance, InventoryStatus
 
 app = create_app()
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                     instance = ItemInstance(
                         catalog_id=new_item.id,
                         unique_code=code,
-                        status='disponible'
+                        status=InventoryStatus.AVAILABLE,
                     )
                     db.session.add(instance)
         

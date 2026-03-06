@@ -1,19 +1,19 @@
 from app import db
-from app.models import Catalog, ItemInstance
+from app.models import Catalog, ItemInstance, InventoryStatus
 from flask import current_app
 from sqlalchemy.sql import func
 import sqlalchemy.exc
 
 class InventoryService:
     @staticmethod
-    def reserve_instances(catalog_id, quantity):
+    def reserve_instances(catalog_id: int, quantity: int):
         try:
             catalog = Catalog.query.get(int(catalog_id))
             if not catalog:
                 return False, [], "Catálogo no encontrado."
                 
             # skip_locked=True evita que la app se cuelgue esperando si otro usuario ya bloqueó la fila
-            available_instances = catalog.instances.filter_by(status='disponible')\
+            available_instances = catalog.instances.filter_by(status=InventoryStatus.AVAILABLE)\
                 .limit(quantity).with_for_update(skip_locked=True).all()
             
             if len(available_instances) < quantity:
@@ -21,7 +21,7 @@ class InventoryService:
                 
             reserved_ids = []
             for instance in available_instances:
-                instance.status = 'prestado' 
+                instance.status = InventoryStatus.LOANED
                 reserved_ids.append(instance.id)
                 
             return True, reserved_ids, "Instancias reservadas exitosamente."
@@ -36,12 +36,12 @@ class InventoryService:
             return False, [], "Error interno al procesar el inventario."
 
     @staticmethod
-    def release_instance(instance_id):
+    def release_instance(instance_id: int):
         instance = ItemInstance.query.get(instance_id)
         if not instance:
             return False, "Instancia física no encontrada."
             
-        instance.status = 'disponible'
+        instance.status = InventoryStatus.AVAILABLE
         return True, "Instancia liberada y devuelta al inventario."
 
 class CatalogService:

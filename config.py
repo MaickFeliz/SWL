@@ -1,36 +1,65 @@
 import os
 from datetime import timedelta
 
-class Config:
-    # Seguridad básica
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'clave-secreta-para-desarrollo'
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    
-    # Base de datos: Usa PostgreSQL si está en las variables de entorno, sino cae en SQLite
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'instance', 'app.db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    SCHEDULER_API_ENABLED = False
-    SCHEDULER_TIMEZONE = "America/Bogota" 
-    
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
-    
-    # --- PARÁMETROS DE NEGOCIO ---
-    # Multa por día de retraso (Adiós números quemados)
-    PENALTY_FEE_PER_DAY = float(os.environ.get('PENALTY_FEE_PER_DAY', 5000.0))
-    
-    # Logging
-    LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'library.log')
+from dotenv import load_dotenv
 
-    # Identidad Corporativa
+
+load_dotenv()
+
+
+class Config:
+    """Configuración base segura, pensada para producción por defecto."""
+
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
+    DEBUG = False
+
+    flask_env = os.getenv("FLASK_ENV", "production")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if flask_env == "production" and not SECRET_KEY:
+        raise ValueError(
+            "SECRET_KEY debe estar definido en el entorno para ejecución en producción."
+        )
+
+    database_url = os.getenv(
+        "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'instance', 'app.db')}"
+    )
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = database_url
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    SCHEDULER_API_ENABLED = False
+    SCHEDULER_TIMEZONE = "America/Bogota"
+
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
+
+    PENALTY_FEE_PER_DAY = float(os.getenv("PENALTY_FEE_PER_DAY", 5000.0))
+
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
+    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "True").lower() in {"true", "1", "yes"}
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", MAIL_USERNAME or None)
+
+    LOG_FILE = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "logs", "library.log"
+    )
+
     APP_NAME = "SWL"
     LIBRARY_NAME = "SWL"
-    
-    # Configuración de Roles estandarizada
+
     USER_ROLES = {
-        'admin': 'Administrador del Sistema',
-        'bibliotecario': 'Bibliotecario / Staff',
-        'premium': 'Usuario Premium',
-        'cliente': 'Estudiante / Cliente Regular'
+        "admin": "Administrador del Sistema",
+        "bibliotecario": "Bibliotecario / Staff",
+        "premium": "Usuario Premium",
+        "cliente": "Estudiante / Cliente Regular",
     }
+
+
+class DevelopmentConfig(Config):
+    """Configuración específica para desarrollo local con debugging habilitado."""
+
+    DEBUG = True

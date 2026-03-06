@@ -1,14 +1,15 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, send_file
 from flask_login import login_required, current_user
 from app.admin import bp
 from app import db
-from app.models import Loan, User, Catalog, ItemInstance
+from app.models import Loan, User, Catalog, ItemInstance, LoanStatus, InventoryStatus
 from datetime import datetime, timezone
 from sqlalchemy import or_
 from functools import wraps
 from sqlalchemy import func
 from app.services.loan_service import LoanService
 from app.services.inventory_service import InventoryService
+from app.services.report_service import ReportService, EXCEL_MIME_TYPE
 from app.utils.decorators import role_required
 from app.forms import AdminUserForm, EditUserForm, ImportForm, CatalogForm, InstanceForm, UpdateInstanceStatusForm
 
@@ -135,20 +136,20 @@ def delete_user(id):
 @role_required('bibliotecario', 'admin')
 def admin_dashboard():
     # El scheduler ya procesa check_overdue_loans() en segundo plano
-    status_filter = request.args.get('status', 'pendiente')
+    status_filter = request.args.get('status', LoanStatus.PENDING.value)
     page = request.args.get('page', 1, type=int)
 
-    pending_count = Loan.query.filter_by(status='pendiente').count()
-    activo_count = Loan.query.filter_by(status='activo').count()
-    returned_count = Loan.query.filter_by(status='devuelto').count()
-    atrasado_count = Loan.query.filter_by(status='atrasado').count()
+    pending_count = Loan.query.filter_by(status=LoanStatus.PENDING).count()
+    activo_count = Loan.query.filter_by(status=LoanStatus.ACTIVE).count()
+    returned_count = Loan.query.filter_by(status=LoanStatus.RETURNED).count()
+    atrasado_count = Loan.query.filter_by(status=LoanStatus.OVERDUE).count()
 
     top_items = db.session.query(
         Catalog.title_or_name,
         func.count(Loan.id).label('total')
     ).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
 
-    query = Loan.query.filter(Loan.status == status_filter)
+    query = Loan.query.filter(Loan.status == LoanStatus(status_filter))
     loans_pagination = query.order_by(Loan.request_date.desc()).paginate(page=page, per_page=20, error_out=False)
 
     stats = {
@@ -164,13 +165,41 @@ def admin_dashboard():
 @role_required('bibliotecario')
 def approve(id):
     success, msg = LoanService.approve_loan(id)
-    
     if success:
         flash(msg, 'success')
-        return redirect(url_for('admin.admin_dashboard', status='activo'))
-    else:
-        flash(msg, 'danger')
-        return redirect(url_for('admin.admin_dashboard', status='pendiente'))
+        return redirect(url_for('admin.admin_dashboard', status=LoanStatus.ACTIVE.value))
+    flash(msg, 'danger')
+    return redirect(url_for('admin.admin_dashboard', status=LoanStatus.PENDING.value))
+
+
+@bp.route('/reports/overdue/export')
+@role_required('admin')
+def export_overdue_report():
+    """Expone un Excel con los 10 usuarios con mayor mora acumulada."""
+    output = ReportService.generate_overdue_users_report()
+    filename = f"usuarios_morosos_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=EXCEL_MIME_TYPE,
+        max_age=0,
+    )
+
+
+@bp.route('/reports/inventory/export')
+@role_required('admin')
+def export_inventory_report():
+    """Expone un Excel con el estado actual del inventario."""
+    output = ReportService.generate_inventory_status_report()
+    filename = f"inventario_actual_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=EXCEL_MIME_TYPE,
+        max_age=0,
+    )
 
 @bp.route('/loan/<int:loan_id>/return', methods=['POST'])
 @role_required('admin', 'bibliotecario')
@@ -199,18 +228,18 @@ def return_loan(loan_id):
 @role_required('bibliotecario')
 def reject_loan(id):
     loan = Loan.query.get_or_404(id)
-    if loan.status == 'pendiente':
-        loan.status = 'rechazado'
+    if loan.status is LoanStatus.PENDING:
+        loan.status = LoanStatus.REJECTED
         loan.observation = 'Rechazado por el bibliotecario.' 
         
         if loan.item_instance:
-            loan.item_instance.status = 'disponible'
+            loan.item_instance.status = InventoryStatus.AVAILABLE
 
         db.session.commit()
         flash('Solicitud rechazada con éxito. Se liberó la reserva física de la biblioteca.', 'success')
     else:
         flash('Solo puedes rechazar solicitudes que estén pendientes.', 'warning')
-    return redirect(url_for('admin.admin_dashboard', status='pendiente'))
+    return redirect(url_for('admin.admin_dashboard', status=LoanStatus.PENDING.value))
 
 # --- RUTAS DE GESTIÓN DE CATÁLOGO E INSTANCIAS (RESTUARADAS) ---
 
@@ -301,10 +330,12 @@ def update_instance_status(instance_id):
     form = UpdateInstanceStatusForm()
 
     if form.validate_on_submit():
-        new_status = form.status.data
+        new_status_value = form.status.data
 
-        if new_status in ['disponible', 'mantenimiento', 'perdido']:
-            instance.status = new_status
+        valid_status_values = {status.value for status in InventoryStatus}
+
+        if new_status_value in valid_status_values:
+            instance.status = InventoryStatus(new_status_value)
             try:
                 db.session.commit()
                 flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status}.', 'success')

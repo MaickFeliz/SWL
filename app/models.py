@@ -1,118 +1,205 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
 from decimal import Decimal
-from datetime import datetime, timedelta, timezone
+from enum import Enum
+from typing import Optional
 from zoneinfo import ZoneInfo
 
-from app import db, login_manager
 from flask import current_app
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Numeric
 
+from app import db, login_manager
+
+
+class InventoryStatus(Enum):
+    """Enum de estados de inventario para garantizar integridad referencial."""
+
+    AVAILABLE = "disponible"
+    LOANED = "prestado"
+    MAINTENANCE = "mantenimiento"
+    LOST = "perdido"
+
+
+class LoanStatus(Enum):
+    """Enum de estados de préstamo para evitar inconsistencias de negocio."""
+
+    PENDING = "pendiente"
+    ACTIVE = "activo"
+    OVERDUE = "atrasado"
+    RETURNED = "devuelto"
+    REJECTED = "rechazado"
+
+
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id: str) -> Optional["User"]:
+    """Resuelve el usuario actual para sesiones de login."""
     return User.query.get(int(user_id))
 
-# REGISTRO (Clientes y Premium)
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=True)
-    document_id = db.Column(db.String(20), unique=True, nullable=False) 
-    full_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20))
-    role = db.Column(db.String(20), nullable=False) 
-    program_name = db.Column(db.String(100), nullable=True)
-    password_hash = db.Column(db.String(255))
 
-    def set_password(self, password):
+class User(UserMixin, db.Model):
+    """Entidad principal de usuarios del sistema de préstamos."""
+
+    id: int = db.Column(db.Integer, primary_key=True)
+    email: Optional[str] = db.Column(db.String(120), unique=True, nullable=True)
+    document_id: str = db.Column(db.String(20), unique=True, nullable=False)
+    full_name: str = db.Column(db.String(100), nullable=False)
+    phone: Optional[str] = db.Column(db.String(20))
+    role: str = db.Column(db.String(20), nullable=False)
+    program_name: Optional[str] = db.Column(db.String(100), nullable=True)
+    password_hash: str = db.Column(db.String(255))
+
+    def set_password(self, password: str) -> None:
+        """Centraliza el hashing de contraseñas para facilitar futuros cambios."""
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
+        """Permite intercambiar el backend de hashing sin tocar los controladores."""
         return check_password_hash(self.password_hash, password)
 
-# 1. EL CATÁLOGO (Lo genérico)
+
 class Catalog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title_or_name = db.Column(db.String(150), nullable=False) 
-    category = db.Column(db.String(50), nullable=False) 
-    author_or_brand = db.Column(db.String(100), nullable=True) 
-    
-    instances = db.relationship('ItemInstance', backref='catalog_item', lazy='dynamic', cascade="all, delete-orphan")
+    """Catálogo lógico de ítems disponibles para préstamo."""
 
-# 2. LAS INSTANCIAS (El objeto físico real)
+    id: int = db.Column(db.Integer, primary_key=True)
+    title_or_name: str = db.Column(db.String(150), nullable=False)
+    category: str = db.Column(db.String(50), nullable=False)
+    author_or_brand: Optional[str] = db.Column(db.String(100), nullable=True)
+
+    instances = db.relationship(
+        "ItemInstance",
+        backref="catalog_item",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+
+
 class ItemInstance(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    catalog_id = db.Column(db.Integer, db.ForeignKey('catalog.id'), nullable=False, index=True)
-    unique_code = db.Column(db.String(50), unique=True, nullable=False)
-    status = db.Column(db.String(20), default='disponible', index=True)  # disponible, prestado, mantenimiento, perdido
-    condition = db.Column(db.String(100), nullable=True) 
-    
-    loans = db.relationship('Loan', backref='item_instance', lazy='dynamic')
+    """Instancia física de un ítem del catálogo."""
 
-def _utc_now():
+    id: int = db.Column(db.Integer, primary_key=True)
+    catalog_id: int = db.Column(
+        db.Integer, db.ForeignKey("catalog.id"), nullable=False, index=True
+    )
+    unique_code: str = db.Column(db.String(50), unique=True, nullable=False)
+    status: InventoryStatus = db.Column(
+        db.Enum(
+            InventoryStatus,
+            name="inventory_status_enum",
+            create_constraint=True,
+        ),
+        default=InventoryStatus.AVAILABLE,
+        nullable=False,
+        index=True,
+    )
+    condition: Optional[str] = db.Column(db.String(100), nullable=True)
+
+    loans = db.relationship("Loan", backref="item_instance", lazy="dynamic")
+
+
+def _utc_now() -> datetime:
+    """Provee un único punto de obtención de timestamps en UTC."""
     return datetime.now(timezone.utc)
 
 
-# 3. EL PRÉSTAMO REAL
 class Loan(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
-    instance_id = db.Column(db.Integer, db.ForeignKey('item_instance.id'), nullable=False, index=True)
-    environment = db.Column(db.String(50), nullable=True)
+    """Préstamo asociado a una instancia física concreta."""
 
-    request_date = db.Column(db.DateTime, default=_utc_now)
-    approval_date = db.Column(db.DateTime, nullable=True)
-    due_date = db.Column(db.DateTime, nullable=True)
-    return_date = db.Column(db.DateTime, nullable=True)
+    id: int = db.Column(db.Integer, primary_key=True)
+    user_id: int = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
+    )
+    instance_id: int = db.Column(
+        db.Integer, db.ForeignKey("item_instance.id"), nullable=False, index=True
+    )
+    environment: Optional[str] = db.Column(db.String(50), nullable=True)
 
-    status = db.Column(db.String(20), default='pendiente', index=True)
-    observation = db.Column(db.Text, nullable=True)
-    final_penalty = db.Column(Numeric(10, 2), default=Decimal('0.00')) 
+    request_date: datetime = db.Column(db.DateTime, default=_utc_now)
+    approval_date: Optional[datetime] = db.Column(db.DateTime, nullable=True)
+    due_date: Optional[datetime] = db.Column(db.DateTime, nullable=True)
+    return_date: Optional[datetime] = db.Column(db.DateTime, nullable=True)
 
-    requester = db.relationship('User', backref=db.backref('loans', lazy='dynamic'))
+    status: LoanStatus = db.Column(
+        db.Enum(
+            LoanStatus,
+            name="loan_status_enum",
+            create_constraint=True,
+        ),
+        default=LoanStatus.PENDING,
+        nullable=False,
+        index=True,
+    )
+    observation: Optional[str] = db.Column(db.Text, nullable=True)
+    final_penalty: Decimal = db.Column(Numeric(10, 2), default=Decimal("0.00"))
+
+    requester = db.relationship(
+        "User", backref=db.backref("loans", lazy="dynamic")
+    )
 
     @property
-    def request_date_co(self):
+    def request_date_co(self) -> Optional[datetime]:
+        """Convierte la fecha de solicitud a zona horaria operativa."""
         if not self.request_date:
             return None
-        utc_dt = self.request_date if self.request_date.tzinfo else self.request_date.replace(tzinfo=timezone.utc)
-        return utc_dt.astimezone(ZoneInfo('America/Bogota'))
+        utc_dt = (
+            self.request_date
+            if self.request_date.tzinfo
+            else self.request_date.replace(tzinfo=timezone.utc)
+        )
+        return utc_dt.astimezone(ZoneInfo("America/Bogota"))
 
     @property
-    def due_date_co(self):
+    def due_date_co(self) -> Optional[datetime]:
+        """Convierte la fecha de vencimiento a zona horaria operativa."""
         if not self.due_date:
             return None
-        utc_dt = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
-        return utc_dt.astimezone(ZoneInfo('America/Bogota'))
+        utc_dt = (
+            self.due_date
+            if self.due_date.tzinfo
+            else self.due_date.replace(tzinfo=timezone.utc)
+        )
+        return utc_dt.astimezone(ZoneInfo("America/Bogota"))
 
     @property
-    def is_overdue(self):
-        if self.status not in ['devuelto', 'rechazado'] and self.due_date:
+    def is_overdue(self) -> bool:
+        """Evalúa mora ignorando estados terminales para coherencia de negocio."""
+        if self.status not in (LoanStatus.RETURNED, LoanStatus.REJECTED) and self.due_date:
             now = datetime.now(timezone.utc)
-            due = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
+            due = (
+                self.due_date
+                if self.due_date.tzinfo
+                else self.due_date.replace(tzinfo=timezone.utc)
+            )
             return now > due
         return False
 
     @property
-    def penalty_fee(self):
-        # Leemos la categoría directamente de la instancia vinculada
-        if not self.item_instance or self.item_instance.catalog_item.category != 'libro':
+    def penalty_fee(self) -> float:
+        """Calcula la multa basada en días de mora y configuración global."""
+        if not self.item_instance or self.item_instance.catalog_item.category != "libro":
             return 0.0
 
-        if self.is_overdue:
+        if self.is_overdue and self.due_date:
             now = datetime.now(timezone.utc)
-            due = self.due_date if self.due_date.tzinfo else self.due_date.replace(tzinfo=timezone.utc)
+            due = (
+                self.due_date
+                if self.due_date.tzinfo
+                else self.due_date.replace(tzinfo=timezone.utc)
+            )
             days_late = (now - due).days
             if days_late > 0:
-                # Obtenemos el valor de la multa desde la configuración
-                fee = current_app.config.get('PENALTY_FEE_PER_DAY', 5000.0)
-                return days_late * fee
+                fee = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+                return float(days_late * fee)
         return 0.0
 
-# 4. USO DE BIBLIOTECA
+
 class LibraryLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    visitor_name = db.Column(db.String(100), nullable=False)
-    visitor_id = db.Column(db.String(20), nullable=False)
-    role = db.Column(db.String(20), nullable=False) 
-    entry_time = db.Column(db.DateTime, default=_utc_now)
-    activity = db.Column(db.String(50), nullable=False)
+    """Registro de uso de la biblioteca con fines estadísticos."""
+
+    id: int = db.Column(db.Integer, primary_key=True)
+    visitor_name: str = db.Column(db.String(100), nullable=False)
+    visitor_id: str = db.Column(db.String(20), nullable=False)
+    role: str = db.Column(db.String(20), nullable=False)
+    entry_time: datetime = db.Column(db.DateTime, default=_utc_now)
+    activity: str = db.Column(db.String(50), nullable=False)

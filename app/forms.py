@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Optional
+
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import (
@@ -10,8 +14,11 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length, EqualTo
 
+from app.models import InventoryStatus
 
-def strip_filter(value):
+
+def strip_filter(value: Optional[str]) -> Optional[str]:
+    """Normaliza entradas eliminando espacios para evitar errores sutiles de validación."""
     return value.strip() if value else None
 
 
@@ -64,9 +71,9 @@ class InstanceForm(FlaskForm):
     status = SelectField(
         'Estado',
         choices=[
-            ('disponible', 'Disponible'),
-            ('mantenimiento', 'Mantenimiento'),
-            ('perdido', 'Perdido'),
+            (InventoryStatus.AVAILABLE.value, 'Disponible'),
+            (InventoryStatus.MAINTENANCE.value, 'Mantenimiento'),
+            (InventoryStatus.LOST.value, 'Perdido'),
         ],
         validators=[DataRequired()],
     )
@@ -120,9 +127,9 @@ class UpdateInstanceStatusForm(FlaskForm):
     status = SelectField(
         'Estado',
         choices=[
-            ('disponible', 'Disponible'),
-            ('mantenimiento', 'Mantenimiento'),
-            ('perdido', 'Perdido'),
+            (InventoryStatus.AVAILABLE.value, 'Disponible'),
+            (InventoryStatus.MAINTENANCE.value, 'Mantenimiento'),
+            (InventoryStatus.LOST.value, 'Perdido'),
         ],
         validators=[DataRequired()],
     )

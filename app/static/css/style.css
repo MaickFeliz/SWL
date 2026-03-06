@@ -1,61 +1,80 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    --brand-primary: #1C3144;    
-    --brand-secondary: #3F88C5;  
-    --brand-accent: #D00000;     
-    --surface-alt: #E2E8F0;      
-    --bg-body: #F4F6F8;          
-    
+    --primary-color: #1c3144;
+    --secondary-color: #3f88c5;
+    --accent-color: #d00000;
+    --success-color: #2b7a4b;
+    --warning-color: #f59e0b;
+    --danger-color: #dc2626;
+    --info-color: #0ea5e9;
+
+    --bg-color: #f4f6f8;
     --surface-color: #ffffff;
+    --surface-alt: #e2e8f0;
     --border-color: rgba(28, 49, 68, 0.12);
-    --text-primary: #111827;
-    --text-secondary: #4B5563;
+
+    --text-color: #111827;
+    --text-muted-color: #4b5563;
+
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
+
     --shadow-sm: 0 1px 3px rgba(28, 49, 68, 0.1);
     --shadow-md: 0 10px 15px -3px rgba(28, 49, 68, 0.08), 0 4px 6px -2px rgba(28, 49, 68, 0.04);
+
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    background-color: var(--bg-body);
-    color: var(--text-primary);
+    background-color: var(--bg-color);
+    color: var(--text-color);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-weight: 700;
-    color: var(--brand-primary);
+    color: var(--primary-color);
     letter-spacing: -0.02em;
 }
 
 .custom-navbar {
     background-color: var(--surface-color) !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 0.8rem 0;
-    border-bottom: 4px solid var(--brand-primary);
+    border-bottom: 4px solid var(--primary-color);
 }
 
 .navbar-brand {
     font-weight: 700;
     font-size: 1.25rem;
-    color: var(--brand-primary) !important;
+    color: var(--primary-color) !important;
+}
+
+.navbar-brand-logo {
+    border-radius: var(--radius-sm);
+    object-fit: contain;
 }
 
 .nav-link {
-    color: var(--text-secondary) !important;
+    color: var(--text-muted-color) !important;
     font-weight: 600;
     transition: var(--transition-fast);
     padding: 0.5rem 1rem !important;
     border-radius: var(--radius-sm);
 }
 
-.nav-link:hover, .nav-link.active {
-    color: var(--brand-primary) !important;
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-color) !important;
     background-color: var(--surface-alt);
 }
 
@@ -71,7 +90,7 @@ h1, h2, h3, h4, h5, h6 {
 .card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-    border-color: var(--brand-secondary);
+    border-color: var(--secondary-color);
 }
 
 .card-header {
@@ -79,7 +98,7 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid var(--border-color);
     font-weight: 700;
     padding: 1rem 1.25rem;
-    color: var(--brand-primary);
+    color: var(--primary-color);
 }
 
 .btn {
@@ -96,27 +115,54 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: var(--shadow-sm);
 }
 
-.btn-primary { background-color: var(--brand-primary); color: white; }
-.btn-primary:hover { background-color: #132230; color: white; }
-.btn-outline-primary { border: 2px solid var(--brand-primary); color: var(--brand-primary); background: transparent; }
-.btn-outline-primary:hover { background-color: var(--brand-primary); color: white; }
-.btn-danger { background-color: var(--brand-accent); color: white; }
-.btn-success { background-color: #2b7a4b; color: white; }
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #132230;
+    color: #ffffff;
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btn-danger {
+    background-color: var(--accent-color);
+    color: #ffffff;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: #ffffff;
+}
 
 .table-responsive {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--surface-color);
-    overflow: hidden; 
+    overflow: hidden;
 }
 
-.table { margin-bottom: 0; }
+.table {
+    margin-bottom: 0;
+}
+
 .table thead th {
     background-color: var(--surface-alt);
     border-bottom: 2px solid var(--border-color);
     padding: 1rem;
     font-weight: 700;
-    color: var(--brand-primary);
+    color: var(--primary-color);
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
@@ -126,21 +172,23 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1rem;
     vertical-align: middle;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
+    color: var(--text-color);
     font-size: 0.9rem;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     padding: 0.6rem 1rem;
     background-color: #fafafa;
-    color: var(--text-primary);
+    color: var(--text-color);
     transition: var(--transition-fast);
 }
 
-.form-control:focus, .form-select:focus {
-    border-color: var(--brand-secondary);
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--secondary-color);
     background-color: var(--surface-color);
     box-shadow: 0 0 0 3px rgba(63, 136, 197, 0.2);
 }
@@ -152,46 +200,148 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.75rem;
 }
 
+.toast-container-custom {
+    z-index: 1055;
+}
+
+.app-footer {
+    background-color: var(--primary-color);
+    color: var(--surface-alt);
+}
+
+.print-header {
+    display: none;
+}
+
+.loan-status-badge-pending {
+    background-color: var(--warning-color);
+    color: #1f2933;
+}
+
+.loan-status-badge-active {
+    background-color: var(--success-color);
+}
+
+.loan-status-badge-overdue {
+    background-color: var(--danger-color);
+}
+
+.loan-status-badge-returned {
+    background-color: #6b7280;
+}
+
+.loan-status-badge-rejected {
+    background-color: #4b5563;
+}
+
+.stat-card-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.stat-card-warning .stat-label,
+.stat-card-warning .stat-icon {
+    color: var(--warning-color);
+}
+
+.stat-card-active {
+    border-left: 4px solid var(--secondary-color);
+}
+
+.stat-card-active .stat-label,
+.stat-card-active .stat-icon {
+    color: var(--secondary-color);
+}
+
+.stat-card-overdue {
+    border-left: 4px solid var(--danger-color);
+}
+
+.stat-card-returned {
+    border-left: 4px solid var(--text-muted-color);
+}
+
 @media (max-width: 768px) {
-    .custom-navbar { padding: 0.5rem 1rem; }
-    .navbar-brand span { font-size: 1.1rem; }
-    
-    .card-header { padding: 0.75rem 1rem; }
-    .card-body { padding: 1rem; }
-    
+    .custom-navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .navbar-brand span {
+        font-size: 1.1rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
     .btn-mobile-block {
         display: block;
         width: 100%;
         margin-bottom: 0.5rem;
     }
-    
+
     .table-responsive {
         border-radius: 0;
         border-left: none;
         border-right: none;
     }
-    
+
     .navbar-collapse {
         padding-top: 1rem;
         border-top: 1px solid var(--border-color);
         margin-top: 0.5rem;
     }
-    
-    .nav-item.ms-2 { margin-left: 0 !important; margin-top: 0.5rem; }
+
+    .nav-item.ms-2 {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
 }
 
 @media print {
-    .no-print, nav, .btn, form { display: none !important; }
-    body { background: white; color: black; }
-    .card { border: none; box-shadow: none; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
+    .no-print,
+    nav,
+    .btn,
+    form {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    .print-header {
+        display: block;
+        margin-bottom: 1rem;
+    }
 }
 
 .custom-back-btn {
     transition: all 0.2s ease-in-out;
 }
+
 .custom-back-btn:hover {
-    color: var(--brand-secondary) !important;
+    color: var(--secondary-color) !important;
     transform: translateX(-5px);
 }
+
