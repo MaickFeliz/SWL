@@ -25,14 +25,12 @@ from __future__ import annotations
 import click
 from datetime import datetime, timezone
 from flask import Flask
-from flask.cli import with_appcontext
 
 
 def register_commands(app: Flask) -> None:
     """Registra todos los comandos CLI personalizados en la instancia de Flask."""
 
     @app.cli.command("check-overdue")
-    @with_appcontext
     def check_overdue() -> None:
         """Revisa préstamos vencidos, actualiza su estado y envía notificaciones.
 

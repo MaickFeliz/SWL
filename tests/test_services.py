@@ -26,12 +26,12 @@ from app.services.report_service import ReportService
 class TestGenerateOverdueUsersReport:
     """Valida el comportamiento de ReportService.generate_overdue_users_report()."""
 
-    def test_returns_valid_bytesio_when_db_is_empty(self, app_context: Flask) -> None:
-        """Debe retornar un BytesIO con un Excel válido y sin filas de datos cuando
-        no existe ningún préstamo en la base de datos.
+    def test_returns_report_with_no_overdue_rows(self, app_context: Flask) -> None:
+        """Debe retornar un BytesIO con un Excel válido y sin filas de morosos cuando
+        no existe ningún préstamo con estado OVERDUE en la base de datos.
 
-        Garantiza que el reporte no lanza excepciones ante tablas vacías y que
-        el archivo resultante puede abrirse con openpyxl sin errores.
+        Garantiza que el reporte no lanza excepciones ante tablas vacías o sin
+        morosos, y que el archivo resultante puede abrirse con openpyxl sin errores.
         """
         output: BytesIO = ReportService.generate_overdue_users_report()
 
