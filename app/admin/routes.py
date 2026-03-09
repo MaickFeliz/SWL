@@ -147,8 +147,7 @@ def admin_dashboard():
     top_items = db.session.query(
         Catalog.title_or_name,
         func.count(Loan.id).label('total')
-    ).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
-
+    ).select_from(Catalog).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
     query = Loan.query.filter(Loan.status == LoanStatus(status_filter))
     loans_pagination = query.order_by(Loan.request_date.desc()).paginate(page=page, per_page=20, error_out=False)
 

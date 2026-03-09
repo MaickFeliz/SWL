@@ -12,9 +12,11 @@
                 </div>
 
                 <form method="POST">
+                    {{ form.hidden_tag() }}
+
                     <div class="mb-3">
-                        <label for="catalog_id" class="form-label">Selecciona el Elemento</label>
-                        <select name="catalog_id" id="catalog_id" class="form-select form-select-lg" required>
+                        {{ form.catalog_id.label(class="form-label") }}
+                        <select name="catalog_id" class="form-select form-select-lg" required>
                             <option value="" selected disabled>-- Ver elementos disponibles --</option>
                             {% for item in items %}
                             <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
@@ -24,19 +26,25 @@
                         </select>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="quantity" class="form-label">Cantidad</label>
-                        <input type="number" name="quantity" id="quantity" class="form-control form-control-lg" min="1"
-                            max="5" value="1" required>
+                    <div class="mb-3">
+                        {{ form.quantity.label(class="form-label") }}
+                        {{ form.quantity(class="form-control form-control-lg", min="1", max="5") }}
                         {% if current_user.role == 'cliente' %}
                         <small class="form-text text-muted">Como cliente, tienes acceso a un número limitado de
                             elementos.</small>
                         {% endif %}
                     </div>
 
+                    <div class="mb-4">
+                        {{ form.environment.label(class="form-label fw-bold") }}
+                        {{ form.environment(class="form-select form-select-lg") }}
+                        <small class="form-text text-muted">Lugar donde se usará el elemento.</small>
+                    </div>
+
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-warning btn-lg"><i
-                                class="bi bi-send-fill me-2"></i>Confirmar Solicitud</button>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="bi bi-send-fill me-2"></i>Confirmar Solicitud
+                        </button>
                         <a href="{{ url_for('main.premium_dashboard') }}" class="btn btn-outline-secondary">Volver al
                             Panel</a>
                     </div>

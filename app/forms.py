@@ -16,6 +16,8 @@ from wtforms.validators import DataRequired, NumberRange, Optional, Email, Lengt
 
 from app.models import InventoryStatus
 
+AMBIENTES = [(str(i), f'Ambiente {i}') for i in range(1, 15)] + [('15', 'Ambiente 15 (Peluquería)')]
+
 
 def strip_filter(value: Optional[str]) -> Optional[str]:
     """Normaliza entradas eliminando espacios para evitar errores sutiles de validación."""
@@ -25,7 +27,7 @@ def strip_filter(value: Optional[str]) -> Optional[str]:
 class RequestItemForm(FlaskForm):
     catalog_id = HiddenField('catalog_id', validators=[DataRequired()])
     quantity = IntegerField('Cantidad', default=1, validators=[DataRequired(), NumberRange(min=1)])
-    environment = SelectField('Ambiente', choices=[('interno', 'Interno'), ('externo', 'Externo')], validators=[Optional()])
+    environment = SelectField('Ambiente', choices=AMBIENTES, validators=[Optional()])
     submit = SubmitField('Solicitar')
 
 class VisitForm(FlaskForm):
@@ -56,7 +58,7 @@ class FastLoanForm(FlaskForm):
     item_type = HiddenField('item_type', validators=[DataRequired()])
     catalog_id = SelectField('Seleccione el Equipo', coerce=int, validators=[DataRequired()])
     quantity = IntegerField('Cantidad', default=1, validators=[DataRequired(), NumberRange(min=1)])
-    environment = SelectField('Ambiente', choices=[('interno', 'Interno'), ('externo', 'Externo')], validators=[Optional()])
+    environment = SelectField('Ambiente', choices=AMBIENTES, validators=[Optional()])
     submit_loan = SubmitField('Confirmar Préstamo')
 
 class CatalogForm(FlaskForm):
@@ -67,7 +69,7 @@ class CatalogForm(FlaskForm):
 
 class InstanceForm(FlaskForm):
     unique_code = StringField('Placa / Serial / Código de Barras', validators=[DataRequired()])
-    condition = StringField('Condición', validators=[Optional()])
+    condition = SelectField('Estado Físico / Condición', choices=[('Nuevo', 'Nuevo'), ('Bueno', 'Bueno'), ('Regular', 'Regular'), ('Malo', 'Malo')], validators=[Optional()])
     status = SelectField(
         'Estado',
         choices=[

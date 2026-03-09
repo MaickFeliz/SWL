@@ -12,18 +12,25 @@
 
                 <form method="POST">
                     {{ form.hidden_tag() }}
+
                     <div class="mb-4">
-                        <label for="catalog_id" class="form-label">Seleccione el Libro</label>
-                        <select name="catalog_id" id="catalog_id" class="form-select form-select-lg" required>
+                        {{ form.catalog_id.label(class="form-label") }}
+                        <select name="catalog_id" class="form-select form-select-lg" required>
                             <option value="" selected disabled>-- Libros disponibles en el catálogo --</option>
                             {% for item in items %}
                             <option value="{{ item.id }}" {% if item.available_count==0 %}disabled{% endif %}>
-                                {{ item.title_or_name }} {% if item.author_or_brand %} - {{ item.author_or_brand }}{%
+                                {{ item.title_or_name }}{% if item.author_or_brand %} - {{ item.author_or_brand }}{%
                                 endif %}
                                 (Disponibles: {{ item.available_count }})
                             </option>
                             {% endfor %}
                         </select>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.environment.label(class="form-label fw-bold") }}
+                        {{ form.environment(class="form-select form-select-lg") }}
+                        <small class="form-text text-muted">Sala o área donde consultarás el libro.</small>
                     </div>
 
                     <div class="alert alert-info bg-info-soft border-info-soft">
@@ -34,8 +41,9 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-info btn-lg text-white"><i
-                                class="bi bi-send-fill me-2"></i>Registrar Préstamo de Libro</button>
+                        <button type="submit" class="btn btn-info btn-lg text-white">
+                            <i class="bi bi-send-fill me-2"></i>Registrar Préstamo de Libro
+                        </button>
                         <a href="{{ url_for('main.premium_dashboard') }}" class="btn btn-outline-secondary">Volver al
                             Panel</a>
                     </div>

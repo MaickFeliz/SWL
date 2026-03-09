@@ -69,6 +69,11 @@ def fast_loan():
 
         return redirect(url_for('main.index'))
 
+    elif request.method == 'POST' and loan_form.submit_loan.data:
+        for field, errors in loan_form.errors.items():
+            for err in errors:
+                flash(f"Error de validación en {field}: {err}", 'danger')
+
     return render_template('main/fast_loan.html', search_form=search_form, loan_form=loan_form)
 
 
@@ -153,6 +158,11 @@ def request_laptop():
 
         return redirect(url_for('main.premium_dashboard'))
 
+    elif request.method == 'POST':
+        for field, errors in form.errors.items():
+            for err in errors:
+                flash(f"Error de validación en {field}: {err}", 'danger')
+
     return render_template('premium/request_laptop.html', items=available_computers, form=form)
 
 
@@ -186,6 +196,11 @@ def request_accessory():
 
         return redirect(url_for('main.premium_dashboard'))
 
+    elif request.method == 'POST':
+        for field, errors in form.errors.items():
+            for err in errors:
+                flash(f"Error de validación en {field}: {err}", 'danger')
+
     return render_template('premium/request_accessory.html', items=available_items, form=form)
 
 
@@ -207,5 +222,10 @@ def request_book():
             flash('Ocurrió un error al registrar la solicitud.', 'danger')
 
         return redirect(url_for('main.premium_dashboard'))
+
+    elif request.method == 'POST':
+        for field, errors in form.errors.items():
+            for err in errors:
+                flash(f"Error de validación en {field}: {err}", 'danger')
 
     return render_template('premium/request_book.html', items=available_books, form=form)

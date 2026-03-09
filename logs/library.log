@@ -821,3 +821,6 @@ Traceback (most recent call last):
   File "D:\SWL\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2112, in _join_determine_implicit_left_side
     raise sa_exc.InvalidRequestError(
 sqlalchemy.exc.InvalidRequestError: Can't determine which FROM clause to join from, there are multiple FROMS which can join to this entity. Please use the .select_from() method to establish an explicit left side, as well as providing an explicit ON clause if not present already to help resolve the ambiguity.
+2026-03-09 14:50:45,951 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-03-09 15:01:27,903 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-03-09 15:09:05,908 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]

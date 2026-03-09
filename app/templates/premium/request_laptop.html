@@ -13,6 +13,8 @@
                 </div>
 
                 <form method="POST">
+                    {{ form.hidden_tag() }}
+
                     <fieldset disabled>
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -41,7 +43,7 @@
 
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Seleccione el Equipo</label>
+                            {{ form.catalog_id.label(class="form-label fw-bold") }}
                             <select name="catalog_id" class="form-select form-select-lg" required>
                                 <option value="" selected disabled>-- Ver portátiles disponibles --</option>
                                 {% for item in items %}
@@ -53,28 +55,27 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Ambiente de Formación</label>
-                            <input type="text" name="environment" class="form-control form-control-lg"
-                                placeholder="Ej: Ambiente 204 / Sistemas 1" required>
+                            {{ form.environment.label(class="form-label fw-bold") }}
+                            {{ form.environment(class="form-select form-select-lg") }}
                             <small class="form-text text-muted">Lugar donde se usarán los equipos.</small>
                         </div>
 
                         {% if current_user.role == 'premium' %}
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Cantidad de Equipos</label>
-                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" max="30"
-                                value="1" required>
+                            {{ form.quantity.label(class="form-label fw-bold") }}
+                            {{ form.quantity(class="form-control form-control-lg", min="1", max="30") }}
                             <small class="form-text text-muted">Indica cuántos portátiles necesitas para la
                                 clase.</small>
                         </div>
                         {% else %}
-                        <input type="hidden" name="quantity" value="1">
+                        {{ form.quantity(type="hidden", value="1") }}
                         {% endif %}
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg"><i
-                                class="bi bi-send-fill me-2"></i>Confirmar y Enviar Solicitud</button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-send-fill me-2"></i>Confirmar y Enviar Solicitud
+                        </button>
                         <a href="{{ url_for('main.premium_dashboard') }}" class="btn btn-outline-secondary">Volver al
                             Panel</a>
                     </div>
