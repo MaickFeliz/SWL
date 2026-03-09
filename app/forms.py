@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 from typing import Optional
-
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import (
@@ -13,7 +11,6 @@ from wtforms import (
     PasswordField,
 )
 from wtforms.validators import DataRequired, NumberRange, Optional, Email, Length, EqualTo
-
 from app.models import InventoryStatus
 
 AMBIENTES = [(str(i), f'Ambiente {i}') for i in range(1, 15)] + [('15', 'Ambiente 15 (Peluquería)')]
@@ -25,7 +22,7 @@ def strip_filter(value: Optional[str]) -> Optional[str]:
 
 
 class RequestItemForm(FlaskForm):
-    catalog_id = HiddenField('catalog_id', validators=[DataRequired()])
+    catalog_id = IntegerField('catalog_id', validators=[DataRequired()])
     quantity = IntegerField('Cantidad', default=1, validators=[DataRequired(), NumberRange(min=1)])
     environment = SelectField('Ambiente', choices=AMBIENTES, validators=[Optional()])
     submit = SubmitField('Solicitar')
