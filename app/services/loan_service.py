@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
@@ -46,67 +46,80 @@ class LoanService:
     @staticmethod
     def create_loan(
         user_id: int,
-        instance_id: int,
+        catalog_id: int,
+        quantity: int = 1,
         environment: Optional[str] = None,
         days: Optional[int] = None,
-    ) -> Loan:
-        """Crea un préstamo bajo una transacción atómica estricta.
+    ) -> List[Loan]:
+        """Crea uno o varios préstamos bajo una única transacción atómica.
 
         Secuencia obligatoria:
-          1. Bloquear fila del ItemInstance con SELECT ... FOR UPDATE
-             (evita condiciones de carrera ante solicitudes concurrentes).
-          2. Validar disponibilidad del ítem (status == AVAILABLE).
-          3. Validar reglas del usuario según categoría del ítem.
-          4. Actualizar estado del ítem → LOANED.
-          5. Crear registro Loan y añadirlo a la sesión.
+          1. Validar reglas de negocio del usuario antes de tocar el inventario.
+          2. Bloquear filas con SELECT ... FOR UPDATE SKIP LOCKED.
+             SKIP LOCKED descarta ítems ya bloqueados por transacciones
+             concurrentes en lugar de hacerlas esperar — ideal para alta
+             concurrencia (varios usuarios solicitando el mismo catálogo).
+          3. Verificar que hay stock suficiente (len >= quantity).
+          4. Actualizar estado de cada ítem → LOANED.
+          5. Crear los registros Loan en bloque dentro de la misma sesión.
           6. db.session.commit() — consolida todos los cambios atómicamente.
 
+        Args:
+            user_id:     ID del usuario solicitante.
+            catalog_id:  ID del catálogo del que se solicitan instancias.
+            quantity:    Número de instancias a prestar (default=1).
+            environment: Sala/ambiente opcional (para equipos de cómputo).
+            days:        Días de préstamo (default: DEFAULT_LOAN_DAYS).
+
+        Returns:
+            Lista de objetos Loan creados.
+
         Raises:
-            ValueError: Si el ítem no existe, no está disponible o el usuario
-                        viola alguna regla de negocio.
-            SQLAlchemyError: Si ocurre un error a nivel de base de datos
-                             (la sesión queda en rollback automático).
+            ValueError: Regla de negocio violada o stock insuficiente.
+            SQLAlchemyError: Error de base de datos (sesión en rollback).
         """
         try:
-            # ── 1. BLOQUEAR FILA ──────────────────────────────────────────────
-            # with_for_update() emite SELECT ... FOR UPDATE en PostgreSQL,
-            # garantizando exclusividad hasta el commit/rollback.
-            instance: Optional[ItemInstance] = (
-                db.session.query(ItemInstance)
-                .filter(ItemInstance.id == instance_id)
-                .with_for_update()
-                .first()
-            )
+            # ── 0. OBTENER CATEGORÍA DEL CATÁLOGO ─────────────────────────────
+            catalog = db.session.get(Catalog, catalog_id)
+            if not catalog:
+                raise ValueError(f"Catálogo con id={catalog_id} no encontrado.")
 
-            if instance is None:
-                raise ValueError(
-                    f"El ítem con id={instance_id} no existe en el inventario."
-                )
+            category = catalog.category
 
-            # ── 2. VALIDAR DISPONIBILIDAD DEL ÍTEM ────────────────────────────
-            if instance.status != InventoryStatus.AVAILABLE:
-                raise ValueError(
-                    f"El ítem '{instance.unique_code}' no está disponible "
-                    f"(estado actual: {instance.status.value})."
-                )
-
-            # ── 3. VALIDAR REGLAS DEL USUARIO POR CATEGORÍA ───────────────────
-            category = instance.catalog_item.category if instance.catalog_item else None
-
+            # ── 1. VALIDAR REGLAS DEL USUARIO ANTES DE TOCAR INVENTARIO ────────
             if category == "computo":
                 can_request, msg = LoanService.can_request_laptop(user_id)
                 if not can_request:
                     raise ValueError(msg)
-            elif category not in ("libro", "computo", None):
-                # Accesorios / categorías generales
+            elif category not in ("libro", "computo"):
                 can_request, msg = LoanService.can_request_accessory(user_id)
                 if not can_request:
                     raise ValueError(msg)
 
-            # ── 4. ACTUALIZAR ESTADO DEL ÍTEM ─────────────────────────────────
-            instance.status = InventoryStatus.LOANED
+            # ── 2. BLOQUEAR FILAS CON SKIP LOCKED ─────────────────────────────
+            # skip_locked=True evita que la transacción espere por ítems ya
+            # bloqueados por otra sesión concurrente; selecciona el siguiente
+            # disponible de inmediato, eliminando cuellos de botella.
+            instances: List[ItemInstance] = (
+                db.session.query(ItemInstance)
+                .filter(
+                    ItemInstance.catalog_id == catalog_id,
+                    ItemInstance.status == InventoryStatus.AVAILABLE,
+                )
+                .with_for_update(skip_locked=True)
+                .limit(quantity)
+                .all()
+            )
 
-            # ── 5. CREAR REGISTRO DE PRÉSTAMO ─────────────────────────────────
+            # ── 3. VERIFICAR STOCK SUFICIENTE ──────────────────────────────────
+            if len(instances) < quantity:
+                db.session.rollback()
+                raise ValueError(
+                    f"Stock insuficiente. Solicitados: {quantity}, "
+                    f"disponibles (sin bloqueo): {len(instances)}."
+                )
+
+            # ── 4 & 5. ACTUALIZAR ESTADO + CREAR REGISTROS DE PRÉSTAMO ─────────
             loan_days = (
                 days
                 if days is not None
@@ -114,24 +127,29 @@ class LoanService:
             )
             due_date = datetime.now(timezone.utc) + timedelta(days=loan_days)
 
-            new_loan = Loan(
-                user_id=user_id,
-                instance_id=instance_id,
-                environment=environment,
-                status=LoanStatus.PENDING,
-                due_date=due_date,
-            )
-            db.session.add(new_loan)
+            created_loans: List[Loan] = []
+            for instance in instances:
+                instance.status = InventoryStatus.LOANED
+                new_loan = Loan(
+                    user_id=user_id,
+                    instance_id=instance.id,
+                    environment=environment,
+                    status=LoanStatus.PENDING,
+                    due_date=due_date,
+                )
+                db.session.add(new_loan)
+                created_loans.append(new_loan)
 
             # ── 6. COMMIT ATÓMICO ─────────────────────────────────────────────
             db.session.commit()
             logger.info(
-                "Préstamo creado — user_id=%s, instance_id=%s, due=%s",
+                "Préstamo(s) creado(s) — user_id=%s, catalog_id=%s, qty=%s, due=%s",
                 user_id,
-                instance_id,
+                catalog_id,
+                quantity,
                 due_date.isoformat(),
             )
-            return new_loan
+            return created_loans
 
         except ValueError:
             db.session.rollback()
@@ -140,16 +158,17 @@ class LoanService:
         except SQLAlchemyError as exc:
             db.session.rollback()
             logger.error(
-                "Error de base de datos al crear préstamo (user=%s, instance=%s): %s",
+                "Error de BD al crear préstamo (user=%s, catalog=%s, qty=%s): %s",
                 user_id,
-                instance_id,
+                catalog_id,
+                quantity,
                 exc,
             )
             raise
 
     @staticmethod
     def approve_loan(loan_id: int) -> Tuple[bool, str]:
-        loan = Loan.query.get(loan_id)
+        loan = db.session.get(Loan, loan_id)
         if not loan or loan.status is not LoanStatus.PENDING:
             return False, "Préstamo no válido o ya procesado."
 
@@ -161,7 +180,7 @@ class LoanService:
 
     @staticmethod
     def return_loan(loan_id: int) -> Tuple[bool, str]:
-        loan = Loan.query.get(loan_id)
+        loan = db.session.get(Loan, loan_id)
         if not loan or loan.status not in (LoanStatus.ACTIVE, LoanStatus.OVERDUE):
             return False, "Préstamo no válido o no está activo."
 

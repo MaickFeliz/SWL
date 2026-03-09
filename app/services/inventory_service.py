@@ -8,7 +8,7 @@ class InventoryService:
     @staticmethod
     def reserve_instances(catalog_id: int, quantity: int):
         try:
-            catalog = Catalog.query.get(int(catalog_id))
+            catalog = db.session.get(Catalog, int(catalog_id))
             if not catalog:
                 return False, [], "Catálogo no encontrado."
                 
@@ -37,7 +37,7 @@ class InventoryService:
 
     @staticmethod
     def release_instance(instance_id: int):
-        instance = ItemInstance.query.get(instance_id)
+        instance = db.session.get(ItemInstance, instance_id)
         if not instance:
             return False, "Instancia física no encontrada."
             
@@ -55,7 +55,9 @@ class CatalogService:
             Catalog, 
             func.count(ItemInstance.id).label('avail_count')
         ).outerjoin(
-            ItemInstance, (ItemInstance.catalog_id == Catalog.id) & (ItemInstance.status == 'disponible')
+            ItemInstance,
+            (ItemInstance.catalog_id == Catalog.id)
+            & (ItemInstance.status == InventoryStatus.AVAILABLE),
         ).group_by(Catalog.id)
 
         if category_filter:
@@ -81,7 +83,9 @@ class CatalogService:
             Catalog, 
             func.count(ItemInstance.id).label('avail_count')
         ).outerjoin(
-            ItemInstance, (ItemInstance.catalog_id == Catalog.id) & (ItemInstance.status == 'disponible')
+            ItemInstance,
+            (ItemInstance.catalog_id == Catalog.id)
+            & (ItemInstance.status == InventoryStatus.AVAILABLE),
         ).group_by(Catalog.id)
 
         if category_filter:

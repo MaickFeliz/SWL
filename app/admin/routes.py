@@ -302,7 +302,7 @@ def manage_instances(catalog_id):
                 catalog_id=catalog_id,
                 unique_code=unique_code,
                 condition=condition,
-                status=status,
+                status=InventoryStatus(status),
             )
             try:
                 db.session.add(new_instance)
@@ -338,7 +338,7 @@ def update_instance_status(instance_id):
             instance.status = InventoryStatus(new_status_value)
             try:
                 db.session.commit()
-                flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status}.', 'success')
+                flash(f'Estado de la instancia {instance.unique_code} actualizado a {new_status_value}.', 'success')
             except Exception:
                 db.session.rollback()
                 flash('Error al actualizar el estado de la instancia.', 'danger')

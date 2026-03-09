@@ -66,7 +66,7 @@ class CatalogForm(FlaskForm):
     submit = SubmitField('Guardar')
 
 class InstanceForm(FlaskForm):
-    unique_code = StringField('Placa SENA / Serial / Código de Barras', validators=[DataRequired()])
+    unique_code = StringField('Placa / Serial / Código de Barras', validators=[DataRequired()])
     condition = StringField('Condición', validators=[Optional()])
     status = SelectField(
         'Estado',

@@ -81,7 +81,7 @@ class TestApproveLoan:
 
         instance = ItemInstance(
             catalog_id=catalog.id,
-            unique_code="SENA-UNIT-TEST-001",
+            unique_code="UNIT-TEST-001",
             status=InventoryStatus.LOANED,
         )
         db.session.add(instance)
@@ -137,7 +137,7 @@ class TestApproveLoan:
 
         instance = ItemInstance(
             catalog_id=catalog.id,
-            unique_code="SENA-UNIT-TEST-002",
+            unique_code="UNIT-TEST-002",
             status=InventoryStatus.LOANED,
         )
         db.session.add(instance)

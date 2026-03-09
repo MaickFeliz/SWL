@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.services.inventory_service import CatalogService
 from app.main import bp
 from app import db
-from app.models import Loan, Catalog, ItemInstance, InventoryStatus, User, LibraryLog
+from app.models import Loan, User, LibraryLog
 from app.services.loan_service import LoanService
 from app.utils.decorators import role_required
 from app.forms import RequestItemForm, VisitForm, FastLoanSearchForm, FastLoanForm
@@ -18,7 +18,7 @@ def fast_loan():
     user_id = request.form.get('user_id')
     user = None
     if user_id:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
     elif search_form.validate_on_submit() and search_form.submit_search.data:
         user = User.query.filter_by(document_id=search_form.document_id.data).first()
 
@@ -54,40 +54,18 @@ def fast_loan():
         catalog_id = loan_form.catalog_id.data
         quantity = 1 if item_type == 'computo' else loan_form.quantity.data
 
-        # Obtenemos IDs de instancias disponibles (solo lectura, sin reservar aún).
-        # El bloqueo real y la actualización de estado ocurren dentro de create_loan().
-        available_instances = (
-            ItemInstance.query
-            .join(Catalog)
-            .filter(
-                Catalog.id == catalog_id,
-                ItemInstance.status.in_(
-                    [InventoryStatus.AVAILABLE]
-                ),
+        try:
+            LoanService.create_loan(
+                user_id=target_user_id,
+                catalog_id=catalog_id,
+                quantity=quantity,
+                environment=environment,
             )
-            .limit(quantity)
-            .all()
-        )
-
-        if len(available_instances) < quantity:
-            flash('Stock insuficiente para completar la solicitud.', 'warning')
-            return redirect(url_for('main.fast_loan'))
-
-        errors = []
-        for inst in available_instances:
-            try:
-                LoanService.create_loan(
-                    user_id=target_user_id,
-                    instance_id=inst.id,
-                    environment=environment,
-                )
-            except (ValueError, Exception) as exc:
-                errors.append(str(exc))
-
-        if errors:
-            flash(f'Algunos préstamos no pudieron crearse: {errors[0]}', 'danger')
-        else:
             flash('Préstamo rápido registrado con éxito.', 'success')
+        except ValueError as exc:
+            flash(str(exc), 'warning')
+        except Exception:
+            flash('Error interno al procesar la solicitud.', 'danger')
 
         return redirect(url_for('main.index'))
 
@@ -160,39 +138,18 @@ def request_laptop():
         catalog_id = form.catalog_id.data
         environment = form.environment.data
 
-        available_instances = (
-            ItemInstance.query
-            .filter_by(catalog_id=catalog_id)
-            .filter(ItemInstance.status.in_(
-                [InventoryStatus.AVAILABLE]
-            ))
-            .limit(quantity)
-            .all()
-        )
-
-        if len(available_instances) < quantity:
-            flash('No hay instancias disponibles para el ítem seleccionado.', 'danger')
-            return redirect(url_for('main.premium_dashboard'))
-
-        errors = []
-        for inst in available_instances:
-            try:
-                LoanService.create_loan(
-                    user_id=current_user.id,
-                    instance_id=inst.id,
-                    environment=environment,
-                )
-            except ValueError as exc:
-                errors.append(str(exc))
-                break  # Regla de negocio violada, no intentar las demás
-            except Exception as exc:
-                errors.append('Error interno al registrar la solicitud.')
-                break
-
-        if errors:
-            flash(errors[0], 'danger')
-        else:
+        try:
+            LoanService.create_loan(
+                user_id=current_user.id,
+                catalog_id=catalog_id,
+                quantity=quantity,
+                environment=environment,
+            )
             flash('Solicitud de portátil enviada correctamente.', 'success')
+        except ValueError as exc:
+            flash(str(exc), 'warning')
+        except Exception:
+            flash('Error interno al registrar la solicitud.', 'danger')
 
         return redirect(url_for('main.premium_dashboard'))
 
@@ -215,35 +172,17 @@ def request_accessory():
         catalog_id = form.catalog_id.data
         quantity = form.quantity.data
 
-        available_instances = (
-            ItemInstance.query
-            .filter_by(catalog_id=catalog_id)
-            .filter(ItemInstance.status.in_(
-                [InventoryStatus.AVAILABLE]
-            ))
-            .limit(quantity)
-            .all()
-        )
-
-        if len(available_instances) < quantity:
-            flash('No hay stock suficiente para el accesorio seleccionado.', 'danger')
-            return redirect(url_for('main.request_accessory'))
-
-        errors = []
-        for inst in available_instances:
-            try:
-                LoanService.create_loan(user_id=current_user.id, instance_id=inst.id)
-            except ValueError as exc:
-                errors.append(str(exc))
-                break
-            except Exception:
-                errors.append('Error interno al procesar la solicitud.')
-                break
-
-        if errors:
-            flash(errors[0], 'danger')
-        else:
+        try:
+            LoanService.create_loan(
+                user_id=current_user.id,
+                catalog_id=catalog_id,
+                quantity=quantity,
+            )
             flash('Solicitud realizada con éxito.', 'success')
+        except ValueError as exc:
+            flash(str(exc), 'warning')
+        except Exception:
+            flash('Error interno al procesar la solicitud.', 'danger')
 
         return redirect(url_for('main.premium_dashboard'))
 
@@ -259,21 +198,8 @@ def request_book():
     if form.validate_on_submit():
         catalog_id = form.catalog_id.data
 
-        available_instance = (
-            ItemInstance.query
-            .filter_by(catalog_id=catalog_id)
-            .filter(ItemInstance.status.in_(
-                [InventoryStatus.AVAILABLE]
-            ))
-            .first()
-        )
-
-        if not available_instance:
-            flash('No hay ejemplares disponibles para el libro seleccionado.', 'danger')
-            return redirect(url_for('main.request_book'))
-
         try:
-            LoanService.create_loan(user_id=current_user.id, instance_id=available_instance.id)
+            LoanService.create_loan(user_id=current_user.id, catalog_id=catalog_id)
             flash('Solicitud de libro registrada. Acércate al mostrador.', 'success')
         except ValueError as exc:
             flash(str(exc), 'warning')
