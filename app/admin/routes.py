@@ -103,7 +103,6 @@ def edit_user(id):
         user.role = form.role.data
         user.program_name = form.program_name.data if form.role.data == 'cliente' else None
 
-        # Actualización opcional de contraseña
         if form.password.data:
             user.set_password(form.password.data)
 
@@ -135,7 +134,6 @@ def delete_user(id):
 @bp.route('/dashboard')
 @role_required('bibliotecario', 'admin')
 def admin_dashboard():
-    # El scheduler ya procesa check_overdue_loans() en segundo plano
     status_filter = request.args.get('status', LoanStatus.PENDING.value)
     page = request.args.get('page', 1, type=int)
 
@@ -205,13 +203,11 @@ def export_inventory_report():
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
     
-    if loan.status != 'devuelto':
-        # 1. Congelamos la multa actual para el historial
+    if loan.status != LoanStatus.RETURNED:
         loan.final_penalty = loan.penalty_fee
-        loan.status = 'devuelto'
+        loan.status = LoanStatus.RETURNED
         loan.return_date = datetime.now(timezone.utc)
         
-        # 2. LIBERAMOS LA INSTANCIA FÍSICA USANDO EL SERVICIO TRANSSACIONAL
         success, msg = InventoryService.release_instance(loan.instance_id)
         
         if success:
@@ -239,8 +235,6 @@ def reject_loan(id):
     else:
         flash('Solo puedes rechazar solicitudes que estén pendientes.', 'warning')
     return redirect(url_for('admin.admin_dashboard', status=LoanStatus.PENDING.value))
-
-# --- RUTAS DE GESTIÓN DE CATÁLOGO E INSTANCIAS (RESTUARADAS) ---
 
 @bp.route('/catalog', methods=['GET', 'POST'])
 @role_required('bibliotecario', 'admin')
@@ -356,7 +350,7 @@ def instance_delete(instance_id):
     instance = ItemInstance.query.get_or_404(instance_id)
     catalog_id = instance.catalog_id
     
-    if instance.loans.filter(Loan.status.in_(['pendiente', 'activo', 'atrasado'])).first():
+    if instance.loans.filter(Loan.status.in_([LoanStatus.PENDING, LoanStatus.ACTIVE, LoanStatus.OVERDUE])).first():
         flash('No puedes eliminar una instancia que se encuentra en un proceso de préstamo activo.', 'danger')
     else:
         db.session.delete(instance)
