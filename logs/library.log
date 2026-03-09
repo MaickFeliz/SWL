@@ -1130,3 +1130,6 @@ WHERE %(param_1)s = loan.instance_id AND loan.status IN (%(status_1_1)s, %(statu
 [parameters: {'param_1': 1, 'param_2': 1, 'status_1_1': 'pendiente', 'status_1_2': 'activo', 'status_1_3': 'atrasado'}]
 (Background on this error at: https://sqlalche.me/e/20/9h9h)
 2026-03-09 16:31:10,925 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-03-09 16:41:07,170 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-03-09 16:42:38,539 INFO: Préstamo(s) creado(s) — user_id=3, catalog_id=4, qty=1, due=2026-03-24T21:42:38.520579+00:00 [in D:\SWL\app\services\loan_service.py:145]
+2026-03-09 16:45:24,952 INFO: Préstamo(s) creado(s) — user_id=2, catalog_id=4, qty=1, due=2026-03-24T21:45:24.948685+00:00 [in D:\SWL\app\services\loan_service.py:145]
