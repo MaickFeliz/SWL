@@ -12,6 +12,11 @@ class Config:
 
     basedir = os.path.abspath(os.path.dirname(__file__))
 
+    # ── Base de datos ───────────────────────────────────────────────────────────
+    # DATABASE_URL es obligatorio. Configúralo en el archivo .env con el formato:
+    #   DATABASE_URL=postgresql://usuario:password@localhost:5432/swl_db
+    # No se provee fallback a SQLite; el esquema se gestiona con Flask-Migrate.
+
     DEBUG = False
 
     flask_env = os.getenv("FLASK_ENV", "production")
@@ -21,9 +26,13 @@ class Config:
             "SECRET_KEY debe estar definido en el entorno para ejecución en producción."
         )
 
-    database_url = os.getenv(
-        "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'instance', 'app.db')}"
-    )
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise ValueError(
+            "DATABASE_URL debe estar definido en el entorno. "
+            "Ejemplo: DATABASE_URL=postgresql://usuario:password@localhost:5432/swl_db"
+        )
+    # Normaliza el prefijo legacy `postgres://` que emiten Heroku/Railway.
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 

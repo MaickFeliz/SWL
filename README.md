@@ -21,33 +21,72 @@ Kiosco "Fast Loan": Interfaz de autoservicio optimizada para agilizar procesos d
 
 Registro de Actividad: Módulo de control de visitas y estadísticas de uso de espacios físicos.
 
-### 💻 Instalación y Despliegue
-1. Configuración del Entorno
-Es obligatorio el uso de entornos virtuales para evitar desastres en las dependencias globales de tu sistema.
+### Instalación y Despliegue
+
+#### Prerrequisitos
+
+- Python 3.10 o superior
+- **Servidor PostgreSQL en ejecución** (local o remoto). Crea una base de datos vacía antes de continuar:
+  ```sql
+  CREATE DATABASE swl_db;
+  ```
+
+#### 1. Configuración del Entorno
 
 ```bash
-
 # Clonar y acceder
 git clone https://github.com/tu-usuario/Sistema-Gestion-Bibliotecaria.git
 cd Sistema-Gestion-Bibliotecaria
 
-# Configurar venv
+# Crear y activar entorno virtual
 python -m venv venv
-source venv/bin/activate  # En Windows use: .\venv\Scripts\activate
+source venv/bin/activate      # Linux / macOS
+.\venv\Scripts\activate       # Windows
 
 # Instalar dependencias
-python.exe -m pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-2. Ejecución
-El sistema inicializa la base de datos SQLite automáticamente en el primer arranque.
+
+#### 2. Configurar Variables de Entorno
+
+Crea un archivo `.env` en la raíz del proyecto (nunca lo versiones):
+
+```env
+FLASK_APP=run.py
+FLASK_ENV=development
+SECRET_KEY=cambia_este_valor_por_uno_seguro
+
+# Formato: postgresql://usuario:password@host:puerto/nombre_base_de_datos
+DATABASE_URL=postgresql://usuario:password@localhost:5432/swl_db
+```
+
+#### 3. Inicializar el Esquema con Flask-Migrate
 
 ```bash
+# Solo la primera vez — crea la carpeta migrations/ si no existe
+flask db init
+
+# Genera el script de migración a partir de los modelos
+flask db migrate -m "Migración inicial"
+
+# Aplica la migración a la base de datos PostgreSQL
+flask db upgrade
+```
+
+> **Actualizaciones futuras**: ante cualquier cambio en los modelos, ejecuta únicamente `flask db migrate -m "descripción"` y `flask db upgrade`.
+
+#### 4. Ejecutar en Desarrollo
+
+```bash
+flask run
+# o directamente:
 python run.py
 ```
-Local: http://localhost:5000
 
-Red Local: Disponible en 0.0.0.0 para acceso desde dispositivos móviles o terminales de kiosco en la misma red.
+- Local: http://localhost:5000
+- Red local: disponible en `0.0.0.0` para acceso desde otros dispositivos en la misma red.
+
 
 ### 📁 Arquitectura del Proyecto
 El software sigue un patrón de diseño modular para facilitar el escalamiento:

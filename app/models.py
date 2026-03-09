@@ -1,15 +1,13 @@
 from __future__ import annotations
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
 from zoneinfo import ZoneInfo
-
 from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy import Numeric
-
 from app import db, login_manager
 
 
