@@ -110,9 +110,9 @@ def register_visit():
 def index():
     if current_user.is_authenticated:
         if current_user.role == 'admin':
-            return redirect(url_for('admin.manage_users'))
+            return redirect(url_for('admin.list_catalogs'))
         elif current_user.role == 'bibliotecario':
-            return redirect(url_for('admin.admin_dashboard'))
+            return redirect(url_for('admin.list_instances'))
         elif current_user.role in ['premium', 'cliente']:
             return redirect(url_for('main.premium_dashboard'))
     return render_template('main/index.html')

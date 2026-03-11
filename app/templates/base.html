@@ -40,7 +40,7 @@
                     
                     {% if current_user.role in ['admin', 'bibliotecario'] %}
                     <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.catalog_manage') }}">
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_catalogs') }}">
                             <i class="bi bi-collection-fill me-1"></i>Catálogo de Equipos
                         </a>
                     </li>
@@ -48,13 +48,13 @@
                     
                     {% if current_user.role == 'admin' %}
                     <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.manage_users') }}">
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_instances') }}">
                             <i class="bi bi-people-fill me-1"></i>Gestión T.I
                         </a>
                     </li>
                     {% elif current_user.role == 'bibliotecario' %}
                     <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.admin_dashboard') }}">
+                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_instances') }}">
                             <i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos
                         </a>
                     </li>

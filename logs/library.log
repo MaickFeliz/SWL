@@ -1133,3 +1133,791 @@ WHERE %(param_1)s = loan.instance_id AND loan.status IN (%(status_1_1)s, %(statu
 2026-03-09 16:41:07,170 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
 2026-03-09 16:42:38,539 INFO: Préstamo(s) creado(s) — user_id=3, catalog_id=4, qty=1, due=2026-03-24T21:42:38.520579+00:00 [in D:\SWL\app\services\loan_service.py:145]
 2026-03-09 16:45:24,952 INFO: Préstamo(s) creado(s) — user_id=2, catalog_id=4, qty=1, due=2026-03-24T21:45:24.948685+00:00 [in D:\SWL\app\services\loan_service.py:145]
+2026-03-11 15:05:40,964 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:06:04,359 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:06:25,264 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:06:33,548 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:06:56,766 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:07:06,154 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:09:44,428 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:10:02,251 ERROR: Exception on /auth/login [POST] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\auth\routes.py", line 17, in login
+    user = User.query.filter_by(document_id=form.document_id.data).first()
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+[SQL: SELECT "user".id AS user_id, "user".email AS user_email, "user".document_id AS user_document_id, "user".full_name AS user_full_name, "user".phone AS user_phone, "user".role AS user_role, "user".program_name AS user_program_name, "user".password_hash AS user_password_hash 
+FROM "user" 
+WHERE "user".document_id = %(document_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'document_id_1': '000000000', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-03-11 15:10:13,351 ERROR: Exception on /auth/login [POST] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\auth\routes.py", line 17, in login
+    user = User.query.filter_by(document_id=form.document_id.data).first()
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+[SQL: SELECT "user".id AS user_id, "user".email AS user_email, "user".document_id AS user_document_id, "user".full_name AS user_full_name, "user".phone AS user_phone, "user".role AS user_role, "user".program_name AS user_program_name, "user".password_hash AS user_password_hash 
+FROM "user" 
+WHERE "user".document_id = %(document_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'document_id_1': '0000000000', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-03-11 15:10:49,690 ERROR: Exception on /auth/register [POST] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\auth\routes.py", line 50, in register
+    if User.query.filter_by(document_id=form.document_id.data).first():
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) no existe la relación «user»
+LINE 2: FROM "user" 
+             ^
+
+[SQL: SELECT "user".id AS user_id, "user".email AS user_email, "user".document_id AS user_document_id, "user".full_name AS user_full_name, "user".phone AS user_phone, "user".role AS user_role, "user".program_name AS user_program_name, "user".password_hash AS user_password_hash 
+FROM "user" 
+WHERE "user".document_id = %(document_id_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'document_id_1': '1013120394', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-03-11 15:13:13,621 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:13:21,547 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:13:24,295 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:13:27,149 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:13:32,715 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:21:15,460 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:24:52,324 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:25:47,382 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:26:11,800 ERROR: Exception on /auth/login [POST] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\auth\routes.py", line 33, in login
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:44:22,988 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:44:30,596 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:44:33,871 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:44:34,081 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:44:36,504 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:44:48,368 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:46:44,200 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:46:48,551 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:46:49,642 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:46:49,845 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:47:25,086 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:47:28,243 ERROR: Exception on / [GET] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\main\routes.py", line 113, in index
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-03-11 15:49:50,832 INFO: LMS Startup - Technical Specs Initialized [in C:\SWL\app\__init__.py:45]
+2026-03-11 15:50:35,105 ERROR: Exception on /auth/login [POST] [in C:\SWL\venv\Lib\site-packages\flask\app.py:875]
+Traceback (most recent call last):
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\SWL\app\auth\routes.py", line 33, in login
+    return redirect(url_for('admin.manage_users'))
+                    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\helpers.py", line 239, in url_for
+    return current_app.url_for(
+           ~~~~~~~~~~~~~~~~~~~^
+        endpoint,
+        ^^^^^^^^^
+    ...<4 lines>...
+        **values,
+        ^^^^^^^^^
+    )
+    ^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1121, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\SWL\venv\Lib\site-packages\flask\app.py", line 1110, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+        endpoint,
+    ...<3 lines>...
+        force_external=_external,
+    )
+  File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?

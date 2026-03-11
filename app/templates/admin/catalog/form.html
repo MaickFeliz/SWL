@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="mb-4">
+    <a href="{{ url_for('admin.list_catalogs') }}" class="btn btn-sm btn-outline-secondary rounded-pill mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Volver al catálogo
+    </a>
+    <h2 class="mb-1">
+        <i class="bi bi-{{ 'pencil-square' if catalog else 'plus-square-fill' }} me-2"></i>
+        {{ 'Editar Ítem' if catalog else 'Nuevo Ítem en Catálogo' }}
+    </h2>
+    <p class="text-secondary mb-0">
+        {% if catalog %}
+            Modifica los datos del ítem <strong>{{ catalog.title_or_name }}</strong>.
+        {% else %}
+            Completa los campos para registrar un nuevo ítem en el catálogo.
+        {% endif %}
+    </p>
+</div>
+
+<div class="card shadow-sm" style="max-width: 680px;">
+    <div class="card-body p-4">
+        <form method="POST"
+              action="{{ url_for('admin.edit_catalog', catalog_id=catalog.id) if catalog else url_for('admin.create_catalog') }}">
+
+            <div class="mb-3">
+                <label for="title_or_name" class="form-label fw-semibold">
+                    Nombre / Título <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="title_or_name"
+                       name="title_or_name"
+                       class="form-control"
+                       placeholder="Ej: MacBook Pro 14&quot;, Fundamentos de Bases de Datos…"
+                       value="{{ catalog.title_or_name if catalog else '' }}"
+                       required
+                       maxlength="150">
+                <div class="form-text">El nombre visible en el catálogo.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="category" class="form-label fw-semibold">
+                    Categoría <span class="text-danger">*</span>
+                </label>
+                <select id="category" name="category" class="form-select" required>
+                    {% set categorias = [
+                        ('libro',     'Libro'),
+                        ('laptop',    'Laptop'),
+                        ('tablet',    'Tablet'),
+                        ('proyector', 'Proyector'),
+                        ('cable',     'Cable / Adaptador'),
+                        ('otro',      'Otro')
+                    ] %}
+                    <option value="" disabled {% if not catalog %}selected{% endif %}>Selecciona una categoría…</option>
+                    {% for val, label in categorias %}
+                    <option value="{{ val }}" {% if catalog and catalog.category == val %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="author_or_brand" class="form-label fw-semibold">
+                    Marca / Autor <span class="text-muted fw-normal">(opcional)</span>
+                </label>
+                <input type="text"
+                       id="author_or_brand"
+                       name="author_or_brand"
+                       class="form-control"
+                       placeholder="Ej: Apple, Thomas H. Cormen…"
+                       value="{{ catalog.author_or_brand if catalog and catalog.author_or_brand else '' }}"
+                       maxlength="100">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-floppy-fill me-2"></i>
+                    {{ 'Guardar cambios' if catalog else 'Crear ítem' }}
+                </button>
+                <a href="{{ url_for('admin.list_catalogs') }}" class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

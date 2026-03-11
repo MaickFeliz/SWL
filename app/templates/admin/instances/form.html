@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="mb-4">
+    <a href="{{ url_for('admin.list_instances') }}" class="btn btn-sm btn-outline-secondary rounded-pill mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Volver al listado
+    </a>
+    <h2 class="mb-1">
+        <i class="bi bi-{{ 'pencil-square' if instance else 'plus-square-fill' }} me-2"></i>
+        {{ 'Editar Instancia' if instance else 'Registrar Nueva Instancia' }}
+    </h2>
+    <p class="text-secondary mb-0">
+        {% if instance %}
+            Modifica los datos de la unidad física <strong>{{ instance.unique_code }}</strong>.
+        {% else %}
+            Registra una nueva unidad física (placa, serial, código de barras) del inventario.
+        {% endif %}
+    </p>
+</div>
+
+<div class="card shadow-sm" style="max-width: 680px;">
+    <div class="card-body p-4">
+        <form method="POST"
+              action="{{ url_for('admin.edit_instance', instance_id=instance.id) if instance else url_for('admin.create_instance') }}">
+
+            <div class="mb-3">
+                <label for="catalog_id" class="form-label fw-semibold">
+                    Ítem del catálogo <span class="text-danger">*</span>
+                </label>
+                <select id="catalog_id" name="catalog_id" class="form-select" required>
+                    <option value="" disabled {% if not instance %}selected{% endif %}>
+                        Selecciona el ítem al que pertenece…
+                    </option>
+                    {% for cat in catalogs %}
+                    <option value="{{ cat.id }}"
+                        {% if instance and instance.catalog_id == cat.id %}selected{% endif %}>
+                        {{ cat.title_or_name }} ({{ cat.category | capitalize }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">El ítem de catálogo que esta unidad física representa.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="unique_code" class="form-label fw-semibold">
+                    Código único <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="unique_code"
+                       name="unique_code"
+                       class="form-control font-monospace"
+                       placeholder="Placa, serial, código de barras…"
+                       value="{{ instance.unique_code if instance else '' }}"
+                       required
+                       maxlength="50">
+                <div class="form-text">Debe ser único en todo el sistema.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label fw-semibold">
+                    Estado <span class="text-danger">*</span>
+                </label>
+                <select id="status" name="status" class="form-select" required>
+                    {% for s in statuses %}
+                    <option value="{{ s }}"
+                        {% if instance and instance.status.value == s %}selected
+                        {% elif not instance and s == 'disponible' %}selected{% endif %}>
+                        {{ s | capitalize }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="condition" class="form-label fw-semibold">
+                    Condición física <span class="text-muted fw-normal">(opcional)</span>
+                </label>
+                <input type="text"
+                       id="condition"
+                       name="condition"
+                       class="form-control"
+                       placeholder="Ej: Buen estado, rayón en pantalla, tecla pegajosa…"
+                       value="{{ instance.condition if instance and instance.condition else '' }}"
+                       maxlength="100">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-floppy-fill me-2"></i>
+                    {{ 'Guardar cambios' if instance else 'Registrar instancia' }}
+                </button>
+                <a href="{{ url_for('admin.list_instances') }}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
