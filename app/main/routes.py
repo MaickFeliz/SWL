@@ -51,8 +51,12 @@ def fast_loan():
 
         item_type = loan_form.item_type.data
         environment = loan_form.environment.data
-        catalog_id = loan_form.catalog_id.data
-        quantity = 1 if item_type == 'computo' else loan_form.quantity.data
+        try:
+            catalog_id = int(loan_form.catalog_id.data)
+            quantity = 1 if item_type == 'computo' else int(loan_form.quantity.data)
+        except (TypeError, ValueError):
+            flash('ID de catálogo o cantidad inválidos.', 'danger')
+            return redirect(url_for('main.fast_loan'))
 
         try:
             LoanService.create_loan(
@@ -139,8 +143,13 @@ def request_laptop():
     available_computers = CatalogService.get_catalog_with_counts(category_filter='computo')
 
     if form.validate_on_submit():
-        quantity = form.quantity.data if current_user.role == 'premium' else 1
-        catalog_id = form.catalog_id.data
+        try:
+            quantity = int(form.quantity.data) if current_user.role == 'premium' else 1
+            catalog_id = int(form.catalog_id.data)
+        except (TypeError, ValueError):
+            flash('Parámetros inválidos.', 'danger')
+            return redirect(url_for('main.request_laptop'))
+            
         environment = form.environment.data
 
         try:
@@ -179,8 +188,12 @@ def request_accessory():
     available_items = CatalogService.get_catalog_with_counts(exclude_category=exclude_cat)
 
     if form.validate_on_submit():
-        catalog_id = form.catalog_id.data
-        quantity = form.quantity.data
+        try:
+            catalog_id = int(form.catalog_id.data)
+            quantity = int(form.quantity.data)
+        except (TypeError, ValueError):
+            flash('Parámetros inválidos.', 'danger')
+            return redirect(url_for('main.request_accessory'))
 
         try:
             LoanService.create_loan(
@@ -211,7 +224,11 @@ def request_book():
     available_books = CatalogService.get_catalog_with_counts(category_filter='libro')
 
     if form.validate_on_submit():
-        catalog_id = form.catalog_id.data
+        try:
+            catalog_id = int(form.catalog_id.data)
+        except (TypeError, ValueError):
+            flash('ID de catálogo inválido.', 'danger')
+            return redirect(url_for('main.request_book'))
 
         try:
             LoanService.create_loan(user_id=current_user.id, catalog_id=catalog_id)

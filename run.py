@@ -1,6 +1,21 @@
 from app import create_app
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 app = create_app()
+
+def daily_loan_check():
+    """Ejecuta la revisión de morosos y notificación automática dentro de un contexto de aplicación."""
+    with app.app_context():
+        from app.services.loan_service import LoanService
+        LoanService.check_overdue_loans()
+
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(daily_loan_check, 'cron', hour=0, minute=0)
+scheduler.start()
+
+# Asegurarse de apagar el scheduler cuando se detiene Flask
+atexit.register(lambda: scheduler.shutdown(wait=False))
 
 # El esquema de la base de datos se gestiona exclusivamente mediante Flask-Migrate.
 # Para inicializar o actualizar el esquema, ejecuta:

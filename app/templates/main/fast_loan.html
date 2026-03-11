@@ -62,8 +62,33 @@
                     </div>
                 </form>
                 {% endif %}
-            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            // Buscamos cualquier botón tipo submit dentro del formulario
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                // Si el formulario ya se está enviando, prevenimos un segundo envío
+                if (form.getAttribute('data-submitting')) {
+                    e.preventDefault();
+                    return;
+                }
+                form.setAttribute('data-submitting', 'true');
+                
+                // Cambiamos el texto del botón y lo deshabilitamos (usando setTimeout para asegurar que el form hace submit de su value si es necesario)
+                setTimeout(() => {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Procesando...';
+                }, 10);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

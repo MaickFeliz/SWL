@@ -198,7 +198,11 @@ class LoanService:
 
     @staticmethod
     def check_overdue_loans() -> int:
-        """Marca préstamos vencidos como atrasados sin bloquear controladores."""
+        """Marca préstamos vencidos como atrasados y notifica por correo."""
+        from app.services.email_service import EmailService
+
+        # Buscar todos los activos vencidos, o los que ya están vencidos para re-notificar
+        # (Dependiendo de la regla de negocio, aquí notificamos al pasar a OVERDUE)
         overdue_loans = Loan.query.filter(
             Loan.status == LoanStatus.ACTIVE,
             Loan.due_date < datetime.now(timezone.utc),
@@ -207,9 +211,27 @@ class LoanService:
         count = 0
         for loan in overdue_loans:
             loan.status = LoanStatus.OVERDUE
+            # Calcular días y multa para el correo
+            due = (
+                loan.due_date
+                if loan.due_date.tzinfo
+                else loan.due_date.replace(tzinfo=timezone.utc)
+            )
+            days_late = (datetime.now(timezone.utc) - due).days
+            penalty = loan.penalty_fee
+            
+            # Enviar correo asíncrono
+            EmailService.send_overdue_warning(
+                user=loan.requester,
+                loan=loan,
+                days_overdue=days_late,
+                penalty=penalty,
+                app=current_app._get_current_object()  # Pasar app real, no proxy
+            )
             count += 1
 
         if count > 0:
             db.session.commit()
+            logger.info("Revisión automática: %d préstamos pasaron a estado atrasado.", count)
 
         return count
