@@ -1,392 +1,356 @@
-"""
-Rutas de administración para gestión de catálogo, instancias y usuarios.
-"""
-
-from functools import wraps
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, send_file
 from flask_login import login_required, current_user
-from sqlalchemy.exc import IntegrityError
+from app.admin import bp
 from app import db
-from app.models import Catalog, ItemInstance, InventoryStatus
+from app.models import Loan, User, Catalog, ItemInstance, LoanStatus, InventoryStatus
+from datetime import datetime, timezone
+from sqlalchemy import or_
+from functools import wraps
+from sqlalchemy import func
+from app.services.loan_service import LoanService
+from app.services.inventory_service import InventoryService
+from app.services.report_service import ReportService, EXCEL_MIME_TYPE
+from app.utils.decorators import role_required
+from app.forms import AdminUserForm, EditUserForm, ImportForm, CatalogForm, InstanceForm, UpdateInstanceStatusForm
 
-
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-
-
-def admin_required(fn):
-    """Decorador que restringe el acceso a usuarios con rol 'admin'."""
-    @wraps(fn)
-    @login_required
-    def wrapper(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role != "admin":
-            flash("Acceso denegado. Se requiere rol de administrador.", "danger")
-            return redirect(url_for("main.index"))
-        return fn(*args, **kwargs)
-    wrapper.__name__ = fn.__name__
-    return wrapper
-
-
-# =============================================================================
-# CATALOG - CRUD
-# =============================================================================
-
-@admin_bp.route("/catalog")
-@admin_required
-def list_catalogs():
-    """Lista todos los catálogos."""
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
-    pagination = Catalog.query.order_by(Catalog.id.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    return render_template("admin/catalog/list.html", pagination=pagination)
-
-
-@admin_bp.route("/catalog/new", methods=["GET", "POST"])
-@admin_required
-def create_catalog():
-    """Crea un nuevo catálogo."""
-    if request.method == "POST":
-        catalog = Catalog(
-            title_or_name=request.form["title_or_name"],
-            category=request.form["category"],
-            author_or_brand=request.form.get("author_or_brand") or None,
-        )
-        db.session.add(catalog)
-        db.session.commit()
-        flash("Catálogo creado exitosamente.", "success")
-        return redirect(url_for("admin.list_catalogs"))
-    return render_template("admin/catalog/form.html", catalog=None)
-
-
-@admin_bp.route("/catalog/<int:catalog_id>/edit", methods=["GET", "POST"])
-@admin_required
-def edit_catalog(catalog_id):
-    """Edita un catálogo existente."""
-    catalog = db.session.get(Catalog, catalog_id)
-    if not catalog:
-        flash("Catálogo no encontrado.", "danger")
-        return redirect(url_for("admin.list_catalogs"))
-
-    if request.method == "POST":
-        catalog.title_or_name = request.form["title_or_name"]
-        catalog.category = request.form["category"]
-        catalog.author_or_brand = request.form.get("author_or_brand") or None
-        db.session.commit()
-        flash("Catálogo actualizado exitosamente.", "success")
-        return redirect(url_for("admin.list_catalogs"))
-
-    return render_template("admin/catalog/form.html", catalog=catalog)
-
-
-@admin_bp.route("/catalog/<int:catalog_id>/delete", methods=["POST"])
-@admin_required
-def delete_catalog(catalog_id):
-    """Elimina un catálogo solo si no tiene instancias físicas asociadas.
-
-    Usa .count() sobre la relación dinámica para evitar cargar todos los objetos
-    en memoria y lanzar un error claro antes de intentar el DELETE.
-    """
-    catalog = db.session.get(Catalog, catalog_id)
-    if not catalog:
-        flash("Catálogo no encontrado.", "danger")
-    elif catalog.instances.count() > 0:
-        flash(
-            f"No se puede eliminar: el catálogo tiene "
-            f"{catalog.instances.count()} instancia(s) registrada(s). "
-            "Elimina primero las instancias asociadas.",
-            "danger",
-        )
-    else:
-        db.session.delete(catalog)
-        db.session.commit()
-        flash("Catálogo eliminado exitosamente.", "success")
-    return redirect(url_for("admin.list_catalogs"))
-
-
-# =============================================================================
-# ITEMINSTANCE - CRUD
-# =============================================================================
-
-@admin_bp.route("/instances")
-@admin_required
-def list_instances():
-    """Lista todas las instancias con filtros opcionales por catálogo y estado."""
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
-    catalog_id = request.args.get("catalog_id", type=int)
-    status = request.args.get("status")
-
-    query = ItemInstance.query
-    if catalog_id:
-        query = query.filter(ItemInstance.catalog_id == catalog_id)
-    if status:
-        try:
-            query = query.filter(ItemInstance.status == InventoryStatus(status))
-        except ValueError:
-            pass  # Valor de estado inválido: ignorar filtro silenciosamente
-
-    pagination = query.order_by(ItemInstance.id.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    catalogs = Catalog.query.all()
-    return render_template(
-        "admin/instances/list.html",
-        pagination=pagination,
-        catalogs=catalogs,
-    )
-
-
-@admin_bp.route("/instances/new", methods=["GET", "POST"])
-@admin_required
-def create_instance():
-    """Registra una nueva instancia física usando InstanceForm con validación."""
-    from app.forms import InstanceForm
-
-    form = InstanceForm()
-    form_catalogs = Catalog.query.order_by(Catalog.title_or_name).all()
-
-    if form.validate_on_submit():
-        try:
-            instance = ItemInstance(
-                catalog_id=request.form.get("catalog_id"),
-                unique_code=form.unique_code.data,
-                status=InventoryStatus(form.status.data),
-                condition=form.condition.data or None,
-            )
-            db.session.add(instance)
-            db.session.commit()
-            flash("Instancia registrada exitosamente.", "success")
-            return redirect(url_for("admin.list_instances"))
-        except IntegrityError:
-            db.session.rollback()
-            flash("El código único ya existe.", "danger")
-        except ValueError as e:
-            flash(f"Estado inválido: {e}", "danger")
-    elif request.method == "POST":
-        # Tarea 3: feedback detallado por campo cuando validate_on_submit es False
-        for field_name, errors in form.errors.items():
-            label = getattr(form, field_name).label.text
-            for err in errors:
-                flash(f"Error en «{label}»: {err}", "danger")
-
-    statuses = [s.value for s in InventoryStatus]
-    return render_template(
-        "admin/instances/form.html",
-        form=form,
-        instance=None,
-        catalogs=form_catalogs,
-        statuses=statuses,
-    )
-
-
-@admin_bp.route("/instances/<int:instance_id>/edit", methods=["GET", "POST"])
-@admin_required
-def edit_instance(instance_id):
-    """Edita una instancia existente con InstanceForm y flash de errores por campo."""
-    from app.forms import InstanceForm
-
-    instance = db.session.get(ItemInstance, instance_id)
-    if not instance:
-        flash("Instancia no encontrada.", "danger")
-        return redirect(url_for("admin.list_instances"))
-
-    form = InstanceForm(obj=instance)
-    form_catalogs = Catalog.query.order_by(Catalog.title_or_name).all()
-
-    if form.validate_on_submit():
-        try:
-            instance.catalog_id = request.form.get("catalog_id", instance.catalog_id)
-            instance.unique_code = form.unique_code.data
-            instance.status = InventoryStatus(form.status.data)
-            instance.condition = form.condition.data or None
-            db.session.commit()
-            flash("Instancia actualizada exitosamente.", "success")
-            return redirect(url_for("admin.list_instances"))
-        except IntegrityError:
-            db.session.rollback()
-            flash("El código único ya existe.", "danger")
-        except ValueError as e:
-            flash(f"Estado inválido: {e}", "danger")
-    elif request.method == "POST":
-        # Tarea 3: feedback detallado por campo cuando validate_on_submit es False
-        for field_name, errors in form.errors.items():
-            label = getattr(form, field_name).label.text
-            for err in errors:
-                flash(f"Error en «{label}»: {err}", "danger")
-
-    statuses = [s.value for s in InventoryStatus]
-    return render_template(
-        "admin/instances/form.html",
-        form=form,
-        instance=instance,
-        catalogs=form_catalogs,
-        statuses=statuses,
-    )
-
-
-@admin_bp.route("/instances/<int:instance_id>/delete", methods=["POST"])
-@admin_required
-def delete_instance(instance_id):
-    """Elimina una instancia física."""
-    instance = db.session.get(ItemInstance, instance_id)
-    if not instance:
-        flash("Instancia no encontrada.", "danger")
-    else:
-        db.session.delete(instance)
-        db.session.commit()
-        flash("Instancia eliminada exitosamente.", "success")
-    return redirect(url_for("admin.list_instances"))
-
-
-# =============================================================================
-# DASHBOARD DEL BIBLIOTECARIO
-# =============================================================================
-
-@admin_bp.route("/dashboard")
-@login_required
-def admin_dashboard():
-    """Panel principal del bibliotecario: préstamos paginados + estadísticas."""
-    from app.models import Loan, LoanStatus
-    from sqlalchemy import func
-
-    current_status = request.args.get("status", "pendiente")
-    page = request.args.get("page", 1, type=int)
-
-    try:
-        status_enum = LoanStatus(current_status)
-    except ValueError:
-        status_enum = LoanStatus.PENDING
-        current_status = "pendiente"
-
-    loans_pagination = (
-        Loan.query.filter_by(status=status_enum)
-        .order_by(Loan.request_date.desc())
-        .paginate(page=page, per_page=15, error_out=False)
-    )
-
-    stats = {
-        "pending":  Loan.query.filter_by(status=LoanStatus.PENDING).count(),
-        "activo":   Loan.query.filter_by(status=LoanStatus.ACTIVE).count(),
-        "atrasado": Loan.query.filter_by(status=LoanStatus.OVERDUE).count(),
-        "returned": Loan.query.filter_by(status=LoanStatus.RETURNED).count(),
-    }
-
-    # Top 5 ítems más solicitados
-    top_items = (
-        db.session.query(
-            Catalog.title_or_name.label("title_or_name"),
-            func.count(Loan.id).label("total"),
-        )
-        .join(ItemInstance, ItemInstance.catalog_id == Catalog.id)
-        .join(Loan, Loan.instance_id == ItemInstance.id)
-        .group_by(Catalog.id, Catalog.title_or_name)
-        .order_by(func.count(Loan.id).desc())
-        .limit(5)
-        .all()
-    )
-
-    return render_template(
-        "admin/dashboard.html",
-        loans_pagination=loans_pagination,
-        current_status=current_status,
-        stats=stats,
-        top_items=top_items,
-    )
-
-
-# =============================================================================
-# GESTIÓN DE USUARIOS
-# =============================================================================
-
-@admin_bp.route("/users")
-@admin_required
+@bp.route('/users')
+@role_required('admin')
 def manage_users():
-    """Lista todos los usuarios del sistema."""
-    from app.models import User
-
-    page = request.args.get("page", 1, type=int)
-    users = User.query.order_by(User.full_name).paginate(
-        page=page, per_page=25, error_out=False
+    page = request.args.get('page', 1, type=int)
+    users_pagination = User.query.paginate(page=page, per_page=10, error_out=False)
+    
+    form = AdminUserForm()
+    import_form = ImportForm()
+    edit_forms = {u.id: EditUserForm(obj=u) for u in users_pagination.items}
+    return render_template(
+        'admin/users.html',
+        users=users_pagination,
+        form=form,
+        import_form=import_form,
+        edit_forms=edit_forms,
     )
-    return render_template("admin/users.html", users=users)
 
-
-@admin_bp.route("/users/new", methods=["GET", "POST"])
-@admin_required
-def create_user():
-    """Crea un nuevo usuario. Flash de errores por campo si falla validate_on_submit."""
-    from app.forms import AdminUserForm
-    from app.models import User
+@bp.route('/users/search')
+@role_required('admin')
+def search_users():
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search')
+    query = User.query
+    if search:
+        query = query.filter(
+            or_(
+                User.full_name.ilike(f'%{search}%'),
+                User.document_id.ilike(f'%{search}%'),
+            )
+        )
+    users_pagination = query.order_by(User.full_name).paginate(page=page, per_page=10, error_out=False)
 
     form = AdminUserForm()
+    import_form = ImportForm()
+    edit_forms = {u.id: EditUserForm(obj=u) for u in users_pagination.items}
+    return render_template(
+        'admin/users.html',
+        users=users_pagination,
+        form=form,
+        import_form=import_form,
+        edit_forms=edit_forms,
+    )
 
+@bp.route('/users/create', methods=['POST'])
+@role_required('admin')
+def create_user():
+    form = AdminUserForm()
     if form.validate_on_submit():
-        if User.query.filter_by(document_id=form.document_id.data).first():
-            flash("Ya existe un usuario con ese número de documento.", "danger")
-            return render_template("admin/user_form.html", form=form, user=None)
-        if form.email.data and User.query.filter_by(email=form.email.data).first():
-            flash("Ya existe un usuario con ese correo electrónico.", "danger")
-            return render_template("admin/user_form.html", form=form, user=None)
+        if User.query.filter_by(document_id=form.document_id.data).first() or \
+           User.query.filter_by(email=form.email.data).first():
+            flash('El documento o correo ya está registrado.', 'warning')
+            return redirect(url_for('admin.manage_users'))
 
         user = User(
             full_name=form.full_name.data,
             document_id=form.document_id.data,
-            email=form.email.data or None,
-            phone=form.phone.data or None,
+            email=form.email.data,
+            phone=form.phone.data,
             role=form.role.data,
-            program_name=form.program_name.data or None,
+            program_name=form.program_name.data if form.role.data == 'cliente' else None
         )
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash(f"Usuario «{user.full_name}» creado exitosamente.", "success")
-        return redirect(url_for("admin.manage_users"))
-    elif request.method == "POST":
-        # Tarea 3: feedback detallado por campo cuando validate_on_submit es False
-        for field_name, errors in form.errors.items():
-            label = getattr(form, field_name).label.text
-            for err in errors:
-                flash(f"Error en «{label}»: {err}", "danger")
+        flash('Usuario creado con éxito.', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({getattr(form, field).label.text}): {error}", 'danger')
+    return redirect(url_for('admin.manage_users'))
 
-    return render_template("admin/user_form.html", form=form, user=None)
+@bp.route('/users/bulk_import', methods=['POST'])
+@role_required('admin')
+def bulk_import():
+    import_form = ImportForm()
+    if import_form.validate_on_submit():
+        return redirect(url_for('admin.manage_users'))
 
-
-@admin_bp.route("/users/<int:user_id>/edit", methods=["GET", "POST"])
-@admin_required
-def edit_user(user_id):
-    """Edita un usuario existente. Flash de errores por campo si falla validate_on_submit."""
-    from app.forms import EditUserForm
-    from app.models import User
-
-    user = db.session.get(User, user_id)
-    if not user:
-        flash("Usuario no encontrado.", "danger")
-        return redirect(url_for("admin.manage_users"))
-
-    form = EditUserForm(obj=user)
+@bp.route('/users/edit/<int:id>', methods=['POST'])
+@role_required('admin')
+def edit_user(id):
+    user = User.query.get_or_404(id)
+    form = EditUserForm()
 
     if form.validate_on_submit():
         user.full_name = form.full_name.data
-        user.phone = form.phone.data or None
+        user.phone = form.phone.data
         user.role = form.role.data
-        user.program_name = form.program_name.data or None
-        if form.email.data:
-            user.email = form.email.data
+        user.program_name = form.program_name.data if form.role.data == 'cliente' else None
+
         if form.password.data:
             user.set_password(form.password.data)
+
         try:
             db.session.commit()
-            flash(f"Usuario «{user.full_name}» actualizado correctamente.", "success")
-            return redirect(url_for("admin.manage_users"))
-        except IntegrityError:
+            flash(f'Usuario {user.full_name} actualizado.', 'success')
+        except Exception:
             db.session.rollback()
-            flash("El correo electrónico ya está en uso por otro usuario.", "danger")
-    elif request.method == "POST":
-        # Tarea 3: feedback detallado por campo cuando validate_on_submit es False
-        for field_name, errors in form.errors.items():
-            label = getattr(form, field_name).label.text
-            for err in errors:
-                flash(f"Error en «{label}»: {err}", "danger")
+            flash('Ocurrió un error al actualizar el usuario.', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({getattr(form, field).label.text}): {error}", 'danger')
 
-    return render_template("admin/user_form.html", form=form, user=user)
+    return redirect(url_for('admin.manage_users'))
+
+@bp.route('/users/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def delete_user(id):
+    if id == current_user.id:
+        flash('No puedes eliminar tu propio usuario.', 'danger')
+        return redirect(url_for('admin.manage_users'))
+    user = User.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Usuario {user.full_name} eliminado.', 'success')
+    return redirect(url_for('admin.manage_users'))
+
+@bp.route('/dashboard')
+@role_required('bibliotecario', 'admin')
+def admin_dashboard():
+    status_filter = request.args.get('status', LoanStatus.PENDING.value)
+    page = request.args.get('page', 1, type=int)
+
+    pending_count = Loan.query.filter_by(status=LoanStatus.PENDING).count()
+    activo_count = Loan.query.filter_by(status=LoanStatus.ACTIVE).count()
+    returned_count = Loan.query.filter_by(status=LoanStatus.RETURNED).count()
+    atrasado_count = Loan.query.filter_by(status=LoanStatus.OVERDUE).count()
+
+    top_items = db.session.query(
+        Catalog.title_or_name,
+        func.count(Loan.id).label('total')
+    ).select_from(Catalog).join(ItemInstance).join(Loan).group_by(Catalog.title_or_name).order_by(func.count(Loan.id).desc()).limit(5).all()
+    
+    try:
+        query = Loan.query.filter(Loan.status == LoanStatus(status_filter))
+    except ValueError:
+        query = Loan.query.filter(Loan.status == LoanStatus.PENDING)
+        
+    loans_pagination = query.order_by(Loan.request_date.desc()).paginate(page=page, per_page=20, error_out=False)
+
+    stats = {
+        'pending': pending_count,
+        'activo': activo_count,
+        'returned': returned_count,
+        'atrasado': atrasado_count
+    }
+
+    return render_template('admin/dashboard.html', loans_pagination=loans_pagination, current_status=status_filter, stats=stats, top_items=top_items)
+
+@bp.route('/approve/<int:id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def approve(id):
+    success, msg = LoanService.approve_loan(id)
+    if success:
+        flash(msg, 'success')
+        return redirect(url_for('admin.admin_dashboard', status=LoanStatus.ACTIVE.value))
+    flash(msg, 'danger')
+    return redirect(url_for('admin.admin_dashboard', status=LoanStatus.PENDING.value))
+
+@bp.route('/reports/overdue/export')
+@role_required('admin')
+def export_overdue_report():
+    output = ReportService.generate_overdue_users_report()
+    filename = f"usuarios_morosos_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=EXCEL_MIME_TYPE,
+        max_age=0,
+    )
+
+@bp.route('/reports/inventory/export')
+@role_required('admin')
+def export_inventory_report():
+    output = ReportService.generate_inventory_status_report()
+    filename = f"inventario_actual_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=EXCEL_MIME_TYPE,
+        max_age=0,
+    )
+
+@bp.route('/loan/<int:loan_id>/return', methods=['POST'])
+@role_required('admin', 'bibliotecario')
+def return_loan(loan_id):
+    loan = Loan.query.get_or_404(loan_id)
+    if loan.status != LoanStatus.RETURNED:
+        loan.final_penalty = loan.penalty_fee
+        loan.status = LoanStatus.RETURNED
+        loan.return_date = datetime.now(timezone.utc)
+        success, msg = InventoryService.release_instance(loan.instance_id)
+        if success:
+            db.session.commit()
+            flash('Ítem devuelto y reingresado al inventario con éxito.', 'success')
+        else:
+            db.session.rollback()
+            flash(f'Error al liberar inventario: {msg}', 'danger')
+    return redirect(request.referrer or url_for('admin.admin_dashboard'))
+
+@bp.route('/reject/<int:id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def reject_loan(id):
+    loan = Loan.query.get_or_404(id)
+    if loan.status is LoanStatus.PENDING:
+        loan.status = LoanStatus.REJECTED
+        loan.observation = 'Rechazado por el bibliotecario.' 
+        if loan.item_instance:
+            loan.item_instance.status = InventoryStatus.AVAILABLE
+        db.session.commit()
+        flash('Solicitud rechazada con éxito.', 'success')
+    else:
+        flash('Solo puedes rechazar solicitudes que estén pendientes.', 'warning')
+    return redirect(url_for('admin.admin_dashboard', status=LoanStatus.PENDING.value))
+
+@bp.route('/catalog', methods=['GET', 'POST'])
+@role_required('bibliotecario', 'admin')
+def catalog_manage():
+    form = CatalogForm()
+    if form.validate_on_submit():
+        new_catalog_item = Catalog(
+            title_or_name=form.title_or_name.data,
+            category=form.category.data,
+            author_or_brand=form.author_or_brand.data
+        )
+        db.session.add(new_catalog_item)
+        db.session.commit()
+        flash(f'Elemento de catálogo "{form.title_or_name.data}" creado con éxito.', 'success')
+        return redirect(url_for('admin.catalog_manage'))
+
+    search_query = request.args.get('search', '')
+    query = Catalog.query
+    if search_query:
+        query = query.filter(
+            or_(
+                Catalog.title_or_name.ilike(f'%{search_query}%'),
+                Catalog.category.ilike(f'%{search_query}%')
+            )
+        )
+    items = query.order_by(Catalog.title_or_name).all()
+    return render_template('admin/catalog.html', items=items, search_query=search_query, form=form)
+
+@bp.route('/catalog/delete/<int:id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def catalog_delete(id):
+    item = Catalog.query.get_or_404(id)
+    if item.instances.count() > 0:
+        flash('No puedes eliminar un catálogo que tiene instancias físicas registradas.', 'danger')
+    else:
+        db.session.delete(item)
+        db.session.commit()
+        flash('Elemento de catálogo eliminado.', 'success')
+    return redirect(url_for('admin.catalog_manage'))
+
+@bp.route('/catalog/<int:catalog_id>/instances', methods=['GET', 'POST'])
+@role_required('bibliotecario', 'admin')
+def manage_instances(catalog_id):
+    catalog_item = Catalog.query.get_or_404(catalog_id)
+    form = InstanceForm()
+    status_forms = {inst.id: UpdateInstanceStatusForm(status=inst.status) for inst in catalog_item.instances.all()}
+
+    if form.validate_on_submit():
+        unique_code = form.unique_code.data.strip()
+        condition = form.condition.data
+        status = form.status.data
+
+        if ItemInstance.query.filter_by(unique_code=unique_code).first():
+            flash(f'El código "{unique_code}" ya está registrado.', 'danger')
+        else:
+            new_instance = ItemInstance(
+                catalog_id=catalog_id,
+                unique_code=unique_code,
+                condition=condition,
+                status=InventoryStatus(status),
+            )
+            try:
+                db.session.add(new_instance)
+                db.session.commit()
+                flash(f'Instancia agregada correctamente.', 'success')
+            except Exception:
+                db.session.rollback()
+                flash('Error en la base de datos al guardar.', 'danger')
+        return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({getattr(form, field).label.text}): {error}", 'danger')
+
+    instances = catalog_item.instances.all()
+    return render_template(
+        'admin/instances.html',
+        catalog_item=catalog_item,
+        instances=instances,
+        form=form,
+        status_forms=status_forms,
+    )
+
+@bp.route('/instance/update_status/<int:instance_id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def update_instance_status(instance_id):
+    instance = ItemInstance.query.get_or_404(instance_id)
+    form = UpdateInstanceStatusForm()
+
+    if form.validate_on_submit():
+        new_status_value = form.status.data
+        valid_status_values = {status.value for status in InventoryStatus}
+
+        if new_status_value in valid_status_values:
+            instance.status = InventoryStatus(new_status_value)
+            try:
+                db.session.commit()
+                flash(f'Estado actualizado a {new_status_value}.', 'success')
+            except Exception:
+                db.session.rollback()
+                flash('Error al actualizar.', 'danger')
+        else:
+            flash('Estado no válido.', 'danger')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error ({getattr(form, field).label.text}): {error}", 'danger')
+        
+    return redirect(url_for('admin.manage_instances', catalog_id=instance.catalog_id))
+
+@bp.route('/instance/delete/<int:instance_id>', methods=['POST'])
+@role_required('bibliotecario', 'admin')
+def instance_delete(instance_id):
+    instance = ItemInstance.query.get_or_404(instance_id)
+    catalog_id = instance.catalog_id
+    
+    if instance.loans.filter(Loan.status.in_([LoanStatus.PENDING, LoanStatus.ACTIVE, LoanStatus.OVERDUE])).first():
+        flash('No puedes eliminar una instancia en préstamo activo.', 'danger')
+    else:
+        db.session.delete(instance)
+        db.session.commit()
+        flash('Instancia eliminada.', 'success')
+        
+    return redirect(url_for('admin.manage_instances', catalog_id=catalog_id))
