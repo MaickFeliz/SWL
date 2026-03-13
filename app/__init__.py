@@ -54,8 +54,8 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    from app.admin.routes import admin_bp
-    app.register_blueprint(admin_bp)
+    from app.admin import bp as admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
     from app import cli as app_cli
     app_cli.register_commands(app)
