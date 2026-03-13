@@ -90,7 +90,7 @@ class AdminUserForm(FlaskForm):
             ('cliente', 'Cliente / Usuario'),
             ('premium', 'Staff / Premium'),
             ('bibliotecario', 'Bibliotecario'),
-            ('admin', 'Administrador Supremo')
+            ('admin', 'Administrador Supremo'),
         ],
         validators=[DataRequired()],
     )
