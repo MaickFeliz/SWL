@@ -90,7 +90,6 @@ class AdminUserForm(FlaskForm):
             ('cliente', 'Cliente / Usuario'),
             ('premium', 'Staff / Premium'),
             ('bibliotecario', 'Bibliotecario'),
-            ('admin', 'Administrador Supremo'),
         ],
         validators=[DataRequired()],
     )
@@ -153,6 +152,7 @@ class RegistrationForm(FlaskForm):
             ('cliente', 'Cliente / Usuario'),
             ('premium', 'Staff / Premium'),
             ('bibliotecario', 'Bibliotecario'),
+            ('admin', 'Administrador Supremo'),
         ],
         validators=[DataRequired()],
     )
