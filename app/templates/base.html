@@ -27,50 +27,89 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-lg-center gap-2 w-100 justify-content-lg-end">
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item me-lg-3 text-center text-lg-start mb-2 mb-lg-0">
-                        <span class="text-secondary fw-medium">
-                            <i class="bi bi-person-circle me-1"></i>Hola, {{ current_user.full_name }}
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('main.profile') }}">
-                            <i class="bi bi-person-badge me-1"></i>Mi Perfil
-                        </a>
-                    </li>
-                    
-                    {% if current_user.role in ['admin', 'bibliotecario'] %}
-                    <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_catalogs') }}">
-                            <i class="bi bi-collection-fill me-1"></i>Catálogo de Equipos
-                        </a>
-                    </li>
-                    {% endif %}
-                    
-                    {% if current_user.role == 'admin' %}
-                    <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_instances') }}">
-                            <i class="bi bi-people-fill me-1"></i>Gestión T.I
-                        </a>
-                    </li>
-                    {% elif current_user.role == 'bibliotecario' %}
-                    <li class="nav-item">
-                        <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.list_instances') }}">
-                            <i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos
-                        </a>
-                    </li>
-                    {% endif %}
-                    
-                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0 d-grid d-lg-block">
-                        <a class="btn btn-outline-danger btn-sm rounded-pill fw-bold" href="{{ url_for('auth.logout') }}">
-                            <i class="bi bi-box-arrow-right me-1"></i>Salir
-                        </a>
-                    </li>
+                        <!-- Saludo y perfil comunes -->
+                        <li class="nav-item me-lg-3 text-center text-lg-start mb-2 mb-lg-0">
+                            <span class="text-secondary fw-medium">
+                                <i class="bi bi-person-circle me-1"></i>Hola, {{ current_user.full_name }}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-center text-lg-start" href="{{ url_for('main.profile') }}">
+                                <i class="bi bi-person-badge me-1"></i>Mi Perfil
+                            </a>
+                        </li>
+
+                        {# Navegación específica por rol #}
+                        {% if current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.manage_users') }}">
+                                    <i class="bi bi-people-fill me-1"></i>Usuarios
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.catalog_manage') }}">
+                                    <i class="bi bi-collection-fill me-1"></i>Catálogo
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.admin_dashboard') }}">
+                                    <i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos
+                                </a>
+                            </li>
+                        {% elif current_user.role == 'bibliotecario' %}
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.admin_dashboard') }}">
+                                    <i class="bi bi-journal-bookmark-fill me-1"></i>Panel de Préstamos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('admin.catalog_manage') }}">
+                                    <i class="bi bi-collection-fill me-1"></i>Catálogo
+                                </a>
+                            </li>
+                        {% elif current_user.role in ['premium', 'cliente'] %}
+                            <li class="nav-item">
+                                <a class="nav-link text-center text-lg-start" href="{{ url_for('main.premium_dashboard') }}">
+                                    <i class="bi bi-house-door me-1"></i>Mi Inicio
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-center text-lg-start" href="#" id="solicitarDropdown"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-plus-circle me-1"></i>Solicitar
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="solicitarDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('main.request_laptop') }}">
+                                            <i class="bi bi-laptop me-1"></i>Portátil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('main.request_book') }}">
+                                            <i class="bi bi-book-half me-1"></i>Libro
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('main.request_accessory') }}">
+                                            <i class="bi bi-headset me-1"></i>Accesorio
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+
+                        <!-- Cerrar sesión para todos los roles autenticados -->
+                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0 d-grid d-lg-block">
+                            <a class="btn btn-outline-danger btn-sm rounded-pill fw-bold" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Salir
+                            </a>
+                        </li>
                     {% else %}
-                    <li class="nav-item d-grid d-lg-block text-center mt-2 mt-lg-0">
-                        <a class="btn btn-primary rounded-pill px-4 fw-bold" href="{{ url_for('auth.login') }}">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
-                        </a>
-                    </li>
+                        <li class="nav-item d-grid d-lg-block text-center mt-2 mt-lg-0">
+                            <a class="btn btn-primary rounded-pill px-4 fw-bold" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

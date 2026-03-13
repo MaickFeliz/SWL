@@ -1,92 +1,224 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="mb-4">
-    <h2 class="text-2xl font-bold mb-6">
-        {% if current_user.role == 'admin' %}
-        Panel de Control Global
-        {% elif current_user.role == 'premium' %}
-        Panel de Gestión Staff
-        {% else %}
-        Mi Panel de Préstamos
-        {% endif %}
+<!-- Hero / Header -->
+<section class="mb-5">
+    <div class="p-4 p-md-5 rounded-4 bg-light border">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div>
+                <h1 class="h3 mb-2">
+                    ¡Hola, {{ current_user.full_name }}!
+                </h1>
+                <p class="mb-0 text-secondary">
+                    Aquí puedes gestionar tus préstamos activos, revisar tu historial y solicitar nuevos equipos o materiales.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">
+                    <i class="bi bi-lightning-charge-fill me-1"></i>
+                    Activos: {{ active_loans|length }}
+                </span>
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-3 py-2">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Historial: {{ past_loans|length }}
+                </span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="mb-5">
+    <h2 class="h5 mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-magic"></i>
+        Acciones rápidas
     </h2>
-    <p class="text-secondary">Bienvenido, {{ current_user.full_name }}.</p>
-</div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 hover-shadow-sm">
+                <div class="card-body text-center">
+                    <div class="rounded-circle bg-primary-subtle text-primary-emphasis d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 64px; height: 64px;">
+                        <i class="bi bi-laptop fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Pedir Portátil</h5>
+                    <p class="card-text text-muted mb-3">
+                        Solicita un equipo de cómputo para tus clases o trabajo académico.
+                    </p>
+                    <a href="{{ url_for('main.request_laptop') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-arrow-right-short me-1"></i>Iniciar solicitud
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 hover-shadow-sm">
+                <div class="card-body text-center">
+                    <div class="rounded-circle bg-info-subtle text-info-emphasis d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 64px; height: 64px;">
+                        <i class="bi bi-book-half fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Pedir Libro</h5>
+                    <p class="card-text text-muted mb-3">
+                        Consulta y solicita libros disponibles en la biblioteca institucional.
+                    </p>
+                    <a href="{{ url_for('main.request_book') }}" class="btn btn-info rounded-pill px-4 text-white">
+                        <i class="bi bi-arrow-right-short me-1"></i>Ver libros
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 hover-shadow-sm">
+                <div class="card-body text-center">
+                    <div class="rounded-circle bg-warning-subtle text-warning-emphasis d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 64px; height: 64px;">
+                        <i class="bi bi-headset fs-3"></i>
+                    </div>
+                    <h5 class="card-title">Pedir Accesorio</h5>
+                    <p class="card-text text-muted mb-3">
+                        Solicita video beams, audífonos u otros accesorios disponibles.
+                    </p>
+                    <a href="{{ url_for('main.request_accessory') }}" class="btn btn-warning rounded-pill px-4">
+                        <i class="bi bi-arrow-right-short me-1"></i>Explorar accesorios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="row mb-5">
-    <div class="col-md-4">
-        <div class="card card-body text-center shadow-sm h-100">
-            <a href="{{ url_for('main.request_laptop') }}" class="text-decoration-none text-dark stretched-link">
-                <i class="bi bi-laptop fs-1 text-primary"></i>
-                <h5 class="mt-3">Solicitar Portátil</h5>
-                <p class="text-muted">Pide un equipo de cómputo para tus clases.</p>
-            </a>
-        </div>
+<!-- Préstamos activos -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-bag-check"></i>
+            Mis préstamos activos
+        </h2>
     </div>
-    <div class="col-md-4">
-        <div class="card card-body text-center shadow-sm h-100">
-            <a href="{{ url_for('main.request_accessory') }}" class="text-decoration-none text-dark stretched-link">
-                <i class="bi bi-headset fs-1 text-warning"></i>
-                <h5 class="mt-3">Solicitar Accesorios</h5>
-                <p class="text-muted">Solicita video beams, audífonos, y más.</p>
-            </a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-body text-center shadow-sm h-100">
-            <a href="{{ url_for('main.request_book') }}" class="text-decoration-none text-dark stretched-link">
-                <i class="bi bi-book-half fs-1 text-info"></i>
-                <h5 class="mt-3">Solicitar Libros</h5>
-                <p class="text-muted">Consulta y pide libros de nuestra biblioteca.</p>
-            </a>
-        </div>
-    </div>
-</div>
 
-<div class="card shadow-md">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Mis Solicitudes Recientes</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Item Solicitado</th>
-                        <th>Estado</th>
-                        <th>Placa / Serial Asignado</th>
-                        <th>Fecha de Solicitud</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for loan in loans %}
-                    <tr>
-                        <td><strong>{{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else
-                                'Desconocido' }}</strong></td>
-                        <td>
-                            <span class="badge 
-                                {% if loan.status == 'pendiente' %}bg-warning text-dark
-                                {% elif loan.status == 'activo' %}bg-success
-                                {% else %}bg-secondary{% endif %}">
-                                {{ loan.status|capitalize }}
-                            </span>
-                        </td>
-                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance
-                                else 'Esperando asignación' }}</span></td>
-                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    {% if active_loans %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            {% for loan in active_loans %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}
+                                </h5>
+                                {% set status_value = loan.status.value %}
+                                {% set badge_class = 'bg-secondary' %}
+                                {% if status_value == 'pendiente' %}
+                                    {% set badge_class = 'bg-warning text-dark' %}
+                                {% elif status_value == 'activo' %}
+                                    {% set badge_class = 'bg-success' %}
+                                {% elif status_value == 'atrasado' %}
+                                    {% set badge_class = 'bg-danger' %}
+                                {% endif %}
+                                <span class="badge {{ badge_class }}">
+                                    {{ status_value|capitalize }}
+                                </span>
+                            </div>
+
+                            <p class="mb-1 text-muted small">
+                                <i class="bi bi-hash me-1"></i>
+                                {{ loan.item_instance.unique_code if loan.item_instance else 'Esperando asignación' }}
+                            </p>
+
+                            <p class="mb-1 text-muted small">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                Solicitud: {{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}
+                            </p>
+
+                            {% if loan.due_date_co %}
+                                <p class="mb-0 text-muted small">
+                                    <i class="bi bi-hourglass-split me-1"></i>
+                                    Vence: {{ loan.due_date_co.strftime('%d/%m/%Y %H:%M') }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        {% if not loans %}
+    {% else %}
         <div class="text-center py-5">
             <i class="bi bi-inbox fs-1 text-muted"></i>
-            <h4 class="mt-3">No tienes solicitudes activas.</h4>
-            <p class="text-muted">Usa las tarjetas de arriba para solicitar material.</p>
+            <h4 class="mt-3">No tienes préstamos activos.</h4>
+            <p class="text-muted mb-0">Usa las acciones rápidas de arriba para realizar una nueva solicitud.</p>
         </div>
+    {% endif %}
+</section>
+
+<!-- Historial colapsable -->
+<section class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-clock-history"></i>
+            Historial de préstamos
+        </h2>
+        <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                type="button" data-bs-toggle="collapse" data-bs-target="#loanHistory"
+                aria-expanded="false" aria-controls="loanHistory">
+            <span>Ver / ocultar</span>
+            <i class="bi bi-chevron-down"></i>
+        </button>
+    </div>
+
+    <div class="collapse" id="loanHistory">
+        {% if past_loans %}
+            <div class="table-responsive mt-3">
+                <table class="table table-sm table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ítem</th>
+                            <th>Estado</th>
+                            <th>Placa / Serial</th>
+                            <th>Solicitado</th>
+                            <th>Cierre</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in past_loans %}
+                            {% set status_value = loan.status.value %}
+                            <tr>
+                                <td class="fw-semibold">
+                                    {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}
+                                </td>
+                                <td>
+                                    {% set badge_class = 'bg-secondary' %}
+                                    {% if status_value == 'devuelto' %}
+                                        {% set badge_class = 'bg-success-subtle text-success-emphasis' %}
+                                    {% elif status_value == 'rechazado' %}
+                                        {% set badge_class = 'bg-danger-subtle text-danger-emphasis' %}
+                                    {% endif %}
+                                    <span class="badge {{ badge_class }}">
+                                        {{ status_value|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-body-secondary text-muted">
+                                        {{ loan.item_instance.unique_code if loan.item_instance else 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}
+                                </td>
+                                <td class="text-muted small">
+                                    {{ loan.return_date.strftime('%d/%m/%Y %H:%M') if loan.return_date else '-' }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-muted small mt-3">
+                Aún no tienes préstamos devueltos o rechazados en tu historial.
+            </div>
         {% endif %}
     </div>
-</div>
+</section>
+
 {% endblock %}

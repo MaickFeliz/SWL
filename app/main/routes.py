@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.services.inventory_service import CatalogService
 from app.main import bp
 from app import db
-from app.models import Loan, User, LibraryLog
+from app.models import Loan, User, LibraryLog, LoanStatus
 from app.services.loan_service import LoanService
 from app.utils.decorators import role_required
 from app.forms import RequestItemForm, VisitForm, FastLoanSearchForm, FastLoanForm
@@ -125,8 +125,32 @@ def index():
 @bp.route('/dashboard')
 @role_required('premium', 'cliente')
 def premium_dashboard():
-    loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
-    return render_template('premium/dashboard.html', loans=loans)
+    active_statuses = [LoanStatus.PENDING, LoanStatus.ACTIVE, LoanStatus.OVERDUE]
+    past_statuses = [LoanStatus.RETURNED, LoanStatus.REJECTED]
+
+    active_loans = (
+        Loan.query.filter(
+            Loan.user_id == current_user.id,
+            Loan.status.in_(active_statuses),
+        )
+        .order_by(Loan.request_date.desc())
+        .all()
+    )
+
+    past_loans = (
+        Loan.query.filter(
+            Loan.user_id == current_user.id,
+            Loan.status.in_(past_statuses),
+        )
+        .order_by(Loan.request_date.desc())
+        .all()
+    )
+
+    return render_template(
+        'premium/dashboard.html',
+        active_loans=active_loans,
+        past_loans=past_loans,
+    )
 
 
 @bp.route('/profile')
