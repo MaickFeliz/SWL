@@ -128,7 +128,6 @@ def premium_dashboard():
     loans = Loan.query.filter_by(user_id=current_user.id).order_by(Loan.request_date.desc()).all()
     return render_template('premium/dashboard.html', loans=loans)
 
-
 @bp.route('/profile')
 @login_required
 def profile():
