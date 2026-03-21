@@ -1,91 +1,214 @@
 {% extends "base.html" %}
+{% block title %}Mi Perfil{% endblock %}
+
 {% block content %}
 
-<div class="mb-4">
-    <h2 class="text-2xl font-bold mb-2">Mi Perfil e Historial</h2>
-    <p class="text-secondary">Información del usuario e historial de préstamos.</p>
+{# ── Page Header ── #}
+<div class="page-header">
+  <div>
+    <h2 class="page-header-title">Mi Perfil</h2>
+    <p class="page-header-sub">Información del usuario e historial de préstamos.</p>
+  </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-5">
-        <div class="card shadow-sm h-100">
-            <div class="card-body">
-                <h5 class="card-title fw-bold border-bottom pb-2 mb-3">Datos del Usuario</h5>
-                <p class="mb-1"><strong>Nombre:</strong> {{ current_user.full_name }}</p>
-                <p class="mb-1"><strong>Documento:</strong> {{ current_user.document_id }}</p>
-                <p class="mb-1"><strong>Rol:</strong> {{ current_user.role|capitalize }}</p>
-                <p class="mb-1"><strong>Correo:</strong> {{ current_user.email }}</p>
-                <p class="mb-1"><strong>Teléfono:</strong> {{ current_user.phone or 'No registrado' }}</p>
+<div class="row g-4 mb-4">
+
+  {# ── User Info Card ── #}
+  <div class="col-12 col-md-5 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        {# Avatar initials #}
+        <div class="text-center mb-4 pt-2">
+          <div class="d-inline-flex align-items-center justify-content-center fw-bold mx-auto"
+               style="width:72px; height:72px; border-radius:50%;
+                      background:var(--accent-light); color:var(--accent);
+                      font-family:'Inter',sans-serif; font-size:1.5rem;">
+            {{ current_user.full_name[0]|upper }}{{ current_user.full_name.split(' ')[-1][0]|upper if current_user.full_name.split(' ')|length > 1 else '' }}
+          </div>
+          <h5 class="mt-3 mb-0 fw-bold">{{ current_user.full_name }}</h5>
+          {% if current_user.role == 'admin' %}
+            <span class="badge badge-role-admin mt-1">Admin</span>
+          {% elif current_user.role == 'bibliotecario' %}
+            <span class="badge badge-role-biblio mt-1">Bibliotecario</span>
+          {% elif current_user.role == 'premium' %}
+            <span class="badge badge-role-premium mt-1">Premium</span>
+          {% else %}
+            <span class="badge badge-role-cliente mt-1">Cliente</span>
+          {% endif %}
+        </div>
+
+        <div class="border-top pt-3">
+          <dl class="mb-0" style="display:grid; row-gap:0.75rem;">
+            <div>
+              <dt style="font-size:0.75rem; font-weight:700; text-transform:uppercase;
+                         letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.125rem;">
+                Documento
+              </dt>
+              <dd class="mb-0">
+                <span class="item-code">{{ current_user.document_id }}</span>
+              </dd>
             </div>
+            <div>
+              <dt style="font-size:0.75rem; font-weight:700; text-transform:uppercase;
+                         letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.125rem;">
+                Correo
+              </dt>
+              <dd class="mb-0" style="font-size:0.9rem; color:var(--text-2);">
+                {{ current_user.email }}
+              </dd>
+            </div>
+            <div>
+              <dt style="font-size:0.75rem; font-weight:700; text-transform:uppercase;
+                         letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.125rem;">
+                Teléfono
+              </dt>
+              <dd class="mb-0" style="font-size:0.9rem; color:var(--text-2);">
+                {{ current_user.phone or 'No registrado' }}
+              </dd>
+            </div>
+            {% if current_user.program_name %}
+            <div>
+              <dt style="font-size:0.75rem; font-weight:700; text-transform:uppercase;
+                         letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.125rem;">
+                Programa
+              </dt>
+              <dd class="mb-0" style="font-size:0.9rem; color:var(--text-2);">
+                {{ current_user.program_name }}
+              </dd>
+            </div>
+            {% endif %}
+          </dl>
         </div>
+      </div>
     </div>
+  </div>
+
+  {# ── Loan Stats placeholder (if desired) ── #}
+  <div class="col-12 col-md-7 col-lg-8 d-flex flex-column gap-3">
+    {% set active_count = loans|selectattr('status.value', 'in', ['activo','pendiente','atrasado'])|list|length %}
+    {% set overdue_count = loans|selectattr('status.value', 'equalto', 'atrasado')|list|length %}
+
+    <div class="row g-3">
+      <div class="col-6 col-sm-4">
+        <div class="card stat-card stat-card-active h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="stat-label">Activos</div>
+              <div class="stat-value">{{ active_count }}</div>
+            </div>
+            <i class="bi bi-bag-check stat-icon"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4">
+        <div class="card stat-card stat-card-overdue h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="stat-label">Atrasados</div>
+              <div class="stat-value">{{ overdue_count }}</div>
+            </div>
+            <i class="bi bi-exclamation-triangle stat-icon"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4">
+        <div class="card stat-card stat-card-returned h-100">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="stat-label">Total historial</div>
+              <div class="stat-value">{{ loans|length }}</div>
+            </div>
+            <i class="bi bi-clock-history stat-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-header bg-white">
-        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Préstamos y Multas
-        </h5>
+{# ── Loan History Table ── #}
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-clock-history me-2" style="color:var(--accent);"></i>
+    Historial de Préstamos y Multas
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive" style="border:none; border-radius:0; box-shadow:none;">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="ps-4">Ítem Solicitado</th>
+            <th>Estado</th>
+            <th>Fecha Solicitud</th>
+            <th>Fecha Límite</th>
+            <th class="pe-4 text-end">Multa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans %}
+          <tr>
+            <td class="ps-4 fw-semibold" style="font-size:0.875rem;">
+              {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}
+            </td>
+            <td>
+              {% set sv = loan.status.value if loan.status.value is defined else loan.status %}
+              {% if sv == 'pendiente' %}
+                <span class="badge badge-status-pending">Pendiente</span>
+              {% elif sv in ['aprobado', 'activo'] %}
+                <span class="badge badge-status-active">Activo</span>
+              {% elif sv == 'devuelto' %}
+                <span class="badge badge-status-returned">Devuelto</span>
+              {% elif sv == 'atrasado' or loan.is_overdue %}
+                <span class="badge badge-status-overdue">Atrasado</span>
+              {% elif sv == 'rechazado' %}
+                <span class="badge badge-status-rejected">Rechazado</span>
+              {% else %}
+                <span class="badge badge-status-returned">{{ sv|capitalize }}</span>
+              {% endif %}
+            </td>
+            <td class="text-muted" style="font-size:0.8125rem;">
+              {{ loan.request_date_co.strftime('%d/%m/%Y') if loan.request_date_co else '—' }}
+            </td>
+            <td style="font-size:0.8125rem;">
+              {% if loan.due_date_co %}
+                <span class="{{ 'text-danger fw-semibold' if loan.is_overdue else 'text-muted' }}">
+                  {{ loan.due_date_co.strftime('%d/%m/%Y') }}
+                </span>
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td class="pe-4 text-end" style="font-size:0.8125rem;">
+              {% if sv == 'devuelto' and loan.final_penalty and loan.final_penalty > 0 %}
+                <span class="fw-semibold" style="color:var(--danger);">
+                  ${{ "{:,.0f}".format(loan.final_penalty) }}
+                </span>
+              {% elif loan.is_overdue and sv != 'devuelto' %}
+                <span class="fw-semibold" style="color:var(--danger);">
+                  ${{ "{:,.0f}".format(loan.penalty_fee) }}
+                </span>
+              {% elif sv == 'devuelto' %}
+                <span style="color:var(--success);">Al día</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="bi bi-inbox empty-state-icon"></i>
+                <h5>Sin historial de préstamos</h5>
+                <p>Aún no tienes préstamos registrados en el sistema.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4">Item Solicitado</th>
-                        <th>Estado</th>
-                        <th>Fecha Solicitud</th>
-                        <th>Fecha Límite (Devolución)</th>
-                        <th class="pe-4 text-end">Multa Estimada</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for loan in loans %}
-                    <tr>
-                        <td class="ps-4"><strong>{{ loan.item_instance.catalog_item.title_or_name if loan.item_instance
-                                else 'Desconocido' }}</strong></td>
-                        <td>
-                            <span class="badge 
-                                {% if loan.status == 'pendiente' %}bg-warning text-dark
-                                {% elif loan.status == 'aprobado' or loan.status == 'activo' %}bg-primary
-                                {% elif loan.status == 'devuelto' %}bg-success
-                                {% elif loan.status == 'atrasado' or loan.is_overdue %}bg-danger
-                                {% else %}bg-secondary{% endif %}">
-                                {{ loan.status|capitalize }}
-                            </span>
-                        </td>
-                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y') if loan.request_date_co else '' }}</td>
-                        <td>
-                            {% if loan.due_date_co %}
-                            <span class="{{ 'text-danger fw-bold' if loan.is_overdue else 'text-dark' }}">
-                                {{ loan.due_date_co.strftime('%d/%m/%Y') }}
-                            </span>
-                            {% else %}
-                            <span class="text-muted">N/A</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if loan.status == 'devuelto' and loan.final_penalty > 0 %}
-                            <span class="text-danger fw-bold">${{ "{:,.0f}".format(loan.final_penalty) }}</span>
-                            {% elif loan.is_overdue and loan.status != 'devuelto' %}
-                            <span class="text-danger fw-bold">${{ "{:,.0f}".format(loan.penalty_fee) }}</span>
-                            {% elif loan.status == 'devuelto' %}
-                            <span class="text-success">Al día</span>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if not loans %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted"></i>
-            <h5 class="mt-3 text-muted">No tienes historial de préstamos.</h5>
-        </div>
-        {% endif %}
-    </div>
+  </div>
 </div>
 
 {% endblock %}

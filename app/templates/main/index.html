@@ -1,64 +1,124 @@
 {% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+
 {% block content %}
-<div class="px-4 py-5 my-5 text-center">
 
-  <h1 class="display-5 fw-bold text-body-emphasis">Sistema de Gestión de Biblioteca</h1>
-  <div class="col-lg-6 mx-auto">
-    <p class="lead mb-4">Una solución integral para la gestión de recursos, préstamos y visitas en la biblioteca del
-      Centro de Diseño e Innovación Tecnológica Industrial.</p>
-    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-      <a href="{{ url_for('auth.login') }}" type="button" class="btn btn-primary btn-lg px-4 gap-3">Iniciar Sesión</a>
-      <a href="{{ url_for('main.fast_loan') }}" type="button" class="btn btn-outline-secondary btn-lg px-4">Préstamo
-        Rápido</a>
+{# ── Hero Section ─────────────────────────────────────────── #}
+<div class="hero-section">
+  <div class="position-relative z-1 text-center" style="max-width: 680px; width: 100%;">
+
+    <span class="hero-badge">
+      <i class="bi bi-shield-check"></i>
+      Sistema Institucional de Gestión
+    </span>
+
+    <h1 class="hero-title">
+      Gestión de Préstamos<br>e Inventario <span>Inteligente</span>
+    </h1>
+
+    <p class="hero-sub">
+      Controla el ciclo completo de préstamos de equipos, libros y accesorios.
+      Registro de visitas, catálogo y reportes analíticos en un solo lugar.
+    </p>
+
+    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg rounded-pill px-5">
+        <i class="bi bi-box-arrow-in-right"></i>
+        Iniciar Sesión
+      </a>
+      <a href="{{ url_for('main.fast_loan') }}" class="btn btn-lg rounded-pill px-5"
+         style="background: rgba(255,255,255,0.12); color: #fff; border: 1.5px solid rgba(255,255,255,0.25); backdrop-filter: blur(8px);">
+        <i class="bi bi-lightning-charge"></i>
+        Préstamo Rápido
+      </a>
     </div>
+
   </div>
 </div>
 
-<div class="container px-4 py-5" id="hanging-icons">
-  <h2 class="pb-2 border-bottom">Funcionalidades Principales</h2>
-  <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-    <div class="col d-flex align-items-start">
-      <div
-        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-        <i class="bi bi-person-check-fill"></i>
-      </div>
-      <div>
-        <h3 class="fs-2">Registro de Visitas</h3>
-        <p>Lleva un control automatizado de los clientes y staff que ingresan a la biblioteca para hacer uso de
-          sus espacios y recursos.</p>
-        <a href="{{ url_for('main.register_visit') }}" class="btn btn-success">
-          Registrar Visita
-        </a>
-      </div>
+{# ── Features Section ─────────────────────────────────────── #}
+<section class="feature-section">
+  <div class="container">
+
+    <div class="text-center mb-5">
+      <h2 class="fw-bold" style="font-family: 'Inter', sans-serif; letter-spacing: -0.03em;">
+        Funcionalidades Principales
+      </h2>
+      <p class="text-muted" style="max-width: 480px; margin: 0.75rem auto 0;">
+        Todo lo que necesitas para administrar los recursos del centro de forma eficiente.
+      </p>
     </div>
-    <div class="col d-flex align-items-start">
-      <div
-        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-        <i class="bi bi-laptop"></i>
+
+    <div class="row g-4">
+
+      <!-- Registro de Visitas -->
+      <div class="col-12 col-md-4">
+        <div class="card h-100 p-2">
+          <div class="card-body">
+            <div class="feature-icon mb-3"
+                 style="background: rgba(16,185,129,0.12); color: var(--success);">
+              <i class="bi bi-person-check-fill"></i>
+            </div>
+            <h5 class="card-title">Registro de Visitas</h5>
+            <p class="card-text">
+              Control automatizado de clientes y staff que ingresan al centro.
+              Registro rápido con número de documento.
+            </p>
+          </div>
+          <div class="card-body pt-0">
+            <a href="{{ url_for('main.register_visit') }}" class="btn btn-success btn-sm rounded-pill px-3">
+              <i class="bi bi-arrow-right-short"></i>Registrar Visita
+            </a>
+          </div>
+        </div>
       </div>
-      <div>
-        <h3 class="fs-2">Préstamos de Equipos</h3>
-        <p>Gestiona el ciclo completo de préstamo de portátiles, desde la solicitud del staff hasta la devolución y
-          registro en el sistema.</p>
-        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
-          Solicitar Equipo
-        </a>
+
+      <!-- Préstamos de Equipos -->
+      <div class="col-12 col-md-4">
+        <div class="card h-100 p-2">
+          <div class="card-body">
+            <div class="feature-icon mb-3"
+                 style="background: var(--accent-light); color: var(--accent);">
+              <i class="bi bi-laptop"></i>
+            </div>
+            <h5 class="card-title">Préstamos de Equipos</h5>
+            <p class="card-text">
+              Ciclo completo de préstamo de portátiles: solicitud, aprobación,
+              entrega y devolución con trazabilidad total.
+            </p>
+          </div>
+          <div class="card-body pt-0">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm rounded-pill px-3">
+              <i class="bi bi-arrow-right-short"></i>Solicitar Equipo
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="col d-flex align-items-start">
-      <div
-        class="icon-square text-body-emphasis bg-body-secondary d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
-        <i class="bi bi-box-seam"></i>
+
+      <!-- Gestión de Inventario -->
+      <div class="col-12 col-md-4">
+        <div class="card h-100 p-2">
+          <div class="card-body">
+            <div class="feature-icon mb-3"
+                 style="background: rgba(139,92,246,0.12); color: #7C3AED;">
+              <i class="bi bi-box-seam"></i>
+            </div>
+            <h5 class="card-title">Gestión de Inventario</h5>
+            <p class="card-text">
+              Control de stock de libros, accesorios y otros elementos.
+              El inventario se actualiza automáticamente con cada operación.
+            </p>
+          </div>
+          <div class="card-body pt-0">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm rounded-pill px-3">
+              <i class="bi bi-arrow-right-short"></i>Ver Inventario
+            </a>
+          </div>
+        </div>
       </div>
-      <div>
-        <h3 class="fs-2">Gestión de Inventario</h3>
-        <p>Controla el stock de libros, accesorios y otros elementos. El inventario se actualiza automáticamente con
-          cada préstamo y devolución.</p>
-        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
-          Gestionar Inventario
-        </a>
-      </div>
+
     </div>
   </div>
-</div>
+</section>
+
 {% endblock %}

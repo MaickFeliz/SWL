@@ -1,212 +1,268 @@
 {% extends "base.html" %}
+{% block title %}Panel Administrativo{% endblock %}
+
 {% block content %}
 
+{# ── Print Header ── #}
 <div class="print-header">
-    <h1>SWL - Reporte Administrativo</h1>
-    <p>Reporte de Control de Préstamos e Inventario</p>
-    <p>Fecha:
-        <script>document.write(new Date().toLocaleDateString())</script>
-    </p>
+  <h1>SWL — Reporte Administrativo</h1>
+  <p>Reporte de Control de Préstamos e Inventario</p>
+  <p>Fecha: <script>document.write(new Date().toLocaleDateString('es-CO'))</script></p>
 </div>
 
-<div class="no-print mb-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+{# ── Page Header ── #}
+<div class="page-header no-print">
+  <div>
+    <h2 class="page-header-title">Panel del Bibliotecario</h2>
+    <p class="page-header-sub">Gestión de préstamos, devoluciones y reportes analíticos.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.export_overdue_report') }}"
+       class="btn btn-outline-success btn-sm">
+      <i class="bi bi-file-earmark-arrow-down"></i>Morosos Excel
+    </a>
+    <a href="{{ url_for('admin.export_inventory_report') }}"
+       class="btn btn-outline-success btn-sm">
+      <i class="bi bi-file-earmark-spreadsheet"></i>Inventario Excel
+    </a>
+    <button onclick="window.print()" class="btn btn-secondary btn-sm">
+      <i class="bi bi-printer"></i>Imprimir
+    </button>
+  </div>
+</div>
+
+{# ── Stat Cards ── #}
+<div class="row g-3 mb-4 no-print">
+  <div class="col-6 col-md-3">
+    <div class="card stat-card stat-card-pending h-100">
+      <div class="d-flex align-items-center justify-content-between">
         <div>
-            <h2 class="mb-1">Panel del Bibliotecario</h2>
-            <p class="text-secondary mb-0">Gestión de préstamos, devoluciones y reportes analíticos.</p>
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value">{{ stats.pending }}</div>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ url_for('admin.export_overdue_report') }}" class="btn btn-outline-success btn-sm">
-                <i class="bi bi-file-earmark-arrow-down me-1"></i>Exportar Morosos a Excel
-            </a>
-            <a href="{{ url_for('admin.export_inventory_report') }}" class="btn btn-outline-success btn-sm">
-                <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar Inventario a Excel
-            </a>
-            <button onclick="window.print()" class="btn btn-dark btn-sm">
-                <i class="bi bi-printer-fill me-2"></i>Imprimir Reporte
-            </button>
-        </div>
+        <i class="bi bi-clock-history stat-icon"></i>
+      </div>
     </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card stat-card-active h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-label">Activos</div>
+          <div class="stat-value">{{ stats.activo }}</div>
+        </div>
+        <i class="bi bi-box-arrow-up-right stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card stat-card-overdue h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-label">Atrasados</div>
+          <div class="stat-value">{{ stats.atrasado }}</div>
+        </div>
+        <i class="bi bi-exclamation-triangle stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card stat-card stat-card-returned h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="stat-label">Devueltos</div>
+          <div class="stat-value">{{ stats.returned }}</div>
+        </div>
+        <i class="bi bi-journal-check stat-icon"></i>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="row mb-4 no-print">
-    <div class="col-md-3">
-        <div class="card border-start shadow-sm h-100"
-            style="border-left-color: #f59e0b !important; border-left-width: 4px !important;">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #f59e0b;">Pendientes
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.pending }}</div>
-                    </div>
-                    <div class="col-auto"><i class="bi bi-clock-history fs-2" style="color: #f59e0b;"></i></div>
-                </div>
-            </div>
+{# ── Top Items ── #}
+{% if top_items %}
+<div class="card mb-4 no-print">
+  <div class="card-header">
+    <i class="bi bi-bar-chart-fill me-2" style="color:var(--accent);"></i>
+    Ítems más Solicitados (Top 5)
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for item in top_items %}
+      <div class="col">
+        <div class="text-center p-2">
+          <div style="font-family:'Inter',sans-serif; font-size:1.5rem; font-weight:800; color:var(--accent);">
+            {{ item.total }}
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-2); text-transform:uppercase;
+                      letter-spacing:0.06em; font-weight:600; margin-top:0.25rem;">
+            {{ item.title_or_name }}
+          </div>
+          <div class="mt-2" style="height:4px; background:var(--accent-light); border-radius:2px;">
+            <div style="height:4px; border-radius:2px; background:var(--accent);
+                        width:{{ [item.total * 20, 100]|min }}%;"></div>
+          </div>
         </div>
+      </div>
+      {% endfor %}
     </div>
-    <div class="col-md-3">
-        <div class="card border-start shadow-sm h-100"
-            style="border-left-color: #3b82f6 !important; border-left-width: 4px !important;">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: #3b82f6;">Activos</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.activo }}</div>
-                    </div>
-                    <div class="col-auto"><i class="bi bi-box-arrow-up-right fs-2" style="color: #3b82f6;"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-start border-danger shadow-sm h-100" style="border-left-width: 4px !important;">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Atrasados</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.atrasado }}</div>
-                    </div>
-                    <div class="col-auto"><i class="bi bi-exclamation-triangle fs-2 text-danger"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-start border-secondary shadow-sm h-100" style="border-left-width: 4px !important;">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Devueltos</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.returned }}</div>
-                    </div>
-                    <div class="col-auto"><i class="bi bi-journal-check fs-2 text-secondary"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
+{% endif %}
 
-<div class="row mb-4 no-print">
-    <div class="col-12">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-white">
-                <h6 class="m-0 font-weight-bold" style="color: #0f172a;">Ítems más Solicitados (Top 5)</h6>
-            </div>
-            <div class="card-body d-flex flex-row justify-content-around">
-                {% for item in top_items %}
-                <div class="text-center">
-                    <div class="h4 mb-0 font-weight-bold" style="color: #3b82f6;">{{ item.total }}</div>
-                    <div class="text-xs text-muted text-uppercase">{{ item.title_or_name }}</div>
-                </div>
-                {% else %}
-                <span class="text-muted">No hay datos suficientes registrados.</span>
-                {% endfor %}
-            </div>
-        </div>
+{# ── Loans Table ── #}
+<div class="card no-print">
+  <div class="card-header d-flex flex-column flex-sm-row align-items-start align-items-sm-center
+              justify-content-between gap-2 flex-wrap">
+    <span style="font-weight:700;">Préstamos</span>
+    <ul class="nav nav-pills mb-0">
+      <li class="nav-item">
+        <a class="nav-link {% if current_status == 'pendiente' %}active{% endif %}"
+           href="?status=pendiente">
+          Pendientes
+          {% if stats.pending > 0 and current_status != 'pendiente' %}
+          <span class="badge ms-1"
+                style="background:var(--warning-light);color:#92400E;font-size:0.7rem;">
+            {{ stats.pending }}
+          </span>
+          {% endif %}
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if current_status == 'activo' %}active{% endif %}"
+           href="?status=activo">Activos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if current_status == 'devuelto' %}active{% endif %}"
+           href="?status=devuelto">Historial</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive" style="border:none; border-radius:0; box-shadow:none;">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Ítem Solicitado</th>
+            <th>Código</th>
+            <th>Fecha Solicitud</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in loans_pagination.items %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ loan.requester.full_name }}</div>
+              <small class="text-muted">{{ loan.requester.document_id }}</small>
+            </td>
+            <td>
+              {% set role = loan.requester.role %}
+              {% if role == 'admin' %}
+                <span class="badge badge-role-admin">{{ role|capitalize }}</span>
+              {% elif role == 'bibliotecario' %}
+                <span class="badge badge-role-biblio">{{ role|capitalize }}</span>
+              {% elif role == 'premium' %}
+                <span class="badge badge-role-premium">{{ role|capitalize }}</span>
+              {% else %}
+                <span class="badge badge-role-cliente">{{ role|capitalize }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="fw-medium">
+                {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'N/A' }}
+              </span>
+              {% if loan.environment %}
+              <br><small class="text-muted">
+                <i class="bi bi-geo-alt-fill me-1"></i>{{ loan.environment }}
+              </small>
+              {% endif %}
+            </td>
+            <td>
+              <span class="item-code">
+                {{ loan.item_instance.unique_code if loan.item_instance else '—' }}
+              </span>
+            </td>
+            <td class="text-muted" style="font-size:0.8125rem; white-space:nowrap;">
+              {{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}
+            </td>
+            <td class="text-center">
+              {% if loan.status.value == 'pendiente' %}
+              <div class="d-flex align-items-center justify-content-center gap-2">
+                <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST" class="mb-0">
+                  <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-check-circle-fill"></i>Aprobar
+                  </button>
+                </form>
+                <form action="{{ url_for('admin.reject_loan', id=loan.id) }}" method="POST" class="mb-0">
+                  <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="bi bi-x-circle-fill"></i>Rechazar
+                  </button>
+                </form>
+              </div>
+              {% elif loan.status.value in ['activo', 'atrasado'] %}
+              <form action="{{ url_for('admin.return_loan', loan_id=loan.id) }}" method="POST">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-arrow-down-left-circle"></i>Recibir Devolución
+                </button>
+              </form>
+              {% else %}
+              <span class="badge badge-status-returned">
+                <i class="bi bi-check-all"></i>Cerrado
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="bi bi-inbox empty-state-icon"></i>
+                <h5>No hay solicitudes en esta categoría</h5>
+                <p>Cuando haya nuevas solicitudes, aparecerán aquí.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</div>
+  </div>
 
-<div class="card shadow-md no-print">
-    <div class="card-header">
-        <ul class="nav nav-pills card-header-pills">
-            <li class="nav-item">
-                <a class="nav-link {% if current_status == 'pendiente' %}active bg-warning text-dark{% endif %}"
-                    href="?status=pendiente">Pendientes</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if current_status == 'activo' %}active{% endif %}"
-                    href="?status=activo">Activos</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if current_status == 'devuelto' %}active bg-secondary{% endif %}"
-                    href="?status=devuelto">Historial</a>
-            </li>
-        </ul>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Rol</th>
-                        <th>Item Solicitado</th>
-                        <th>Placa / Serial</th>
-                        <th>Fecha Solicitud</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for loan in loans_pagination.items %}
-                    <tr>
-                        <td>
-                            <strong>{{ loan.requester.full_name }}</strong><br>
-                            <small class="text-muted">{{ loan.requester.document_id }}</small>
-                        </td>
-                        <td><span class="badge bg-light text-dark">{{ loan.requester.role|capitalize }}</span></td>
-                        <td>
-                            {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'N/A' }}
-                            {% if loan.environment %}
-                            <br><small class="text-muted"><i class="bi bi-geo-alt-fill me-1"></i>{{ loan.environment
-                                }}</small>
-                            {% endif %}
-                        </td>
-
-                        <td><span class="badge bg-primary-soft">{{ loan.item_instance.unique_code if loan.item_instance
-                                else '---' }}</span></td>
-
-                        <td>{{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '' }}</td>
-                        <td class="text-center">
-                            {% if loan.status.value == 'pendiente' %}
-                            <div class="d-flex align-items-center justify-content-center gap-2">
-                                <form action="{{ url_for('admin.approve', id=loan.id) }}" method="POST" class="mb-0">
-                                    <button type="submit" class="btn btn-success btn-sm flex-shrink-0"><i
-                                            class="bi bi-check-circle-fill me-1"></i>Aprobar</button>
-                                </form>
-                                <form action="{{ url_for('admin.reject_loan', id=loan.id) }}" method="POST"
-                                    class="mb-0">
-                                    <button type="submit" class="btn btn-danger btn-sm flex-shrink-0"><i
-                                            class="bi bi-x-circle-fill me-1"></i>Rechazar</button>
-                                </form>
-                            </div>
-                            {% elif loan.status.value in ['activo', 'atrasado'] %}
-                            <form action="{{ url_for('admin.return_loan', loan_id=loan.id) }}" method="POST"
-                                style="display:inline;">
-                                <button type="submit" class="btn btn-info btn-sm"><i
-                                        class="bi bi-arrow-down-left-circle-fill me-1"></i>Recibir (Devolución)</button>
-                            </form>
-                            {% else %}
-                            <span class="badge bg-secondary-soft"><i class="bi bi-check-all me-1"></i>Cerrado</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if not loans_pagination.items %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted"></i>
-            <h4 class="mt-3">No hay solicitudes en esta categoría.</h4>
-            <p class="text-muted">Cuando haya nuevas solicitudes, aparecerán aquí.</p>
-        </div>
+  {# Pagination #}
+  {% if loans_pagination.pages and loans_pagination.pages > 1 %}
+  <div class="card-body border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <small class="text-muted">
+      Página {{ loans_pagination.page }} de {{ loans_pagination.pages }}
+      ({{ loans_pagination.total }} registros)
+    </small>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {% if not loans_pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="?status={{ current_status }}&page={{ loans_pagination.prev_num if loans_pagination.has_prev else 1 }}">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      {% for p in loans_pagination.iter_pages() %}
+        {% if p %}
+          <li class="page-item {% if p == loans_pagination.page %}active{% endif %}">
+            <a class="page-link" href="?status={{ current_status }}&page={{ p }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
         {% endif %}
-        {% if loans_pagination.pages and loans_pagination.pages > 1 %}
-        <nav class="mt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                Página {{ loans_pagination.page }} de {{ loans_pagination.pages }} ({{ loans_pagination.total }} registros).
-            </div>
-            <ul class="pagination mb-0">
-                <li class="page-item {% if not loans_pagination.has_prev %}disabled{% endif %}">
-                    <a class="page-link" href="?status={{ current_status }}&page={{ loans_pagination.prev_num if loans_pagination.has_prev else 1 }}">Anterior</a>
-                </li>
-                <li class="page-item {% if not loans_pagination.has_next %}disabled{% endif %}">
-                    <a class="page-link" href="?status={{ current_status }}&page={{ loans_pagination.next_num if loans_pagination.has_next else loans_pagination.pages }}">Siguiente</a>
-                </li>
-            </ul>
-        </nav>
-        {% endif %}
-    </div>
+      {% endfor %}
+      <li class="page-item {% if not loans_pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="?status={{ current_status }}&page={{ loans_pagination.next_num if loans_pagination.has_next else loans_pagination.pages }}">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+  {% endif %}
+
 </div>
+
 {% endblock %}

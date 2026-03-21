@@ -1,44 +1,105 @@
 {% extends "base.html" %}
+{% block title %}Ingresar{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
-        <div class="col-12 col-md-8 col-lg-5">
-            
-            <div class="mb-3">
-                <a href="{{ url_for('main.index') }}" class="text-decoration-none text-muted fw-medium custom-back-btn">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al inicio
-                </a>
-            </div>
+<div class="auth-layout">
 
-            <div class="card shadow-md border-0">
-                <div class="card-header bg-transparent text-center py-4 border-0">
-                    <img src="{{ url_for('static', filename='img/1.png') }}" alt="Logo SWL" height="70" class="mb-3 rounded">
-                    <h3 class="mb-0 fw-bold" style="color: var(--brand-primary);">Ingreso al Sistema</h3>
-                    <p class="text-muted small mb-0">SWL</p>
-                </div>
-            <div class="card-body px-4 pb-4">
-                <form method="POST" action="">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.document_id.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
-                        {{ form.document_id(class="form-control form-control-lg", placeholder="Ej: 1000123456") }}
-                    </div>
-                    <div class="mb-4">
-                        {{ form.password.label(class="form-label fw-bold", style="color: var(--text-secondary);") }}
-                        {{ form.password(class="form-control form-control-lg", placeholder="••••••••") }}
-                    </div>
-                    <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary btn-lg fw-bold py-2") }}
-                    </div>
-                </form>
-                <div class="text-center mt-4 pt-3 border-top">
-                    <p class="text-muted small mb-0">¿No tienes cuenta? 
-                        <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold" style="color: var(--brand-secondary);">Regístrate aquí</a>
-                    </p>
-                </div>
-            </div>
+  {# ── Left: Branding Panel ── #}
+  <aside class="auth-brand-panel d-none d-lg-flex">
+    <div class="position-relative z-1 text-center">
+      <img src="{{ url_for('static', filename='img/1.png') }}" alt="Logo SWL"
+           height="72" class="mb-4" style="border-radius: 14px; opacity: 0.95;">
+      <h2 style="font-family:'Inter',sans-serif; font-weight:800; color:#fff; letter-spacing:-0.03em; font-size:1.625rem; margin-bottom:0.75rem;">
+        {{ config['APP_NAME'] }}
+      </h2>
+      <p style="color:rgba(255,255,255,0.6); font-size:0.9375rem; max-width:300px; line-height:1.7;">
+        Gestión de préstamos, inventario y catálogo institucional.
+      </p>
+
+      <div class="mt-5 d-flex flex-column gap-3" style="max-width: 280px; margin: 2.5rem auto 0;">
+        <div class="d-flex align-items-center gap-3" style="color:rgba(255,255,255,0.75); font-size:0.875rem;">
+          <i class="bi bi-shield-lock-fill" style="color:#60A5FA; font-size:1.125rem; flex-shrink:0;"></i>
+          Acceso seguro por rol
         </div>
+        <div class="d-flex align-items-center gap-3" style="color:rgba(255,255,255,0.75); font-size:0.875rem;">
+          <i class="bi bi-graph-up-arrow" style="color:#34D399; font-size:1.125rem; flex-shrink:0;"></i>
+          Reportes y estadísticas en tiempo real
+        </div>
+        <div class="d-flex align-items-center gap-3" style="color:rgba(255,255,255,0.75); font-size:0.875rem;">
+          <i class="bi bi-box-seam-fill" style="color:#FBBF24; font-size:1.125rem; flex-shrink:0;"></i>
+          Inventario actualizado automáticamente
+        </div>
+      </div>
     </div>
+  </aside>
+
+  {# ── Right: Form Panel ── #}
+  <div class="auth-form-panel">
+    <div class="auth-form-card">
+
+      <!-- Back link + Logo mobile -->
+      <div class="d-flex align-items-center justify-content-between mb-3 d-lg-none">
+        <img src="{{ url_for('static', filename='img/1.png') }}" alt="Logo SWL"
+             height="36" style="border-radius:8px;">
+        <a href="{{ url_for('main.index') }}" class="back-link">
+          <i class="bi bi-arrow-left"></i>Inicio
+        </a>
+      </div>
+      <a href="{{ url_for('main.index') }}" class="back-link mb-4 d-none d-lg-inline-flex">
+        <i class="bi bi-arrow-left"></i>Volver al inicio
+      </a>
+
+      <h1 style="font-family:'Inter',sans-serif; font-size:1.5rem; font-weight:800;
+                 letter-spacing:-0.03em; color:var(--text-1); margin: 1rem 0 0.375rem;">
+        Bienvenido de vuelta
+      </h1>
+      <p style="font-size:0.875rem; color:var(--text-2); margin-bottom:1.75rem;">
+        Ingresa tus credenciales para acceder al sistema.
+      </p>
+
+      <form method="POST" action="" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-4">
+          {{ form.document_id.label(class="form-label") }}
+          {{ form.document_id(class="form-control form-control-lg",
+                              placeholder="Ej: 1000123456",
+                              id="document_id") }}
+          {% if form.document_id.errors %}
+            <div class="invalid-feedback d-block">
+              {% for e in form.document_id.errors %}{{ e }}{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="mb-5">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control form-control-lg",
+                           placeholder="••••••••",
+                           id="password") }}
+          {% if form.password.errors %}
+            <div class="invalid-feedback d-block">
+              {% for e in form.password.errors %}{{ e }}{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="d-grid">
+          {{ form.submit(class="btn btn-primary btn-lg fw-bold rounded-pill") }}
+        </div>
+      </form>
+
+      <div class="separator mt-4">o</div>
+
+      <p class="text-center" style="font-size:0.875rem; color:var(--text-2); margin:0;">
+        ¿No tienes cuenta?
+        <a href="{{ url_for('auth.register') }}" class="fw-semibold" style="color:var(--accent);">
+          Regístrate aquí
+        </a>
+      </p>
+
+    </div>
+  </div>
+
 </div>
 {% endblock %}

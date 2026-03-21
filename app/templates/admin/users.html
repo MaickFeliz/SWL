@@ -1,240 +1,319 @@
 {% extends "base.html" %}
+{% block title %}Gestión de Usuarios{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-0">Gestión de Usuarios</h2>
-        <p class="text-secondary">Edita roles y datos de los usuarios del sistema.</p>
-    </div>
-    <div class="text-end">
-        <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createUserModal">
-            <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
-        </button>
-        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
-            <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>Importar Masivo
-        </button>
-    </div>
+
+{# ── Page Header ── #}
+<div class="page-header">
+  <div>
+    <h2 class="page-header-title">Gestión de Usuarios</h2>
+    <p class="page-header-sub">Edita roles y datos de los usuarios del sistema.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+      <i class="bi bi-person-plus-fill"></i>Nuevo Usuario
+    </button>
+    <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
+      <i class="bi bi-file-earmark-spreadsheet-fill"></i>Importar Masivo
+    </button>
+  </div>
 </div>
 
-<div class="card shadow-md">
-    <div class="card-header">
-        <form method="GET" class="d-flex">
-            <input type="text" name="search" class="form-control me-2"
-                placeholder="Buscar por Nombre, Documento, Programa...">
-            <button type="submit" class="btn btn-primary flex-shrink-0"><i class="bi bi-search me-2"></i>Buscar</button>
-        </form>
+{# ── Search + Table card ── #}
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="d-flex gap-2">
+      <input type="text" name="search" class="form-control"
+             placeholder="Buscar por nombre, documento, programa..."
+             value="{{ request.args.get('search', '') }}"
+             aria-label="Buscar usuarios">
+      <button type="submit" class="btn btn-primary flex-shrink-0">
+        <i class="bi bi-search"></i>Buscar
+      </button>
+    </form>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive" style="border:none; border-radius:0; box-shadow:none;">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Documento</th>
+            <th>Rol</th>
+            <th>Programa</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users.items %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                {# Avatar with initials #}
+                <div class="flex-shrink-0 d-flex align-items-center justify-content-center fw-bold"
+                     style="width:38px; height:38px; border-radius:50%;
+                            background:var(--accent-light); color:var(--accent);
+                            font-family:'Inter',sans-serif; font-size:0.875rem;">
+                  {{ user.full_name[0]|upper }}{{ user.full_name.split(' ')[-1][0]|upper if user.full_name.split(' ')|length > 1 else '' }}
+                </div>
+                <div>
+                  <div class="fw-semibold" style="font-size:0.9rem;">{{ user.full_name }}</div>
+                  <small class="text-muted">{{ user.email }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="item-code">{{ user.document_id }}</span>
+            </td>
+            <td>
+              {% if user.role == 'admin' %}
+                <span class="badge badge-role-admin">Admin</span>
+              {% elif user.role == 'bibliotecario' %}
+                <span class="badge badge-role-biblio">Bibliotecario</span>
+              {% elif user.role == 'premium' %}
+                <span class="badge badge-role-premium">Premium</span>
+              {% else %}
+                <span class="badge badge-role-cliente">Cliente</span>
+              {% endif %}
+            </td>
+            <td style="font-size:0.875rem; color:var(--text-2);">
+              {{ user.program_name or '—' }}
+            </td>
+            <td class="text-center">
+              <div class="d-flex align-items-center justify-content-center gap-1">
+                <button class="btn btn-sm btn-outline-primary" title="Editar"
+                        data-bs-toggle="modal" data-bs-target="#editUser{{ user.id }}">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="Eliminar"
+                        data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          {# ── Edit User Modal ── #}
+          <div class="modal fade" id="editUser{{ user.id }}" tabindex="-1"
+               aria-labelledby="editUserLabel{{ user.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0" style="border-radius:var(--radius-xl); box-shadow:var(--shadow-xl);">
+                <div class="modal-header border-0 pb-0">
+                  <h5 class="modal-title fw-bold" id="editUserLabel{{ user.id }}">
+                    Editar — {{ user.full_name }}
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('admin.edit_user', id=user.id) }}" method="POST">
+                  {{ edit_forms[user.id].hidden_tag() }}
+                  <div class="modal-body pt-3">
+                    <div class="mb-3">
+                      {{ edit_forms[user.id].full_name.label(class="form-label") }}
+                      {{ edit_forms[user.id].full_name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                      {{ edit_forms[user.id].phone.label(class="form-label") }}
+                      {{ edit_forms[user.id].phone(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                      {{ edit_forms[user.id].role.label(class="form-label") }}
+                      {{ edit_forms[user.id].role(class="form-select",
+                          id="roleSelect%s" % user.id,
+                          onchange="toggleProgramField(%s)" % user.id) }}
+                    </div>
+                    <div class="mb-1" id="programGroup{{ user.id }}"
+                         style="display: {{ 'block' if user.role == 'cliente' else 'none' }};">
+                      {{ edit_forms[user.id].program_name.label(class="form-label") }}
+                      {{ edit_forms[user.id].program_name(class="form-control", placeholder="Opcional") }}
+                    </div>
+                  </div>
+                  <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {# ── Delete User Modal ── #}
+          <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1"
+               aria-labelledby="deleteLabel{{ user.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+              <div class="modal-content border-0" style="border-radius:var(--radius-xl); box-shadow:var(--shadow-xl);">
+                <div class="modal-body text-center p-4">
+                  <div class="mb-3"
+                       style="width:52px; height:52px; background:var(--danger-light);
+                              border-radius:50%; display:inline-flex; align-items:center;
+                              justify-content:center; color:var(--danger); font-size:1.5rem;">
+                    <i class="bi bi-trash-fill"></i>
+                  </div>
+                  <h5 class="fw-bold mb-1" id="deleteLabel{{ user.id }}">Eliminar usuario</h5>
+                  <p style="font-size:0.875rem; color:var(--text-2);">
+                    ¿Seguro que quieres eliminar a <strong>{{ user.full_name }}</strong>?
+                    Esta acción no se puede deshacer.
+                  </p>
+                  <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form action="{{ url_for('admin.delete_user', id=user.id) }}" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="bi bi-person-slash empty-state-icon"></i>
+                <h5>No se encontraron usuarios</h5>
+                <p>Prueba con otro término de búsqueda o crea un nuevo usuario.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Nombre Completo</th>
-                        <th>Documento</th>
-                        <th>Rol</th>
-                        <th>Programa</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users.items %}
-                    <tr>
-                        <td><strong>{{ user.full_name }}</strong><br><small class="text-muted">{{ user.email }}</small>
-                        </td>
-                        <td>{{ user.document_id }}</td>
-                        <td>
-                            <span class="badge 
-                                {% if user.role == 'cliente' %}bg-info text-dark
-                                {% elif user.role == 'premium' %}bg-warning text-dark
-                                {% else %}bg-dark{% endif %}">
-                                {{ user.role|capitalize }}
-                            </span>
-                        </td>
-                        <td>{{ user.program_name or '-' }}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                data-bs-target="#editUser{{ user.id }}"><i class="bi bi-pencil-square"></i></button>
-                            <button class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal"
-                                data-bs-target="#deleteUserModal{{ user.id }}" title="Eliminar Usuario">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
-                        </td>
-                    </tr>
+  </div>
 
-                    <!-- Edit User Modal -->
-                    <div class="modal fade" id="editUser{{ user.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Editar a {{ user.full_name }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <form action="{{ url_for('admin.edit_user', id=user.id) }}" method="POST">
-                                    {{ edit_forms[user.id].hidden_tag() }}
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            {{ edit_forms[user.id].full_name.label(class="form-label") }}
-                                            {{ edit_forms[user.id].full_name(class="form-control") }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ edit_forms[user.id].phone.label(class="form-label") }}
-                                            {{ edit_forms[user.id].phone(class="form-control") }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ edit_forms[user.id].role.label(class="form-label") }}
-                                            {{ edit_forms[user.id].role(class="form-select", id="roleSelect%s" % user.id, onchange="toggleProgramField(%s)" % user.id) }}
-                                        </div>
-                                        <div class="mb-3" id="programGroup{{ user.id }}"
-                                            style="display: {{ 'block' if user.role == 'cliente' else 'none' }};">
-                                            {{ edit_forms[user.id].program_name.label(class="form-label") }}
-                                            {{ edit_forms[user.id].program_name(class="form-control", placeholder="Opcional") }}
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Delete User Modal -->
-                    <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content border-danger">
-                                <div class="modal-header text-bg-danger">
-                                    <h5 class="modal-title text-white">Eliminar {{ user.full_name }}</h5>
-                                    <button type="button" class="btn-close btn-close-white"
-                                        data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body text-start border-0">
-                                    <p>¿Seguro que quieres eliminar a este usuario? Se perderá permanentemente su
-                                        registro en el sistema junto con su historial de préstamos.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Cancelar</button>
-                                    <form action="{{ url_for('admin.delete_user', id=user.id) }}" method="POST"
-                                        class="d-inline">
-                                        <button type="submit" class="btn btn-danger">Sí, Eliminar</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if not users %}
-        <div class="text-center py-5">
-            <i class="bi bi-person-slash fs-1 text-muted"></i>
-            <h4 class="mt-3">No se encontraron usuarios.</h4>
-            <p class="text-muted">Prueba con otro término de búsqueda o registra nuevos usuarios.</p>
-        </div>
+  {# Pagination #}
+  {% if users.pages and users.pages > 1 %}
+  <div class="card-body border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <small class="text-muted">
+      Página {{ users.page }} de {{ users.pages }} ({{ users.total }} usuarios)
+    </small>
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {% if not users.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="?search={{ request.args.get('search','') }}&page={{ users.prev_num if users.has_prev else 1 }}">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      {% for p in users.iter_pages() %}
+        {% if p %}
+          <li class="page-item {% if p == users.page %}active{% endif %}">
+            <a class="page-link" href="?search={{ request.args.get('search','') }}&page={{ p }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
         {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not users.has_next %}disabled{% endif %}">
+        <a class="page-link" href="?search={{ request.args.get('search','') }}&page={{ users.next_num if users.has_next else users.pages }}">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Create User Modal ── #}
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0" style="border-radius:var(--radius-xl); box-shadow:var(--shadow-xl);">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">Agregar Nuevo Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('admin.create_user') }}" method="POST">
+        {{ form.hidden_tag() }}
+        <div class="modal-body pt-1">
+          <div class="row g-3">
+            <div class="col-md-6">
+              {{ form.full_name.label(class="form-label") }}
+              {{ form.full_name(class="form-control", placeholder="Nombre completo") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.document_id.label(class="form-label") }}
+              {{ form.document_id(class="form-control", placeholder="Ej: 123456789") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control", type="email", placeholder="nombre@correo.com") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.phone.label(class="form-label") }}
+              {{ form.phone(class="form-control", placeholder="Número de contacto") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.role.label(class="form-label") }}
+              {{ form.role(class="form-select") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.program_name.label(class="form-label") }}
+              {{ form.program_name(class="form-control", placeholder="Opcional") }}
+            </div>
+            <div class="col-12">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(class="form-control", placeholder="Mínimo 8 caracteres") }}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          {{ form.submit(class="btn btn-primary") }}
+        </div>
+      </form>
     </div>
+  </div>
+</div>
+
+{# ── Import Users Modal ── #}
+<div class="modal fade" id="importUsersModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0" style="border-radius:var(--radius-xl); box-shadow:var(--shadow-xl);">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-file-earmark-spreadsheet me-2" style="color:var(--success);"></i>
+          Importación Masiva de Usuarios
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="{{ url_for('admin.bulk_import') }}" method="POST" enctype="multipart/form-data">
+        {{ import_form.hidden_tag() }}
+        <input type="hidden" name="import_type" value="users">
+        <div class="modal-body pt-0">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Sube un archivo <strong>Excel (.xlsx)</strong> o <strong>CSV</strong>.
+          </div>
+          <p class="text-muted" style="font-size:0.8125rem;">
+            Columnas requeridas:<br>
+            <code>document_id, full_name, email, phone, role, program_name, password</code>
+          </p>
+          <div class="mb-2">
+            <label class="form-label">Archivo de origen</label>
+            {{ import_form.file(class="form-control", accept=".csv, .xlsx") }}
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i>Importar Datos
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
-    function toggleProgramField(userId) {
-        var roleSelect = document.getElementById('roleSelect' + userId);
-        var programGroup = document.getElementById('programGroup' + userId);
-        if (roleSelect && programGroup) {
-            if (roleSelect.value === 'cliente') {
-                programGroup.style.display = 'block';
-            } else {
-                programGroup.style.display = 'none';
-                programGroup.querySelector('input').value = '';
-            }
-        }
+  function toggleProgramField(userId) {
+    var roleSelect = document.getElementById('roleSelect' + userId);
+    var programGroup = document.getElementById('programGroup' + userId);
+    if (roleSelect && programGroup) {
+      programGroup.style.display = roleSelect.value === 'cliente' ? 'block' : 'none';
+      if (roleSelect.value !== 'cliente') {
+        var input = programGroup.querySelector('input');
+        if (input) input.value = '';
+      }
     }
+  }
 </script>
 
-<!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header">
-                <h5 class="modal-title">Agregar Nuevo Usuario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('admin.create_user') }}" method="POST">
-                {{ form.hidden_tag() }}
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.full_name.label(class="form-label") }}
-                            {{ form.full_name(class="form-control", placeholder="Nombre completo") }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.document_id.label(class="form-label") }}
-                            {{ form.document_id(class="form-control", placeholder="Ej: 123456789") }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control", type="email", placeholder="nombre@correo.com") }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.phone.label(class="form-label") }}
-                            {{ form.phone(class="form-control", placeholder="Número de contacto") }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.role.label(class="form-label") }}
-                            {{ form.role(class="form-select") }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.program_name.label(class="form-label") }}
-                            {{ form.program_name(class="form-control", placeholder="Opcional") }}
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {{ form.password(class="form-control", placeholder="Mínimo 8 caracteres") }}
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    {{ form.submit(class="btn btn-primary") }}
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Import Users Modal -->
-<div class="modal fade" id="importUsersModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header text-bg-light border-bottom">
-                <h5 class="modal-title"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Importación
-                    Masiva de Usuarios</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('admin.bulk_import') }}" method="POST" enctype="multipart/form-data">
-                {{ import_form.hidden_tag() }}
-                <input type="hidden" name="import_type" value="users">
-                <div class="modal-body">
-                    <div class="alert alert-info border-0 rounded-3">
-                        <i class="bi bi-info-circle-fill me-2"></i>Sube un archivo <strong>Excel (.xlsx)</strong> o
-                        <strong>CSV</strong>.
-                    </div>
-                    <p class="text-muted small mb-3">Columnas
-                        requeridas:<br><code>document_id, full_name, email, phone, role, program_name, password</code>
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Archivo de Origen</label>
-                        {{ import_form.file(class="form-control form-control-lg", accept=".csv, .xlsx") }}
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Importar
-                        Datos</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}
