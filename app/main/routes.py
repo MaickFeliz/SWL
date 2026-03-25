@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app.services.inventory_service import CatalogService
 from app.main import bp
@@ -40,14 +40,23 @@ def fast_loan():
     # 2. FLUJO DE CONFIRMACIÓN DE PRÉSTAMO
     if loan_form.validate_on_submit() and loan_form.submit_loan.data:
         target_user_id = loan_form.user_id.data
-        if current_user.role not in ('admin', 'bibliotecario'):
-            try:
-                tid = int(target_user_id)
-            except (TypeError, ValueError):
-                tid = None
-            if tid is None or tid != current_user.id:
-                flash('Operación no autorizada.', 'danger')
-                return redirect(url_for('main.index'))
+        try:
+            target_user_id_int = int(target_user_id)
+        except (TypeError, ValueError):
+            target_user_id_int = None
+
+        if target_user_id_int is None:
+            flash('ID de usuario inválido.', 'danger')
+            return redirect(url_for('main.index'))
+
+        authorized, auth_msg = LoanService.authorize_fast_loan(
+            target_user_id=target_user_id_int,
+            current_user_id=current_user.id,
+            current_user_role=current_user.role,
+        )
+        if not authorized:
+            flash(auth_msg, 'danger')
+            return redirect(url_for('main.index'))
 
         item_type = loan_form.item_type.data
         environment = loan_form.environment.data
@@ -60,7 +69,7 @@ def fast_loan():
 
         try:
             LoanService.create_loan(
-                user_id=target_user_id,
+                user_id=target_user_id_int,
                 catalog_id=catalog_id,
                 quantity=quantity,
                 environment=environment,
@@ -69,6 +78,7 @@ def fast_loan():
         except ValueError as exc:
             flash(str(exc), 'warning')
         except Exception:
+            current_app.logger.error("Error procesando la solicitud", exc_info=True)
             flash('Error interno al procesar la solicitud.', 'danger')
 
         return redirect(url_for('main.index'))
@@ -186,6 +196,7 @@ def request_laptop():
         except ValueError as exc:
             flash(str(exc), 'warning')
         except Exception:
+            current_app.logger.error("Error procesando la solicitud", exc_info=True)
             flash('Error interno al registrar la solicitud.', 'danger')
 
         return redirect(url_for('main.premium_dashboard'))
@@ -228,6 +239,7 @@ def request_accessory():
         except ValueError as exc:
             flash(str(exc), 'warning')
         except Exception:
+            current_app.logger.error("Error procesando la solicitud", exc_info=True)
             flash('Error interno al procesar la solicitud.', 'danger')
 
         return redirect(url_for('main.premium_dashboard'))

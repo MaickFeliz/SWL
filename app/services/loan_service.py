@@ -17,6 +17,25 @@ class LoanService:
     """Orquesta las reglas de negocio de préstamos desacopladas de las rutas."""
 
     @staticmethod
+    def authorize_fast_loan(target_user_id: int, current_user_id: int, current_user_role: str) -> Tuple[bool, str]:
+        """Valida si el usuario puede realizar un préstamo rápido en nombre del target.
+
+        Args:
+            target_user_id:    ID del usuario destino del préstamo.
+            current_user_id:   ID del usuario autenticado que realiza la operación.
+            current_user_role: Rol del usuario autenticado.
+
+        Returns:
+            (True, "Ok") si la operación está autorizada.
+            (False, mensaje) si no lo está.
+        """
+        if current_user_role in ("admin", "bibliotecario"):
+            return True, "Ok"
+        if target_user_id != current_user_id:
+            return False, "Operación no autorizada."
+        return True, "Ok"
+
+    @staticmethod
     def can_request_laptop(user_id: int) -> Tuple[bool, str]:
         active_loans = Loan.query.join(ItemInstance).join(Catalog).filter(
             Loan.user_id == user_id,
@@ -185,7 +204,8 @@ class LoanService:
             return False, "Préstamo no válido o no está activo."
 
         if loan.is_overdue:
-            loan.final_penalty = loan.penalty_fee
+            fee_per_day = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+            loan.final_penalty = loan.penalty_fee(fee_per_day=fee_per_day)
 
         loan.status = LoanStatus.RETURNED
         loan.return_date = datetime.now(timezone.utc)
@@ -208,6 +228,7 @@ class LoanService:
             Loan.due_date < datetime.now(timezone.utc),
         ).all()
 
+        fee_per_day: float = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
         count = 0
         for loan in overdue_loans:
             loan.status = LoanStatus.OVERDUE
@@ -218,8 +239,8 @@ class LoanService:
                 else loan.due_date.replace(tzinfo=timezone.utc)
             )
             days_late = (datetime.now(timezone.utc) - due).days
-            penalty = loan.penalty_fee
-            
+            penalty = loan.penalty_fee(fee_per_day=fee_per_day)
+
             # Enviar correo asíncrono
             EmailService.send_overdue_warning(
                 user=loan.requester,

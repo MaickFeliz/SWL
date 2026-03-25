@@ -78,7 +78,8 @@ def register_commands(app: Flask) -> None:
                         )
                     ).days,
                 )
-                penalty: float = loan.penalty_fee
+                fee_per_day: float = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+                penalty: float = loan.penalty_fee(fee_per_day=fee_per_day)
 
                 EmailService.send_overdue_warning(
                     user=loan.requester,

@@ -64,6 +64,7 @@ class Catalog(db.Model):
     title_or_name: str = db.Column(db.String(150), nullable=False)
     category: str = db.Column(db.String(50), nullable=False)
     author_or_brand: Optional[str] = db.Column(db.String(100), nullable=True)
+    is_penalty_applicable: bool = db.Column(db.Boolean, default=False)
 
     instances = db.relationship(
         "ItemInstance",
@@ -172,10 +173,17 @@ class Loan(db.Model):
             return now > due
         return False
 
-    @property
-    def penalty_fee(self) -> float:
-        """Calcula la multa basada en días de mora y configuración global."""
-        if not self.item_instance or self.item_instance.catalog_item.category != "libro":
+    def penalty_fee(self, fee_per_day: Optional[float] = None) -> float:
+        """Calcula la multa basada en días de mora y configuración global.
+
+        Args:
+            fee_per_day: Tarifa por día inyectada externamente. Si no se
+                         proporciona, se intenta leer de la configuración de
+                         Flask (solo válido dentro de un contexto de aplicación).
+        """
+        if not self.item_instance:
+            return 0.0
+        if not self.item_instance.catalog_item.is_penalty_applicable:
             return 0.0
 
         if self.is_overdue and self.due_date:
@@ -187,8 +195,9 @@ class Loan(db.Model):
             )
             days_late = (now - due).days
             if days_late > 0:
-                fee = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
-                return float(days_late * fee)
+                if fee_per_day is None:
+                    fee_per_day = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+                return float(days_late * fee_per_day)
         return 0.0
 
 

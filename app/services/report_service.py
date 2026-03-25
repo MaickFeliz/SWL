@@ -37,7 +37,9 @@ class ReportService:
         )
 
         rows = []
+        fee_per_day = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
         for loan, user in overdue_loans:
+            fee = loan.penalty_fee(fee_per_day=fee_per_day)
             rows.append(
                 {
                     "Usuario": user.full_name,
@@ -47,13 +49,13 @@ class ReportService:
                     "Días de mora": max(
                         0,
                         (
-                            loan.penalty_fee
-                            / current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+                            fee
+                            / fee_per_day
                         )
-                        if loan.penalty_fee
+                        if fee
                         else 0,
                     ),
-                    "Multa estimada": float(loan.penalty_fee),
+                    "Multa estimada": float(fee),
                 }
             )
 

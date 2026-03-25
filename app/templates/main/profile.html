@@ -185,7 +185,7 @@
                 </span>
               {% elif loan.is_overdue and sv != 'devuelto' %}
                 <span class="fw-semibold" style="color:var(--danger);">
-                  ${{ "{:,.0f}".format(loan.penalty_fee) }}
+                  ${{ "{:,.0f}".format(loan.penalty_fee()) }}
                 </span>
               {% elif sv == 'devuelto' %}
                 <span style="color:var(--success);">Al día</span>

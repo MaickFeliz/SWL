@@ -204,7 +204,9 @@ def export_inventory_report():
 def return_loan(loan_id):
     loan = Loan.query.get_or_404(loan_id)
     if loan.status != LoanStatus.RETURNED:
-        loan.final_penalty = loan.penalty_fee
+        from flask import current_app
+        fee_per_day = current_app.config.get("PENALTY_FEE_PER_DAY", 5000.0)
+        loan.final_penalty = loan.penalty_fee(fee_per_day=fee_per_day)
         loan.status = LoanStatus.RETURNED
         loan.return_date = datetime.now(timezone.utc)
         success, msg = InventoryService.release_instance(loan.instance_id)
