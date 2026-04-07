@@ -156,7 +156,7 @@
   {% endif %}
 
   {# ── Main content ── #}
-  <main class="{% if 'auth' not in request.endpoint %}container mt-4 mb-5{% endif %} flex-grow-1">
+  <main class="{% if 'auth' not in request.endpoint and request.endpoint != 'main.index' %}container mt-4 mb-5{% endif %} flex-grow-1">
 
     {# Flash messages — toasts #}
     {% with messages = get_flashed_messages(with_categories=true) %}
