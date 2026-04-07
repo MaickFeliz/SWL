@@ -3,32 +3,37 @@
 
 {% block content %}
 
-{# ── Hero Section ─────────────────────────────────────────── #}
+{# ── Hero Section (Mejorado con efecto SaaS) ──────────────── #}
 <div class="hero-section">
-  <div class="position-relative z-1 text-center" style="max-width: 680px; width: 100%;">
+  <div class="position-relative z-1 text-center px-3" style="max-width: 800px; width: 100%;">
 
-    <span class="hero-badge">
-      <i class="bi bi-shield-check"></i>
-      Sistema Institucional de Gestión
+    <span class="hero-badge animate-fade-in shadow-sm">
+      <i class="bi bi-shield-fill-check text-success"></i>
+      Sistema Institucional de Gestión SWL
     </span>
 
-    <h1 class="hero-title">
-      Gestión de Préstamos<br>e Inventario <span>Inteligente</span>
+    <h1 class="hero-title mt-3">
+      Gestión de Préstamos e <br> Inventario <span class="position-relative">
+        Inteligente
+        <svg class="position-absolute bottom-0 start-0 w-100" style="height: 8px; transform: translateY(5px);" viewBox="0 0 100 20" preserveAspectRatio="none">
+          <path d="M0 10 Q 50 20 100 10" fill="transparent" stroke="var(--success)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </span>
     </h1>
 
-    <p class="hero-sub">
+    <p class="hero-sub fs-5 mt-4 mb-5">
       Controla el ciclo completo de préstamos de equipos, libros y accesorios.
-      Registro de visitas, catálogo y reportes analíticos en un solo lugar.
+      Automatiza registros, supervisa el catálogo y genera reportes analíticos en un solo dashboard.
     </p>
 
     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-      <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg rounded-pill px-5">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg" style="transition: transform 0.2s; hover:transform: translateY(-2px);">
         <i class="bi bi-box-arrow-in-right"></i>
-        Iniciar Sesión
+        Acceder al Sistema
       </a>
       <a href="{{ url_for('main.fast_loan') }}" class="btn btn-lg rounded-pill px-5"
-         style="background: rgba(255,255,255,0.12); color: #fff; border: 1.5px solid rgba(255,255,255,0.25); backdrop-filter: blur(8px);">
-        <i class="bi bi-lightning-charge"></i>
+         style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+        <i class="bi bi-lightning-charge-fill text-warning"></i>
         Préstamo Rápido
       </a>
     </div>
@@ -36,88 +41,121 @@
   </div>
 </div>
 
-{# ── Features Section ─────────────────────────────────────── #}
-<section class="feature-section">
+{# ── Floating Stats Section (Para dar autoridad) ──────────── #}
+<div class="container position-relative z-2" style="margin-top: -3rem; margin-bottom: 3rem;">
+  <div class="row justify-content-center g-3">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100">
+        <h3 class="fw-bold mb-0" style="color: var(--accent);">24/7</h3>
+        <span class="text-muted" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Disponibilidad</span>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100">
+        <h3 class="fw-bold mb-0" style="color: var(--success);">100%</h3>
+        <span class="text-muted" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Trazabilidad</span>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100">
+        <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-infinity"></i></h3>
+        <span class="text-muted" style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Recursos Gestionados</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Features Section (Diseño de grilla moderno) ──────────── #}
+<section class="feature-section py-5 bg-white">
   <div class="container">
 
     <div class="text-center mb-5">
+      <span class="badge bg-primary-soft mb-2 px-3 py-2 rounded-pill">Módulos del Sistema</span>
       <h2 class="fw-bold" style="font-family: 'Inter', sans-serif; letter-spacing: -0.03em;">
-        Funcionalidades Principales
+        Todo el control en tus manos
       </h2>
-      <p class="text-muted" style="max-width: 480px; margin: 0.75rem auto 0;">
-        Todo lo que necesitas para administrar los recursos del centro de forma eficiente.
+      <p class="text-muted" style="max-width: 500px; margin: 0 auto;">
+        Herramientas diseñadas para minimizar el tiempo de administración y maximizar la eficiencia del centro.
       </p>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
 
-      <!-- Registro de Visitas -->
       <div class="col-12 col-md-4">
-        <div class="card h-100 p-2">
+        <div class="card h-100 border-0 shadow-sm p-3 rounded-4 action-card">
           <div class="card-body">
-            <div class="feature-icon mb-3"
-                 style="background: rgba(16,185,129,0.12); color: var(--success);">
-              <i class="bi bi-person-check-fill"></i>
+            <div class="feature-icon mb-4"
+                 style="background: var(--success-light); color: var(--success);">
+              <i class="bi bi-person-bounding-box"></i>
             </div>
-            <h5 class="card-title">Registro de Visitas</h5>
-            <p class="card-text">
-              Control automatizado de clientes y staff que ingresan al centro.
-              Registro rápido con número de documento.
+            <h5 class="card-title fw-bold">Registro de Visitas</h5>
+            <p class="card-text text-muted">
+              Control automatizado de staff y usuarios. Registro ágil mediante número de documento, generando reportes de afluencia en tiempo real.
             </p>
           </div>
-          <div class="card-body pt-0">
-            <a href="{{ url_for('main.register_visit') }}" class="btn btn-success btn-sm rounded-pill px-3">
-              <i class="bi bi-arrow-right-short"></i>Registrar Visita
+          <div class="card-footer bg-transparent border-0 pt-0">
+            <a href="{{ url_for('main.visit') }}" class="btn btn-outline-success w-100 rounded-pill">
+              <i class="bi bi-qr-code-scan me-2"></i>Registrar Entrada
             </a>
           </div>
         </div>
       </div>
 
-      <!-- Préstamos de Equipos -->
       <div class="col-12 col-md-4">
-        <div class="card h-100 p-2">
+        <div class="card h-100 border-0 shadow-sm p-3 rounded-4 action-card position-relative overflow-hidden">
+          <div class="position-absolute top-0 end-0 p-3">
+            <span class="badge bg-warning text-dark rounded-pill shadow-sm"><i class="bi bi-star-fill me-1"></i>Más usado</span>
+          </div>
           <div class="card-body">
-            <div class="feature-icon mb-3"
+            <div class="feature-icon mb-4"
                  style="background: var(--accent-light); color: var(--accent);">
               <i class="bi bi-laptop"></i>
             </div>
-            <h5 class="card-title">Préstamos de Equipos</h5>
-            <p class="card-text">
-              Ciclo completo de préstamo de portátiles: solicitud, aprobación,
-              entrega y devolución con trazabilidad total.
+            <h5 class="card-title fw-bold">Gestión de Préstamos</h5>
+            <p class="card-text text-muted">
+              Módulo integral para portátiles, accesorios y libros. Flujo completo: solicitud, aprobación de staff, entrega y devoluciones.
             </p>
           </div>
-          <div class="card-body pt-0">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-              <i class="bi bi-arrow-right-short"></i>Solicitar Equipo
+          <div class="card-footer bg-transparent border-0 pt-0">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 rounded-pill">
+              <i class="bi bi-plus-circle me-2"></i>Nueva Solicitud
             </a>
           </div>
         </div>
       </div>
 
-      <!-- Gestión de Inventario -->
       <div class="col-12 col-md-4">
-        <div class="card h-100 p-2">
+        <div class="card h-100 border-0 shadow-sm p-3 rounded-4 action-card">
           <div class="card-body">
-            <div class="feature-icon mb-3"
+            <div class="feature-icon mb-4"
                  style="background: rgba(139,92,246,0.12); color: #7C3AED;">
-              <i class="bi bi-box-seam"></i>
+              <i class="bi bi-boxes"></i>
             </div>
-            <h5 class="card-title">Gestión de Inventario</h5>
-            <p class="card-text">
-              Control de stock de libros, accesorios y otros elementos.
-              El inventario se actualiza automáticamente con cada operación.
+            <h5 class="card-title fw-bold">Control de Inventario</h5>
+            <p class="card-text text-muted">
+              Catálogo centralizado. El stock se actualiza dinámicamente con cada operación, evitando conflictos y pérdidas de material.
             </p>
           </div>
-          <div class="card-body pt-0">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm rounded-pill px-3">
-              <i class="bi bi-arrow-right-short"></i>Ver Inventario
+          <div class="card-footer bg-transparent border-0 pt-0">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary w-100 rounded-pill" style="color: #7C3AED; border-color: rgba(139,92,246,0.3);">
+              <i class="bi bi-search me-2"></i>Explorar Catálogo
             </a>
           </div>
         </div>
       </div>
 
     </div>
+  </div>
+</section>
+
+{# ── Call to Action final ─────────────────────────────────── #}
+<section class="py-5" style="background-color: var(--surface-2);">
+  <div class="container text-center py-4">
+    <h3 class="fw-bold mb-3">¿Listo para optimizar la gestión?</h3>
+    <p class="text-muted mb-4">Ingresa con tus credenciales institucionales para acceder al panel de control.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-dark btn-lg rounded-pill px-5 shadow-sm">
+      <i class="bi bi-lock-fill me-2"></i>Iniciar Sesión Segura
+    </a>
   </div>
 </section>
 
