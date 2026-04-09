@@ -1921,3 +1921,11 @@ Traceback (most recent call last):
   File "C:\SWL\venv\Lib\site-packages\werkzeug\routing\map.py", line 901, in build
     raise BuildError(endpoint, values, method, self)
 werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.manage_users'. Did you mean 'admin.create_instance' instead?
+2026-04-09 14:19:23,561 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:19:26,663 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:32:01,572 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:32:04,087 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:32:06,545 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:34:18,880 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:39:42,387 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-09 14:39:43,490 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
