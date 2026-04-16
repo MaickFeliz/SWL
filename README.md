@@ -1,103 +1,73 @@
-# Sistema de Gestión Bibliotecaria
-Solución integral de código abierto para la administración de inventarios, préstamos de equipos y control de acceso en centros educativos y empresariales.
+# SWL — System Warehouse Library 📖🚀
+> **Gestión de activos de alto tráfico, sin fricción y con arquitectura modular.**
 
-## Descripción General
-Esta plataforma automatiza el flujo de trabajo de bibliotecas y centros de recursos modernos. Diseñada originalmente para gestionar el alto tráfico de usuarios, el sistema permite un control riguroso sobre activos físicos como equipos de cómputo, material bibliográfico y accesorios técnicos, adaptándose a cualquier institución que requiera una gestión de recursos eficiente.
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.x-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-## Características Principales
-### Gestión Multitier de Usuarios
-Usuario Estándar: Registro simplificado por perfil (estudiante, empleado, etc.) con límites de solicitud configurables.
+**SWL** no es solo un sistema de biblioteca; es un motor de gestión de inventario diseñado para la escala. Desde material bibliográfico hasta equipos técnicos de alto costo, el sistema garantiza trazabilidad total mediante un backend robusto en **Flask** y una persistencia de datos sólida en **PostgreSQL**.
 
-Usuario Premium/Instructor: Acceso a inventario especializado (equipos audiovisuales, herramientas técnicas) y gestión de préstamos grupales.
+---
 
-Administrador (SuperUser): Panel de control centralizado para la gestión de inventarios, auditoría de devoluciones y actualización de bases de datos.
+## 🔥 Por qué SWL es diferente
+* **Arquitectura Desacoplada:** Olvídate del código espagueti. Usamos *Blueprints* para separar la autenticación, la lógica administrativa y la experiencia del usuario final.
+* **Kiosco "Fast Loan":** Diseñado para la eficiencia. Préstamos en segundos sin necesidad de login tedioso, ideal para centros de alto tráfico.
+* **Tier-Based Access:** Sistema de permisos granular (Standard, Premium, Admin) que controla desde quién puede pedir un libro hasta quién puede auditar un laptop de alta gama.
+* **DB Migrations Ready:** Implementación profesional con `Flask-Migrate` para asegurar que tu esquema evolucione sin romper los datos existentes.
 
-### Módulos de Operación
-Motor de Préstamos Inteligente: Validación en tiempo real de stock y prevención de duplicados por usuario.
+---
 
-Inventario Dinámico: Categorización flexible de ítems (General vs. Especializado) con trazabilidad por seriales.
+## 🛠️ Stack Tecnológico
+* **Backend:** Python 3.10+ & Flask.
+* **Database:** PostgreSQL (Optimizado para relaciones complejas).
+* **Frontend:** Jinja2 & CSS3 (Interfaz limpia y funcional).
+* **Seguridad:** Werkzeug para hashing de credenciales y Flask-Login para sesiones seguras.
 
-Kiosco "Fast Loan": Interfaz de autoservicio optimizada para agilizar procesos de alta demanda mediante búsqueda por documento de identidad, sin fricción de inicio de sesión.
+---
 
-Registro de Actividad: Módulo de control de visitas y estadísticas de uso de espacios físicos.
+## 🚀 Quick Start (No-BS Setup)
 
-### Instalación y Despliegue
-
-#### Prerrequisitos
-
-- Python 3.10 o superior
-- **Servidor PostgreSQL en ejecución** (local o remoto). Crea una base de datos vacía antes de continuar:
-  ```sql
-  CREATE DATABASE swl_db;
-  ```
-
-#### 1. Configuración del Entorno
-
+### 1. Entorno y Dependencias
 ```bash
-# Clonar y acceder
-git clone https://github.com/tu-usuario/Sistema-Gestion-Bibliotecaria.git
-cd Sistema-Gestion-Bibliotecaria
-
-# Crear y activar entorno virtual
+git clone [https://github.com/MaickFeliz/swl.git](https://github.com/MaickFeliz/swl.git)
+cd swl
 python -m venv venv
-source venv/bin/activate      # Linux / macOS
-.\venv\Scripts\activate       # Windows
-
-# Instalar dependencias
-python -m pip install --upgrade pip
+# Activa el entorno (Windows: .\venv\Scripts\activate | Linux: source venv/bin/activate)
 pip install -r requirements.txt
 ```
 
-#### 2. Configurar Variables de Entorno
-
-Crea un archivo `.env` en la raíz del proyecto (nunca lo versiones):
-
+### 2. Base de Datos (PostgreSQL)
+Crea tu base de datos y configura el `.env`:
+```sql
+CREATE DATABASE swl_db;
+```
+Archivo `.env` (No lo subas al repo, usa `.env.example` como guía):
 ```env
-FLASK_APP=run.py
-FLASK_ENV=development
-SECRET_KEY=cambia_este_valor_por_uno_seguro
-
-# Formato: postgresql://usuario:password@host:puerto/nombre_base_de_datos
-DATABASE_URL=postgresql://usuario:password@localhost:5432/swl_db
+DATABASE_URL=postgresql://tu_usuario:tu_password@localhost:5432/swl_db
+SECRET_KEY=tu_token_super_secreto
 ```
 
-#### 3. Inicializar el Esquema con Flask-Migrate
-
+### 3. Migración y Ejecución
 ```bash
-# Solo la primera vez — crea la carpeta migrations/ si no existe
-flask db init
-
-# Genera el script de migración a partir de los modelos
-flask db migrate -m "Migración inicial"
-
-# Aplica la migración a la base de datos PostgreSQL
 flask db upgrade
-```
-
-> **Actualizaciones futuras**: ante cualquier cambio en los modelos, ejecuta únicamente `flask db migrate -m "descripción"` y `flask db upgrade`.
-
-#### 4. Ejecutar en Desarrollo
-
-```bash
-flask run
-# o directamente:
 python run.py
 ```
 
-- Local: http://localhost:5000
-- Red local: disponible en `0.0.0.0` para acceso desde otros dispositivos en la misma red.
+---
 
+## 📁 Estructura del Proyecto
+```text
+├── app/
+│   ├── admin/      # Control total, reportes y auditoría.
+│   ├── auth/       # Seguridad y gestión de sesiones.
+│   ├── main/       # El core del usuario y modo Kiosco.
+│   ├── services/   # Lógica de negocio (Emails, Préstamos, Inventario).
+│   └── models.py   # Esquema de datos centralizado.
+├── migrations/     # Historial de versiones de la DB.
+└── run.py          # Punto de entrada de la aplicación.
+```
 
-### 📁 Arquitectura del Proyecto
-El software sigue un patrón de diseño modular para facilitar el escalamiento:
+---
 
-app/admin/: Lógica de gestión, reportes y aprobaciones.
-
-app/auth/: Sistema de autenticación y seguridad.
-
-app/main/: Dashboards de usuario y lógica del modo Kiosco.
-
-instance/: Persistencia de datos local.
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MaickFeliz/SWL)
-[![Ask Mintlify](https://mintlify.com)](https://maickfeliz-swl.mintlify.app/introduction)
+## 👨‍💻 Autor
+Desarrollado con enfoque en la eficiencia por **Maick Arevalo (@MaickFeliz)**.
