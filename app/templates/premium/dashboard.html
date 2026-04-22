@@ -1,247 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Mi Inicio{% endblock %}
-
 {% block content %}
+<header class="mb-10">
+    <span class="text-indigo-600 font-semibold text-sm tracking-wider uppercase">Panel de Control</span>
+    <h1 class="text-4xl font-extrabold text-slate-900 mt-2">Hola, {{ current_user.full_name }} 👋</h1>
+</header>
 
-{# ── Hero / Welcome Banner ── #}
-<section class="mb-4">
-  <div class="card p-0" style="background:linear-gradient(135deg,var(--primary) 0%,#1e3a5f 100%); border:none; overflow:hidden;">
-    <div class="card-body p-4 p-md-5">
-      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-        <div>
-          <p style="font-size:0.8125rem; font-weight:600; color:rgba(255,255,255,0.55);
-                    text-transform:uppercase; letter-spacing:0.07em; margin-bottom:0.375rem;">
-            Panel de Usuario
-          </p>
-          <h1 style="font-family:'Inter',sans-serif; font-size:1.625rem; font-weight:800;
-                     color:#fff; letter-spacing:-0.03em; margin-bottom:0.5rem;">
-            Hola, {{ current_user.full_name }}
-          </h1>
-          <p style="color:rgba(255,255,255,0.6); font-size:0.9375rem; margin:0; max-width:440px;">
-            Gestiona tus préstamos, revisa tu historial y solicita nuevos recursos.
-          </p>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge rounded-pill px-3 py-2"
-                style="background:rgba(16,185,129,0.2); color:#6EE7B7;
-                       border:1px solid rgba(16,185,129,0.3); font-size:0.8125rem; font-weight:600;">
-            <i class="bi bi-check-circle me-1"></i>
-            {{ active_loans|length }} Activo{{ 's' if active_loans|length != 1 }}
-          </span>
-          <span class="badge rounded-pill px-3 py-2"
-                style="background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7);
-                       border:1px solid rgba(255,255,255,0.15); font-size:0.8125rem; font-weight:600;">
-            <i class="bi bi-clock-history me-1"></i>
-            {{ past_loans|length }} en Historial
-          </span>
-        </div>
-      </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+        <p class="text-slate-500 text-sm">Préstamos Activos</p>
+        <p class="text-3xl font-bold mt-1 text-indigo-600">{{ active_loans|length }}</p>
     </div>
-  </div>
-</section>
-
-{# ── Quick Actions ── #}
-<section class="mb-4">
-  <h2 class="section-title">
-    <i class="bi bi-lightning-charge-fill" style="color:var(--warning);"></i>
-    Acciones Rápidas
-  </h2>
-  <div class="row row-cols-1 row-cols-md-3 g-3">
-
-    <!-- Portátil -->
-    <div class="col">
-      <div class="card action-card h-100">
-        <div class="card-body text-center py-4">
-          <div class="action-icon mx-auto"
-               style="background:var(--accent-light); color:var(--accent);">
-            <i class="bi bi-laptop"></i>
-          </div>
-          <h5 class="card-title">Pedir Portátil</h5>
-          <p class="card-text mb-3">
-            Solicita un equipo de cómputo para tus actividades.
-          </p>
-          <a href="{{ url_for('main.request_laptop') }}"
-             class="btn btn-primary btn-sm rounded-pill px-4">
-            <i class="bi bi-arrow-right-short"></i>Solicitar
-          </a>
-        </div>
-      </div>
     </div>
 
-    <!-- Libro -->
-    <div class="col">
-      <div class="card action-card h-100">
-        <div class="card-body text-center py-4">
-          <div class="action-icon mx-auto"
-               style="background:var(--info-light); color:var(--info);">
-            <i class="bi bi-book"></i>
-          </div>
-          <h5 class="card-title">Pedir Libro</h5>
-          <p class="card-text mb-3">
-            Consulta y solicita libros disponibles en el catálogo.
-          </p>
-          <a href="{{ url_for('main.request_book') }}"
-             class="btn btn-sm rounded-pill px-4"
-             style="background:var(--info); color:#fff;">
-            <i class="bi bi-arrow-right-short"></i>Ver libros
-          </a>
-        </div>
-      </div>
-    </div>
+<div class="flex gap-4 border-b border-slate-200 mb-6">
+    <button class="pb-4 border-b-2 border-indigo-600 font-medium text-sm text-indigo-600">Préstamos Activos</button>
+    <button hx-get="/historial" hx-target="#loan-section" class="pb-4 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700">Historial</button>
+</div>
 
-    <!-- Accesorio -->
-    <div class="col">
-      <div class="card action-card h-100">
-        <div class="card-body text-center py-4">
-          <div class="action-icon mx-auto"
-               style="background:var(--warning-light); color:var(--warning);">
-            <i class="bi bi-headset"></i>
-          </div>
-          <h5 class="card-title">Pedir Accesorio</h5>
-          <p class="card-text mb-3">
-            Video beams, audífonos y otros accesorios disponibles.
-          </p>
-          <a href="{{ url_for('main.request_accessory') }}"
-             class="btn btn-warning btn-sm rounded-pill px-4">
-            <i class="bi bi-arrow-right-short"></i>Explorar
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-{# ── Active Loans ── #}
-<section class="mb-4">
-  <h2 class="section-title">
-    <i class="bi bi-bag-check-fill" style="color:var(--success);"></i>
-    Mis Préstamos Activos
-  </h2>
-
-  {% if active_loans %}
-  <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+<section id="loan-section" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
     {% for loan in active_loans %}
-    <div class="col">
-      <div class="card h-100">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <h5 class="card-title mb-0" style="font-size:0.9375rem;">
-              {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}
-            </h5>
-            {% set sv = loan.status.value %}
-            {% if sv == 'pendiente' %}
-              <span class="badge badge-status-pending ms-2 flex-shrink-0">Pendiente</span>
-            {% elif sv == 'activo' %}
-              <span class="badge badge-status-active ms-2 flex-shrink-0">Activo</span>
-            {% elif sv == 'atrasado' %}
-              <span class="badge badge-status-overdue ms-2 flex-shrink-0">Atrasado</span>
-            {% endif %}
-          </div>
-
-          <div class="d-flex flex-column gap-1 mt-auto">
-            <div style="font-size:0.8125rem; color:var(--text-2);">
-              <i class="bi bi-hash me-1 text-muted"></i>
-              <span class="item-code">
-                {{ loan.item_instance.unique_code if loan.item_instance else 'Sin asignar' }}
-              </span>
+    <div class="p-5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 transition-all group">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="font-bold text-slate-800">{{ loan.item_instance.catalog_item.title_or_name }}</h3>
+                <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">{{ loan.item_instance.unique_code }}</span>
             </div>
-            <div style="font-size:0.8125rem; color:var(--text-2);">
-              <i class="bi bi-calendar-event me-1 text-muted"></i>
-              Solicitud: {{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '—' }}
-            </div>
-            {% if loan.due_date_co %}
-            <div style="font-size:0.8125rem; color:{% if sv == 'atrasado' %}var(--danger){% else %}var(--text-2){% endif %};">
-              <i class="bi bi-hourglass-split me-1"></i>
-              Vence: {{ loan.due_date_co.strftime('%d/%m/%Y %H:%M') }}
-            </div>
-            {% endif %}
-          </div>
+            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700">
+                {{ loan.status.value }}
+            </span>
         </div>
-      </div>
+        <div class="flex justify-between items-end text-sm">
+            <div class="text-slate-500">Vence: <span class="text-slate-900 font-medium">{{ loan.due_date_co.strftime('%d %b') }}</span></div>
+            <button class="text-indigo-600 font-bold hover:underline">Ver detalles →</button>
+        </div>
     </div>
     {% endfor %}
-  </div>
-
-  {% else %}
-  <div class="card">
-    <div class="empty-state">
-      <i class="bi bi-inbox empty-state-icon"></i>
-      <h5>Sin préstamos activos</h5>
-      <p>Usa las acciones rápidas de arriba para hacer una nueva solicitud.</p>
-    </div>
-  </div>
-  {% endif %}
 </section>
-
-{# ── Loan History (collapsible) ── #}
-<section class="mb-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="section-title mb-0">
-      <i class="bi bi-clock-history"></i>
-      Historial de Préstamos
-    </h2>
-    <button class="collapse-toggle btn btn-link p-0 text-decoration-none"
-            type="button" data-bs-toggle="collapse"
-            data-bs-target="#loanHistory" aria-expanded="false">
-      <i class="bi bi-chevron-down"></i>
-      <span>Ver / ocultar</span>
-    </button>
-  </div>
-
-  <div class="collapse" id="loanHistory">
-    {% if past_loans %}
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead>
-          <tr>
-            <th>Ítem</th>
-            <th>Estado</th>
-            <th>Código</th>
-            <th>Solicitado</th>
-            <th>Cierre</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for loan in past_loans %}
-          {% set sv = loan.status.value %}
-          <tr>
-            <td class="fw-semibold" style="font-size:0.875rem;">
-              {{ loan.item_instance.catalog_item.title_or_name if loan.item_instance else 'Desconocido' }}
-            </td>
-            <td>
-              {% if sv == 'devuelto' %}
-                <span class="badge badge-status-returned">Devuelto</span>
-              {% elif sv == 'rechazado' %}
-                <span class="badge badge-status-rejected">Rechazado</span>
-              {% else %}
-                <span class="badge badge-status-returned">{{ sv|capitalize }}</span>
-              {% endif %}
-            </td>
-            <td>
-              <span class="item-code">
-                {{ loan.item_instance.unique_code if loan.item_instance else 'N/A' }}
-              </span>
-            </td>
-            <td class="text-muted" style="font-size:0.8125rem;">
-              {{ loan.request_date_co.strftime('%d/%m/%Y %H:%M') if loan.request_date_co else '—' }}
-            </td>
-            <td class="text-muted" style="font-size:0.8125rem;">
-              {{ loan.return_date.strftime('%d/%m/%Y %H:%M') if loan.return_date else '—' }}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="card">
-      <div class="card-body text-muted" style="font-size:0.875rem;">
-        Aún no tienes préstamos devueltos o rechazados en tu historial.
-      </div>
-    </div>
-    {% endif %}
-  </div>
-</section>
-
 {% endblock %}

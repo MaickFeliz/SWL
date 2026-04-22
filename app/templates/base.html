@@ -1,226 +1,43 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html lang="es" class="h-full bg-slate-50">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SWL — Sistema de gestión de préstamos, inventario y catálogo institucional.">
-  <title>{% block title %}SWL{% endblock %} · {{ config['APP_NAME'] }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SWL{% endblock %}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-  <!-- Design System -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-  {% block extra_head %}{% endblock %}
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { @apply bg-white/80 backdrop-blur-md border border-slate-200/50; }
+    </style>
 </head>
-
-<body class="d-flex flex-column min-vh-100">
-
-  {# ── Navbar (hidden on auth pages) ── #}
-  {% if 'auth' not in request.endpoint %}
-  <nav class="navbar navbar-expand-lg custom-navbar sticky-top" aria-label="Navegación principal">
-    <div class="container">
-
-      <!-- Brand -->
-      <a class="navbar-brand" href="{{ url_for('main.index') }}">
-        <img src="{{ url_for('static', filename='img/1.png') }}" alt="Logo SWL" height="36">
-        <span class="d-none d-sm-inline">{{ config['APP_NAME'] }}</span>
-      </a>
-
-      <!-- Mobile toggler -->
-      <button class="navbar-toggler ms-auto" type="button"
-              data-bs-toggle="collapse" data-bs-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <!-- Nav links -->
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav align-items-lg-center gap-1 w-100 justify-content-lg-end py-2 py-lg-0">
-
-          {% if current_user.is_authenticated %}
-
-            {# Greeting #}
-            <li class="nav-item me-lg-2">
-              <span class="navbar-user-greeting d-flex align-items-center gap-1 px-2 py-2">
-                <i class="bi bi-person-circle"></i>
-                {{ current_user.full_name }}
-              </span>
-            </li>
-
-            {# Profile link #}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.profile') }}">
-                <i class="bi bi-person-badge me-1"></i>Mi Perfil
-              </a>
-            </li>
-
-            {# Role-specific navigation #}
-            {% if current_user.role == 'admin' %}
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin.manage_users' %}active{% endif %}"
-                   href="{{ url_for('admin.manage_users') }}">
-                  <i class="bi bi-people me-1"></i>Usuarios
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin.catalog_manage' %}active{% endif %}"
-                   href="{{ url_for('admin.catalog_manage') }}">
-                  <i class="bi bi-collection me-1"></i>Catálogo
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}"
-                   href="{{ url_for('admin.admin_dashboard') }}">
-                  <i class="bi bi-grid-1x2 me-1"></i>Panel
-                </a>
-              </li>
-
-            {% elif current_user.role == 'bibliotecario' %}
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}"
-                   href="{{ url_for('admin.admin_dashboard') }}">
-                  <i class="bi bi-grid-1x2 me-1"></i>Panel
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'admin.catalog_manage' %}active{% endif %}"
-                   href="{{ url_for('admin.catalog_manage') }}">
-                  <i class="bi bi-collection me-1"></i>Catálogo
-                </a>
-              </li>
-
-            {% elif current_user.role in ['premium', 'cliente'] %}
-              <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'main.premium_dashboard' %}active{% endif %}"
-                   href="{{ url_for('main.premium_dashboard') }}">
-                  <i class="bi bi-house me-1"></i>Mi Inicio
-                </a>
-              </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="solicitarDropdown"
-                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-plus-circle me-1"></i>Solicitar
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="solicitarDropdown">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('main.request_laptop') }}">
-                      <i class="bi bi-laptop me-2"></i>Portátil
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('main.request_book') }}">
-                      <i class="bi bi-book me-2"></i>Libro
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('main.request_accessory') }}">
-                      <i class="bi bi-headset me-2"></i>Accesorio
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            {% endif %}
-
-            {# Logout — all roles #}
-            <li class="nav-item ms-lg-1 mt-2 mt-lg-0">
-              <a class="btn btn-sm btn-outline-danger rounded-pill d-flex d-lg-inline-flex align-items-center gap-1 justify-content-center"
-                 href="{{ url_for('auth.logout') }}">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Salir</span>
-              </a>
-            </li>
-
-          {% else %}
-            <li class="nav-item mt-2 mt-lg-0">
-              <a class="btn btn-primary rounded-pill px-4 d-flex d-lg-inline-flex align-items-center gap-1 justify-content-center"
-                 href="{{ url_for('auth.login') }}">
-                <i class="bi bi-box-arrow-in-right"></i>
-                <span>Ingresar</span>
-              </a>
-            </li>
-          {% endif %}
-
-        </ul>
-      </div>
-    </div>
-  </nav>
-  {% endif %}
-
-  {# ── Main content ── #}
-  <main class="{% if 'auth' not in request.endpoint and request.endpoint != 'main.index' %}container mt-4 mb-5{% endif %} flex-grow-1">
-
-    {# Flash messages — toasts #}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div aria-live="polite" aria-atomic="true" class="no-print">
-      <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
-        {% for category, message in messages %}
-        {% set toast_class = category %}
-        {% set icon = 'info-circle' %}
-        {% if category == 'danger' %}
-          {% set toast_class = 'danger text-white' %}
-          {% set icon = 'exclamation-octagon-fill' %}
-        {% elif category == 'success' %}
-          {% set toast_class = 'success text-white' %}
-          {% set icon = 'check-circle-fill' %}
-        {% elif category == 'warning' %}
-          {% set toast_class = 'warning' %}
-          {% set icon = 'exclamation-triangle-fill' %}
-        {% endif %}
-
-        <div class="toast align-items-center text-bg-{{ toast_class }} border-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
-          <div class="d-flex">
-            <div class="toast-body d-flex align-items-center gap-2">
-              <i class="bi bi-{{ icon }} fs-5 flex-shrink-0"></i>
-              {{ message }}
+<body class="h-full flex flex-col text-slate-900">
+    <nav class="sticky top-0 z-40 w-full glass">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+                <span class="font-bold text-xl tracking-tight">SWL</span>
             </div>
-            <button type="button"
-                    class="btn-close {% if category != 'warning' %}btn-close-white{% endif %} me-2 m-auto"
-                    data-bs-dismiss="toast" aria-label="Cerrar"></button>
-          </div>
+            <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+                <a href="{{ url_for('main.index') }}" class="hover:text-indigo-600 transition-colors">Inicio</a>
+                <a href="{{ url_for('main.profile') }}" class="hover:text-indigo-600 transition-colors">Perfil</a>
+                <form action="{{ url_for('auth.logout') }}" method="post">
+                    <button class="bg-slate-900 text-white px-4 py-2 rounded-full hover:bg-slate-800 transition-all">Salir</button>
+                </form>
+            </div>
         </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-    {% endwith %}
+    </nav>
 
-    {% block content %}{% endblock %}
-  </main>
+    <main class="flex-grow max-w-7xl w-full mx-auto p-6">
+        {% block content %}{% endblock %}
+    </main>
 
-  {# ── Footer ── #}
-  {% if 'auth' not in request.endpoint %}
-  <footer class="mt-auto py-3 no-print app-footer">
-    <div class="container">
-      <div class="d-flex align-items-center justify-content-center gap-2">
-        <i class="bi bi-book-half"></i>
-        <span>© 2026 SWL — Desarrollado por Maick</span>
-      </div>
-    </div>
-  </footer>
-  {% endif %}
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Auto-show toasts
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.toast').forEach(function (el) {
-        new bootstrap.Toast(el, { autohide: true, delay: 5000 }).show();
-      });
-    });
-  </script>
-
-  {% block extra_scripts %}{% endblock %}
+    <footer class="py-8 border-t border-slate-200 text-center text-slate-400 text-xs">
+        © 2026 SWL — La Plata, Huila.
+    </footer>
 </body>
 </html>

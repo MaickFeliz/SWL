@@ -1941,3 +1941,7 @@ werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'admin.
 2026-04-13 16:04:20,283 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
 2026-04-13 16:04:28,175 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
 2026-04-13 16:04:29,465 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:45]
+2026-04-22 17:50:58,041 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:44]
+2026-04-22 17:52:41,848 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:44]
+2026-04-22 17:54:56,801 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:44]
+2026-04-22 17:55:02,072 INFO: LMS Startup - Technical Specs Initialized [in D:\SWL\app\__init__.py:44]
