@@ -28,8 +28,7 @@ def create_app(config_class: type[Config] = Config) -> Flask:
     login_manager.init_app(app)
     mail.init_app(app)
 
-    if not os.path.exists("logs"):
-        os.mkdir("logs")
+    os.makedirs("logs", exist_ok=True)
 
     file_handler = RotatingFileHandler(
         app.config["LOG_FILE"], maxBytes=1024000, backupCount=3
