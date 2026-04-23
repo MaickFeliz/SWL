@@ -1,20 +1,17 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-50">
+<html lang="es" class="h-full">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SWL{% endblock %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS compilado (sin CDN, compatible con CSP strict) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <!-- Sistema de diseño SWL -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-
-    <style type="text/tailwindcss">
-        body { font-family: 'Inter', sans-serif; }
-        .glass { @apply bg-white/80 backdrop-blur-md border border-slate-200/50; }
-    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body class="h-full flex flex-col text-slate-900">
@@ -43,6 +40,9 @@
     <footer class="py-8 border-t border-slate-200 text-center text-slate-400 text-xs">
         © 2026 SWL — La Plata, Huila.
     </footer>
+    <!-- HTMX — interactividad sin JavaScript complejo (local, CSP-safe) -->
+    <script src="{{ url_for('static', filename='js/htmx.min.js') }}" defer></script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

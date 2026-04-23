@@ -1,6 +1,12 @@
 {
+  "scripts": {
+    "build:css": "tailwindcss -i app/static/css/tailwind.src.css -o app/static/css/tailwind.css --content \"app/templates/**/*.html\" --minify",
+    "watch:css": "tailwindcss -i app/static/css/tailwind.src.css -o app/static/css/tailwind.css --content \"app/templates/**/*.html\" --watch"
+  },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.4",
     "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.4"
   }
 }
