@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" class="h-full bg-slate-50">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SWL{% endblock %}</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
@@ -15,18 +16,21 @@
         .glass { @apply bg-white/80 backdrop-blur-md border border-slate-200/50; }
     </style>
 </head>
+
 <body class="h-full flex flex-col text-slate-900">
     <nav class="sticky top-0 z-40 w-full glass">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">S
+                </div>
                 <span class="font-bold text-xl tracking-tight">SWL</span>
             </div>
             <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
                 <a href="{{ url_for('main.index') }}" class="hover:text-indigo-600 transition-colors">Inicio</a>
                 <a href="{{ url_for('main.profile') }}" class="hover:text-indigo-600 transition-colors">Perfil</a>
                 <form action="{{ url_for('auth.logout') }}" method="post">
-                    <button class="bg-slate-900 text-white px-4 py-2 rounded-full hover:bg-slate-800 transition-all">Salir</button>
+                    <button
+                        class="bg-slate-900 text-white px-4 py-2 rounded-full hover:bg-slate-800 transition-all">Salir</button>
                 </form>
             </div>
         </div>
@@ -40,4 +44,5 @@
         © 2026 SWL — La Plata, Huila.
     </footer>
 </body>
+
 </html>

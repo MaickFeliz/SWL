@@ -1,39 +1,52 @@
 {% extends "base.html" %}
+
 {% block content %}
 <header class="mb-10">
     <span class="text-indigo-600 font-semibold text-sm tracking-wider uppercase">Panel de Control</span>
-    <h1 class="text-4xl font-extrabold text-slate-900 mt-2">Hola, {{ current_user.full_name }} 👋</h1>
+    <h1 class="text-4xl font-extrabold text-slate-900 mt-2">Hola, {{ current_user.full_name if current_user.full_name
+        else 'Usuario' }} 👋</h1>
 </header>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
     <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
         <p class="text-slate-500 text-sm">Préstamos Activos</p>
-        <p class="text-3xl font-bold mt-1 text-indigo-600">{{ active_loans|length }}</p>
+        <p class="text-3xl font-bold mt-1 text-indigo-600">{{ active_loans|length if active_loans else 0 }}</p>
     </div>
-    </div>
+</div>
 
 <div class="flex gap-4 border-b border-slate-200 mb-6">
     <button class="pb-4 border-b-2 border-indigo-600 font-medium text-sm text-indigo-600">Préstamos Activos</button>
-    <button hx-get="/historial" hx-target="#loan-section" class="pb-4 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700">Historial</button>
+    <button hx-get="/historial" hx-target="#loan-section"
+        class="pb-4 border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-slate-700 transition-colors">Historial</button>
 </div>
 
 <section id="loan-section" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% if active_loans %}
     {% for loan in active_loans %}
-    <div class="p-5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 transition-all group">
+    <div class="p-5 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 transition-all group shadow-sm">
         <div class="flex justify-between items-start mb-4">
             <div>
-                <h3 class="font-bold text-slate-800">{{ loan.item_instance.catalog_item.title_or_name }}</h3>
-                <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">{{ loan.item_instance.unique_code }}</span>
+                <h3 class="font-bold text-slate-800">{{ loan.item_instance.catalog_item.title_or_name if
+                    loan.item_instance else 'Desconocido' }}</h3>
+                <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">{{
+                    loan.item_instance.unique_code if loan.item_instance else 'N/A' }}</span>
             </div>
-            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700">
-                {{ loan.status.value }}
+            <span
+                class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter bg-amber-100 text-amber-700">
+                {{ loan.status.value if loan.status else 'Desconocido' }}
             </span>
         </div>
         <div class="flex justify-between items-end text-sm">
-            <div class="text-slate-500">Vence: <span class="text-slate-900 font-medium">{{ loan.due_date_co.strftime('%d %b') }}</span></div>
+            <div class="text-slate-500">Vence: <span class="text-slate-900 font-medium">{{ loan.due_date_co.strftime('%d
+                    %b') if loan.due_date_co else '—' }}</span></div>
             <button class="text-indigo-600 font-bold hover:underline">Ver detalles →</button>
         </div>
     </div>
     {% endfor %}
+    {% else %}
+    <div class="col-span-full p-8 text-center bg-slate-50 border border-slate-200 rounded-xl text-slate-500">
+        No tienes préstamos activos en este momento.
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
