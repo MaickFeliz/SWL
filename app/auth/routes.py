@@ -16,10 +16,13 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(document_id=form.document_id.data).first()
 
+        # Static precomputed hash to simulate delay without saturating CPU
+        DUMMY_HASH = "pbkdf2:sha256:260000$dummy$dummy"
+
         if user:
             is_valid_password = user.check_password(form.password.data)
         else:
-            check_password_hash(generate_password_hash(''), form.password.data)
+            check_password_hash(DUMMY_HASH, form.password.data)
             is_valid_password = False
 
         if not user or not is_valid_password:

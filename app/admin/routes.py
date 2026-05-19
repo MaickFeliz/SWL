@@ -126,9 +126,13 @@ def delete_user(id):
         flash('No puedes eliminar tu propio usuario.', 'danger')
         return redirect(url_for('admin.manage_users'))
     user = User.query.get_or_404(id)
-    db.session.delete(user)
-    db.session.commit()
-    flash(f'Usuario {user.full_name} eliminado.', 'success')
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Usuario {user.full_name} eliminado.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('No se puede eliminar el usuario. Posee registros atados (ej. préstamos históricos).', 'danger')
     return redirect(url_for('admin.manage_users'))
 
 @bp.route('/dashboard')

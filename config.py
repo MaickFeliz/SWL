@@ -28,15 +28,10 @@ class Config:
 
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
-        raise ValueError(
-            "DATABASE_URL debe estar definido en el entorno. "
-            "Ejemplo: DATABASE_URL=postgresql://usuario:password@localhost:5432/swl_db"
-        )
-    # Normaliza el prefijo legacy `postgres://` que emiten Heroku/Railway.
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+        raise ValueError("DATABASE_URL debe estar definido en el entorno.")
 
-    SQLALCHEMY_DATABASE_URI = database_url
+    # Required by Flask-SQLAlchemy; also fixes deprecated postgres:// prefix
+    SQLALCHEMY_DATABASE_URI = database_url.replace("postgres://", "postgresql://")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)

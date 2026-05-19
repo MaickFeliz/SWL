@@ -65,15 +65,27 @@ class Catalog(db.Model):
     category: str = db.Column(db.String(50), nullable=False)
     author_or_brand: Optional[str] = db.Column(db.String(100), nullable=True)
     is_penalty_applicable: bool = db.Column(db.Boolean, default=False)
-    
-    available_count: int = 0 
+
+    @property
+    def available_count(self) -> int:
+        """Retorna el valor inyectado por el servicio (JOIN optimizado) o
+        consulta la DB como fallback si no fue provisto."""
+        if hasattr(self, '_available_count'):
+            return self._available_count
+        return self.instances.filter_by(status=InventoryStatus.AVAILABLE).count()
+
+    @available_count.setter
+    def available_count(self, value: int) -> None:
+        """Permite que CatalogService inyecte el conteo desde un JOIN sin N+1."""
+        self._available_count = value
 
     instances = db.relationship(
-            "ItemInstance",
+        "ItemInstance",
         backref="catalog_item",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+
 
 class ItemInstance(db.Model):
     """Instancia física de un ítem del catálogo."""
@@ -190,6 +202,7 @@ class Loan(db.Model):
             if days_late > 0:
                 return float(days_late * fee_per_day)
         return 0.0
+
 
 class LibraryLog(db.Model):
     """Registro de uso de la biblioteca con fines estadísticos."""

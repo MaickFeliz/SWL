@@ -1,6 +1,7 @@
 from app import create_app
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+import os
 
 app = create_app()
 
@@ -10,12 +11,11 @@ def daily_loan_check():
         from app.services.loan_service import LoanService
         LoanService.check_overdue_loans()
 
-scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_job(daily_loan_check, 'cron', hour=0, minute=0)
-scheduler.start()
-
-# Asegurarse de apagar el scheduler cuando se detiene Flask
-atexit.register(lambda: scheduler.shutdown(wait=False))
+if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not os.environ.get('SERVER_SOFTWARE'):
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(daily_loan_check, 'cron', hour=0, minute=0)
+    scheduler.start()
+    atexit.register(lambda: scheduler.shutdown())
 
 # El esquema de la base de datos se gestiona exclusivamente mediante Flask-Migrate.
 # Para inicializar o actualizar el esquema, ejecuta:
